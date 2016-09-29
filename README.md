@@ -1,5 +1,5 @@
 ## "e4_MP" 
-### project is an e4 rcp implementaion of my Master Project. I will start with a SWT renderer.
+### This project is an e4 rcp implementaion of my Master Project. I will start with a SWT renderer.
 
 # BostonCase
 In my project I will analyze the Bosten Bombing Case.
