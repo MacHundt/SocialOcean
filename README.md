@@ -1,5 +1,5 @@
-## "e4_MP" 
-### This project is an e4 rcp implementaion of my Master Project. I will start with a SWT renderer.
+# e4
+This repository includes e4 rcp projects. 
 
 # BostonCase
 In my project I will analyze the Bosten Bombing Case.
