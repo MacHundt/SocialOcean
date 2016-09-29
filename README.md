@@ -7,5 +7,5 @@ Data Fusion of Twitter and Flickr and aother sources is used.
 The Map Visualization is done with OSM.
 
 # Used Libraries
-Lucene
-OSM
+- Lucene
+- OSM
