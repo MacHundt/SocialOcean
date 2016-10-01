@@ -9,7 +9,7 @@
  *    Stepan Rutz - initial implementation
  *******************************************************************************/
 
-package widget;
+package bostoncase.widget;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.InputStream;

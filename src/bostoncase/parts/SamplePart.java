@@ -25,7 +25,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 
-import widget.MapWidget;
+import bostoncase.widget.MapWidget;
 
 public class SamplePart {
 
