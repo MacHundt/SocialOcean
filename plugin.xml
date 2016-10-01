@@ -18,5 +18,13 @@
          </property>
       </product>
    </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            class="bostoncase.parts.MapPart"
+            id="bostoncase.parts.MapPart"
+            name="MapPar">
+      </view>
+   </extension>
 
 </plugin>

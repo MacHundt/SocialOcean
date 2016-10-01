@@ -4,8 +4,14 @@
     <children xsi:type="advanced:PerspectiveStack" xmi:id="_6wlLkMgZEeSyMNYR5xypkQ" elementId="org.eclipse.ui.ide.perspectivestack">
       <children xsi:type="advanced:Perspective" xmi:id="_6wlLkcgZEeSyMNYR5xypkQ" elementId="BostonCase.perspective.sample">
         <children xsi:type="basic:PartSashContainer" xmi:id="_6wlLksgZEeSyMNYR5xypkQ" elementId="BostonCase.partsashcontainer.sample">
-          <children xsi:type="basic:PartStack" xmi:id="_6wlLk8gZEeSyMNYR5xypkQ" elementId="BostonCase.partstack.sample">
-            <children xsi:type="basic:Part" xmi:id="_6wlLlMgZEeSyMNYR5xypkQ" elementId="BostonCase.part.sample" contributionURI="bundleclass://BostonCase/bostoncase.parts.SamplePart" label="Sample Part"/>
+          <children xsi:type="basic:PartSashContainer" xmi:id="_9Qu8sIfgEeaXL6O2qUILnA" elementId="bostoncase.partsashcontainer.0" horizontal="true">
+            <children xsi:type="basic:PartStack" xmi:id="_6wlLk8gZEeSyMNYR5xypkQ" elementId="BostonCase.partstack.sample">
+              <children xsi:type="basic:Part" xmi:id="_6wlLlMgZEeSyMNYR5xypkQ" elementId="BostonCase.part.sample" contributionURI="bundleclass://BostonCase/bostoncase.parts.SamplePart" label="Sample Part"/>
+            </children>
+          </children>
+          <children xsi:type="basic:Part" xmi:id="_ah6CoIffEeaXL6O2qUILnA" elementId="bostoncase.part.intern_mappart" contributionURI="bundleclass://BostonCase/bostoncase.parts.MapPart" label="intern_mapPart" iconURI="platform:/plugin/BostonCase/icons/map.png"/>
+          <children xsi:type="basic:PartStack" xmi:id="_DLxMMIfrEeaXL6O2qUILnA" elementId="bostoncase.partstack.0">
+            <children xsi:type="basic:Part" xmi:id="_Daj2IIfrEeaXL6O2qUILnA" elementId="bostoncase.part.console" contributionURI="bundleclass://BostonCase/bostoncase.parts.Console" label="Console"/>
           </children>
         </children>
       </children>
