@@ -1,4 +1,3 @@
- 
 package bostoncase.parts;
 
 import javax.annotation.PostConstruct;

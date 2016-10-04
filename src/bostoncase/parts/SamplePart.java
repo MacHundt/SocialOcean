@@ -2,7 +2,6 @@ package bostoncase.parts;
 
 import java.util.Arrays;
 import java.util.List;
-
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
@@ -12,25 +11,17 @@ import org.eclipse.e4.ui.model.application.ui.MDirtyable;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Tree;
-
-import bostoncase.widget.MapWidget;
 
 public class SamplePart {
 
 	private Text txtInput;
 	private TableViewer tableViewer;
-	private Tree layerTree;
-	
-    private Text text;
-    private Browser browser;
 
 	@Inject
 	private MDirtyable dirty;
@@ -48,18 +39,17 @@ public class SamplePart {
 			}
 		});
 		txtInput.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		
+
 		tableViewer = new TableViewer(parent);
 
 		tableViewer.setContentProvider(ArrayContentProvider.getInstance());;
 		tableViewer.setInput(createInitialDataModel());
 		tableViewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
-		
 	}
 
 	@Focus
 	public void setFocus() {
-		txtInput.setFocus();
+		tableViewer.getTable().setFocus();
 	}
 
 	@Persist
@@ -68,6 +58,6 @@ public class SamplePart {
 	}
 	
 	private List<String> createInitialDataModel() {
-		return Arrays.asList("Sample item 1", "Sample item 2", "Sample item 3", "Sample item 4", "Sample item 5", "Sample item 6");
+		return Arrays.asList("Sample item 1", "Sample item 2", "Sample item 3", "Sample item 4", "Sample item 5");
 	}
 }
