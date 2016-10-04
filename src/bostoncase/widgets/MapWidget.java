@@ -295,7 +295,6 @@ public class MapWidget extends Canvas {
         }
     }
    
-    
     private class MapMouseListener implements MouseListener, MouseWheelListener, MouseMoveListener, MouseTrackListener {
         private Point mouseCoords = new Point(0, 0);
         private Point downCoords;
@@ -441,10 +440,9 @@ public class MapWidget extends Canvas {
         });
         setMapPosition(mapPosition);
         addMouseListener(mouseListener);
-        
-//        addMouseMoveListener(mouseListener);
-//        addMouseWheelListener(mouseListener);
-//        addMouseTrackListener(mouseListener);
+        addMouseMoveListener(mouseListener);
+        addMouseWheelListener(mouseListener);
+        addMouseTrackListener(mouseListener);
         /// TODO: check tileservers
     }
     

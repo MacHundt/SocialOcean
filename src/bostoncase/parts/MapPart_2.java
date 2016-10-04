@@ -12,15 +12,15 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 
-import bostoncase.widget.MapWidget;
+import bostoncase.widgets.MapWidget;
 
-public class MapPart {
+public class MapPart_2 {
 	
 	private MapWidget mapvis;
 	private Tree layerTree;
 	
 	@Inject
-	public MapPart() {
+	public MapPart_2() {
 		
 	}
 	
