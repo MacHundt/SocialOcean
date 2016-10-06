@@ -14,5 +14,9 @@
          </property>
       </product>
    </extension>
+   <extension
+         id="id1"
+         point="org.eclipse.e4.workbench.model">
+   </extension>
 
 </plugin>
