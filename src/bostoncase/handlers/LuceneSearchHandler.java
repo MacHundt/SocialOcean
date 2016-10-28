@@ -2,26 +2,18 @@
 package bostoncase.handlers;
 
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.util.ArrayList;
 
-import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.spatial.geopoint.search.GeoPointInBBoxQuery;
 import org.eclipse.e4.core.di.annotations.CanExecute;
 import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.core.di.annotations.Optional;
 
-import bostoncase.parts.Console;
-import bostoncase.widgets.SearchFiles;
+import impl.LuceneQuerySearcher;
+import utils.Lucene;
 
 
 public class LuceneSearchHandler {
@@ -32,50 +24,44 @@ public class LuceneSearchHandler {
 	// get the Console
 	// get the map
 	// result table
-	// get Lucene Index folder
-	// ... include Lucene LIB
-	// ... get geo tools
-	// ... perform query!!
 	
 	@Execute
-	public void execute(@Optional @Named("QueryString") String query,@Optional @Named("indexpath") String index, 
-			@Optional @Named("type") String type)  {
-		
-		// execute query get Lucene result
-		System.out.println(type+" - "+query);
-		System.out.println(index);
-		
-		try {
-//			SearchFiles.geoQuery(index, 42.2279, 42.3969, -71.1908, -70.9235);
-			SearchFiles.searchQuery(query, index);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	public void execute(@Optional @Named("QueryString") String query, @Optional @Named("indexpath") String index,
+			@Optional @Named("type") String type) {
+
+		if (query.startsWith("#")) {
+			query = query.replace("#", "tags:");
+		}
+
+		LuceneQuerySearcher lqs = LuceneQuerySearcher.INSTANCE;
+		Lucene l = Lucene.INSTANCE;
+		if (!l.isInitialized)
+			l.initLucene(index, lqs);
+
+		// GEO Test
+		if (query.equals("geo")) {
+			l.ADDGeoQuery(42.2279, 42.3969, -71.1908, -70.9235);
 		}
 		
-//		try {
-//		IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(index)));
-//		IndexSearcher searcher = new IndexSearcher(reader);
-//		
-//		Term t = new Term("content", query);
-//		
-//		// Get the top 10 docs
-//		Query lucene_query = new TermQuery(t);
-//		TopDocs tops= searcher.search(lucene_query, 10);
-//		ScoreDoc[] scoreDoc = tops.scoreDocs;
-//		System.out.println(scoreDoc.length); 
-//		for (ScoreDoc score : scoreDoc){
-//		    System.out.println("DOC " + score.doc + " SCORE " + score.score);
-//		}
-//		// Get the frequency of the term
-//		int freq = reader.docFreq(t);
-//		System.out.println("FREQ " + freq);
-//		
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-	
+		// Get Field -> Top50 --> TEST
+		else if (query.equals("field40")) {
+			l.searchTopXOfField("content", 50);
+		}
+		
+		// Get Time Range TEST
+		else if (query.equals("time")) {
+			l.searchTimeRange(1366012800, 1366120800);
+		}
+		
+		else {
+			try {
+				l.ADDQuery(l.getParser().parse(query));
+			} catch (ParseException e) {
+				System.out.println("Could not parse the Query: " + query);
+				e.printStackTrace();
+				return;
+			}
+		}
 	}
 	
 	

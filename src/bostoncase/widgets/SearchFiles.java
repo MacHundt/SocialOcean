@@ -71,6 +71,7 @@ public class SearchFiles {
 		parser = new QueryParser(field, analyzer);
 	}
 	
+	
 	public static void geoQuery(String index, double minLat, double maxLat, double minLong, double maxLong) throws ParseException, IOException {
 		
 		try {

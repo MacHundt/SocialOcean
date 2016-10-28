@@ -37,6 +37,9 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bostoncase.handlers.LuceneSearchHandler;
+import impl.LuceneQuerySearcher;
+import utils.IndexInfo;
+import utils.Lucene;
 
 
 public class LuceneSearch {
@@ -109,6 +112,14 @@ public class LuceneSearch {
 //			// get the property value and print it out
 //			System.out.println(prop.getProperty("lucene_index"));
 			luceneIndex = prop.getProperty("lucene_index");
+			
+			LuceneQuerySearcher lqs = LuceneQuerySearcher.INSTANCE;
+			Lucene l = Lucene.INSTANCE;
+			if (!l.isInitialized) {
+				System.out.println("Loading Lucene Index ...");
+				l.initLucene(luceneIndex, lqs);
+			}
+
 	
 		} catch (IOException e1) {
 			e1.printStackTrace();
