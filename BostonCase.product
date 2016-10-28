@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="BostonCase" id="BostonCase.product" application="org.eclipse.e4.ui.workbench.swt.E4Application" version="1.0.0.0" useFeatures="false" includeLaunchers="true">
-
+<product name="BostonCase" id="BostonCase.product" application="org.eclipse.e4.ui.workbench.swt.E4Application" version="1.0.0.qualifier" useFeatures="false" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
@@ -16,14 +15,12 @@
 
    <windowImages/>
 
-
    <launcher>
       <solaris/>
       <win useIco="false">
          <bmp/>
       </win>
    </launcher>
-
 
    <vm>
    </vm>

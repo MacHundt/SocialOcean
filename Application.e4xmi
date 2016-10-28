@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <application:Application xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:advanced="http://www.eclipse.org/ui/2010/UIModel/application/ui/advanced" xmlns:application="http://www.eclipse.org/ui/2010/UIModel/application" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:menu="http://www.eclipse.org/ui/2010/UIModel/application/ui/menu" xmi:id="_6wlLcMgZEeSyMNYR5xypkQ" elementId="BostonCase.application" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ">
-  <children xsi:type="basic:TrimmedWindow" xmi:id="_6wlLccgZEeSyMNYR5xypkQ" elementId="BostonCase.window.main" label="BostonCase" width="500" height="400">
+  <children xsi:type="basic:TrimmedWindow" xmi:id="_6wlLccgZEeSyMNYR5xypkQ" elementId="BostonCase.window.main" label="BostonCase" width="800" height="600">
     <children xsi:type="advanced:PerspectiveStack" xmi:id="_6wlLkMgZEeSyMNYR5xypkQ" elementId="org.eclipse.ui.ide.perspectivestack">
       <children xsi:type="advanced:Perspective" xmi:id="_6wlLkcgZEeSyMNYR5xypkQ" elementId="BostonCase.perspective.sample">
         <children xsi:type="basic:PartSashContainer" xmi:id="_6wlLksgZEeSyMNYR5xypkQ" elementId="BostonCase.partsashcontainer.main">
-          <children xsi:type="basic:PartStack" xmi:id="_6wlLk8gZEeSyMNYR5xypkQ" elementId="BostonCase.partstack.selectionpart" containerData="1000"/>
+          <children xsi:type="basic:PartStack" xmi:id="_6wlLk8gZEeSyMNYR5xypkQ" elementId="BostonCase.partstack.selectionpart" containerData="1000">
+            <children xsi:type="basic:Part" xmi:id="_XETc0Jw3EeaqBeVOr5nmKw" elementId="bostoncase.part.lucene" contributionURI="bundleclass://BostonCase/bostoncase.parts.LuceneSearch" label="Lucene"/>
+          </children>
           <children xsi:type="basic:PartSashContainer" xmi:id="_jkLewIosEeauXYmQDjn7lw" elementId="bostoncase.partsashcontainer.mappart" containerData="6000" horizontal="true">
             <children xsi:type="basic:PartStack" xmi:id="_nKjIgIosEeauXYmQDjn7lw" elementId="bostoncase.partstack.datalayers" containerData="2000">
               <children xsi:type="basic:Part" xmi:id="_utZO4IosEeauXYmQDjn7lw" elementId="bostoncase.part.layer" contributionURI="bundleclass://BostonCase/bostoncase.parts.Console" label="Layer" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ"/>
@@ -45,6 +47,7 @@
   <handlers xmi:id="_6wlLhMgZEeSyMNYR5xypkQ" elementId="bostoncase.handler.saveCommand" contributionURI="bundleclass://BostonCase/bostoncase.handlers.SaveHandler" command="_6wlLg8gZEeSyMNYR5xypkQ"/>
   <handlers xmi:id="_6wlLh8gZEeSyMNYR5xypkQ" elementId="bostoncase.handler.aboutCommand" contributionURI="bundleclass://BostonCase/bostoncase.handlers.AboutHandler" command="_6wlLhsgZEeSyMNYR5xypkQ"/>
   <handlers xmi:id="_F_0sMIowEeauXYmQDjn7lw" elementId="bostoncase.handler.showSettings" contributionURI="bundleclass://BostonCase/bostoncase.handlers.ShowSettingsHandler" command="_qNf0wIovEeauXYmQDjn7lw"/>
+  <handlers xmi:id="_AKLDYJw3EeaqBeVOr5nmKw" elementId="bostoncase.handler.lucenesearch" contributionURI="bundleclass://BostonCase/bostoncase.handlers.LuceneSearchHandler" command="_xfTKYJw2EeaqBeVOr5nmKw"/>
   <bindingTables xmi:id="_6wlLfsgZEeSyMNYR5xypkQ" elementId="BostonCase.bindingtable" bindingContext="_6wlLecgZEeSyMNYR5xypkQ">
     <bindings xmi:id="_6wlLf8gZEeSyMNYR5xypkQ" elementId="BostonCase.keybinding.m1q" keySequence="M1+Q" command="_6wlLfMgZEeSyMNYR5xypkQ"/>
     <bindings xmi:id="_6wlLgsgZEeSyMNYR5xypkQ" elementId="BostonCase.keybinding.m1o" keySequence="M1+O" command="_6wlLgMgZEeSyMNYR5xypkQ"/>
@@ -60,6 +63,11 @@
   <commands xmi:id="_6wlLg8gZEeSyMNYR5xypkQ" elementId="org.eclipse.ui.file.save" commandName="saveCommand"/>
   <commands xmi:id="_6wlLhsgZEeSyMNYR5xypkQ" elementId="org.eclipse.ui.help.aboutAction" commandName="aboutCommand"/>
   <commands xmi:id="_qNf0wIovEeauXYmQDjn7lw" elementId="bostoncase.command.showsettings" commandName="showSettings"/>
+  <commands xmi:id="_xfTKYJw2EeaqBeVOr5nmKw" elementId="bostoncase.command.lucenesearch" commandName="LuceneSearchCommand">
+    <parameters xmi:id="_4PcogJw2EeaqBeVOr5nmKw" elementId="QueryString" name="QueryString"/>
+    <parameters xmi:id="_6j8asJw2EeaqBeVOr5nmKw" elementId="type" name="type"/>
+    <parameters xmi:id="_5xP_MJxGEeaqBeVOr5nmKw" elementId="indexpath" name="indexpath"/>
+  </commands>
   <addons xmi:id="_6wlLcsgZEeSyMNYR5xypkQ" elementId="org.eclipse.e4.core.commands.service" contributionURI="bundleclass://org.eclipse.e4.core.commands/org.eclipse.e4.core.commands.CommandServiceAddon"/>
   <addons xmi:id="_6wlLc8gZEeSyMNYR5xypkQ" elementId="org.eclipse.e4.ui.contexts.service" contributionURI="bundleclass://org.eclipse.e4.ui.services/org.eclipse.e4.ui.services.ContextServiceAddon"/>
   <addons xmi:id="_6wlLdMgZEeSyMNYR5xypkQ" elementId="org.eclipse.e4.ui.bindings.service" contributionURI="bundleclass://org.eclipse.e4.ui.bindings/org.eclipse.e4.ui.bindings.BindingServiceAddon"/>
