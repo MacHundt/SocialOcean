@@ -23,7 +23,10 @@ import org.apache.lucene.search.suggest.InputIterator;
 import org.apache.lucene.spatial.geopoint.search.GeoPointInBBoxQuery;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
+import org.eclipse.swt.widgets.Display;
 
+import bostoncase.parts.LuceneStatistics;
+import interfaces.Console;
 import interfaces.ILuceneQuerySearcher;
 
 // as singleton
@@ -87,42 +90,61 @@ public enum Lucene {
 		querySearcher.initQuerySearcher(searcher, analyzer);
 		isInitialized = true;
 		
-		printStatistics();
-		
 	}
 	
-	private void printStatistics() {
-		
-		System.out.println("Index name: \t"+idxInfo.getIndexPath());
-		System.out.println("Lucene Version: \t"+idxInfo.getVersion());
-		System.out.println("Number of fieds: \t"+termCounts.size());
-		System.out.println("Number of terms: \t"+numTerms);
-		System.out.println("Filesize of Index: \t"+idxInfo.getTotalFileSize()/1000000+" MB");
-		
+	public void printToConsole(String msg) {
+		while (!Console.isInitialized) {
+			continue;
+		}
+		Console c = Console.getInstance();
+		c.outputConsole(msg);
+	}
+	
+	public void printLuceneFields() {
 		// sort by names now
 		String[] idxFieldsCopy = idxFields.clone();
-
+		
 		// sort by term count
 		ValueComparator bvc = new ValueComparator(termCounts);
 		TreeMap<String, FieldTermCount> termCountsSorted = new TreeMap<String, FieldTermCount>(bvc);
 		termCountsSorted.putAll(termCounts);
-//		String[] sortedFields = termCountsSorted.keySet().toArray(new String[termCounts.size()]);
-//		String[] idxFieldsCopySorted = new String[idxFields.length];
-//		System.arraycopy(sortedFields, 0, idxFieldsCopySorted, 0, sortedFields.length);
-//		if (termCounts.size() < idxFieldsCopy.length) {
-//			int idx = sortedFields.length;
-//			for (String f : idxFields) {
-//				if (!termCounts.containsKey(f)) {
-//					idxFieldsCopySorted[idx] = f;
-//					idx += 1;
-//				}
-//			}
-//		}
+		// String[] sortedFields = termCountsSorted.keySet().toArray(new
+		// String[termCounts.size()]);
+		// String[] idxFieldsCopySorted = new String[idxFields.length];
+		// System.arraycopy(sortedFields, 0, idxFieldsCopySorted, 0,
+		// sortedFields.length);
+		// if (termCounts.size() < idxFieldsCopy.length) {
+		// int idx = sortedFields.length;
+		// for (String f : idxFields) {
+		// if (!termCounts.containsKey(f)) {
+		// idxFieldsCopySorted[idx] = f;
+		// idx += 1;
+		// }
+		// }
+		// }
 		System.out.println(String.format("\n%-10s %15s \t %-10s", "Name", "Term Count", "%"));
 		for (FieldTermCount ftc : termCountsSorted.values()) {
-			String formattedString = String.format("%-10s %15d \t %.2f %s" ,ftc.fieldname, ftc.termCount,(ftc.termCount*100)/(float)numTerms, "%");       
-			System.out.println(formattedString); 
+			String formattedString = String.format("%-10s %15d \t %.2f %s", ftc.fieldname, ftc.termCount,
+					(ftc.termCount * 100) / (float) numTerms, "%");
+			System.out.println(formattedString);
 		}
+	}
+	
+	
+	public void printStatistics() {
+		ArrayList<String> build = new ArrayList<>();
+		build.add("Index name: \t\t\t"+idxInfo.getIndexPath());
+		build.add("Lucene Version: \t\t"+idxInfo.getVersion());
+		build.add("Number of fieds: \t\t"+termCounts.size());
+		build.add("Number of terms: \t\t"+numTerms);
+		build.add("Index filesize: \t\t\t"+idxInfo.getTotalFileSize()/1000000+" MB");
+		
+		build.forEach(System.out::println); 
+		while (!LuceneStatistics.isInitialized) {
+			continue;
+		}
+		LuceneStatistics ls = LuceneStatistics.getInstance();
+		build.forEach(item->ls.printLuceneStatistics(item));
 	}
 	
 
@@ -160,6 +182,7 @@ public enum Lucene {
 		queryResults.add(qr);
 		
 		System.out.println(qr.toString());
+		printToConsole(qr.toString());
 	}
 	
 	public void FUSEQuery(int index, Query newQuery) {

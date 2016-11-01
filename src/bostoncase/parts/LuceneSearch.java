@@ -24,21 +24,17 @@ import org.eclipse.e4.core.commands.ECommandService;
 import org.eclipse.e4.core.commands.EHandlerService;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import bostoncase.handlers.LuceneSearchHandler;
 import impl.LuceneQuerySearcher;
-import utils.IndexInfo;
 import utils.Lucene;
 
 
@@ -47,7 +43,9 @@ public class LuceneSearch {
 	public static final String SEARCH_LUCENE_QUERY_COMMAND_ID = "bostoncase.command.lucenesearch";
 	
 	private Text text;
-	private String luceneIndex = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/lucene_index";
+//	private String luceneIndex = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/lucene_index";
+	private String luceneIndex = "";
+
 	
 	@Inject ECommandService commandService;
 	@Inject EHandlerService service;
@@ -82,21 +80,14 @@ public class LuceneSearch {
 	@PostConstruct
 	public void postConstruct(Composite parent) {
 		
-		Properties prop = new Properties();
 		InputStream input = null;
-
 		try {
-//			input = LuceneSearchHandler.class.getResourceAsStream("config.properties");
-			// load a properties file
-//			Path currentRelativePath = Paths.get("");
-//			String s = currentRelativePath.toAbsolutePath().toString();
-//			System.out.println("Current relative path is: " + s);
-			
 //			## LOAD Icons
-			ImageDescriptor st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/open.png");
-			Image img = st.createImage();
+//			ImageDescriptor st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/open.png");
+//			Image img = st.createImage();
 			
 //			## LOAD Settings File
+			Properties prop = new Properties();
 			URL url = null;
 			try {
 			  url = new URL("platform:/plugin/"
@@ -109,18 +100,8 @@ public class LuceneSearch {
 			url = FileLocator.toFileURL(url);
 			input = new FileInputStream(new File(url.getPath()));
 			prop.load(input);
-//			// get the property value and print it out
 //			System.out.println(prop.getProperty("lucene_index"));
 			luceneIndex = prop.getProperty("lucene_index");
-			
-			LuceneQuerySearcher lqs = LuceneQuerySearcher.INSTANCE;
-			Lucene l = Lucene.INSTANCE;
-			if (!l.isInitialized) {
-				System.out.println("Loading Lucene Index ...");
-				l.initLucene(luceneIndex, lqs);
-			}
-
-	
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		} finally {
@@ -132,6 +113,26 @@ public class LuceneSearch {
 				}
 			}
 		}
+		
+//		## Initialize LUCENE model class
+		LuceneQuerySearcher lqs = LuceneQuerySearcher.INSTANCE;
+		Lucene l = Lucene.INSTANCE;
+		if (!l.isInitialized && !luceneIndex.isEmpty()) {
+			System.out.print("Loading Lucene Index ...");
+			LuceneIndexLoaderThread lilt = new LuceneIndexLoaderThread(l) {
+				@Override
+				public void execute() {
+					l.initLucene(luceneIndex, lqs);
+					
+				}
+			};
+			lilt.start();
+		} else {
+			System.out.println(" Could not load the index at path: '"+luceneIndex+"'");
+		}
+		
+		
+//		## BUILD GUI
 		
 //		Composite composite = new Composite(tabFolder, SWT.NONE);
 //		tbtmLuceneSearch.setControl(composite);
