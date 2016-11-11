@@ -3,7 +3,20 @@ Bundle-ManifestVersion: 2
 Bundle-Name: BostonCase
 Bundle-SymbolicName: BostonCase;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Eclipse-BundleShape: dir
+Bundle-ClassPath: libs/lucene-analyzers-common-6.2.1.jar,
+ libs/lucene-backward-codecs-6.2.1.jar,
+ libs/lucene-codecs-6.2.1.jar,
+ libs/lucene-core-6.2.1.jar,
+ libs/lucene-queryparser-6.2.1.jar,
+ libs/lucene-spatial-6.2.1.jar,
+ libs/lucene-suggest-6.2.1.jar,
+ libs/lucene-grouping-6.2.1.jar,
+ libs/lucene-highlighter-6.2.1.jar,
+ libs/lucene-join-6.2.1.jar,
+ libs/lucene-misc-6.2.1.jar,
+ libs/java-sdk-3.5.1-jar-with-dependencies.jar,
+ libs/jfreechart-1.0.19.jar,
+ .
 Require-Bundle: org.eclipse.e4.core.di;bundle-version="1.6.1",
  org.eclipse.jface;bundle-version="3.12.0",
  org.eclipse.e4.ui.workbench;bundle-version="1.4.0",
@@ -16,18 +29,8 @@ Require-Bundle: org.eclipse.e4.core.di;bundle-version="1.6.1",
  org.eclipse.osgi,
  org.eclipse.equinox.registry,
  org.eclipse.equinox.app
-Import-Package: javax.inject;version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Import-Package: javax.annotation;version="1.0.0";resolution:=optional,
+ javax.inject;version="1.0.0"
 Bundle-ActivationPolicy: lazy
-Bundle-ClassPath: libs/lucene-analyzers-common-6.2.1.jar,
- libs/lucene-backward-codecs-6.2.1.jar,
- libs/lucene-codecs-6.2.1.jar,
- libs/lucene-core-6.2.1.jar,
- libs/lucene-queryparser-6.2.1.jar,
- libs/lucene-spatial-6.2.1.jar,
- libs/lucene-suggest-6.2.1.jar,
- libs/lucene-grouping-6.2.1.jar,
- libs/lucene-highlighter-6.2.1.jar,
- libs/lucene-join-6.2.1.jar,
- libs/lucene-misc-6.2.1.jar,
- .
+Eclipse-BundleShape: dir

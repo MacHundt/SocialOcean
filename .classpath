@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="libs/jfreechart-1.0.19.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/java-sdk-3.5.1-jar-with-dependencies.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/lucene-grouping-6.2.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/lucene-highlighter-6.2.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/lucene-join-6.2.1.jar"/>
