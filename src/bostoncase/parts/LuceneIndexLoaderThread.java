@@ -1,7 +1,5 @@
 package bostoncase.parts;
 
-import org.eclipse.swt.widgets.Display;
-
 import utils.Lucene;
 
 public abstract class LuceneIndexLoaderThread extends Thread {

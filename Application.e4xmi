@@ -9,12 +9,10 @@
           </children>
           <children xsi:type="basic:PartSashContainer" xmi:id="_jkLewIosEeauXYmQDjn7lw" elementId="bostoncase.partsashcontainer.mappart" containerData="6000" horizontal="true">
             <children xsi:type="basic:PartStack" xmi:id="_nKjIgIosEeauXYmQDjn7lw" elementId="bostoncase.partstack.datalayers" containerData="2000" selectedElement="_cCvw0KApEearzvHMhN-SAg">
-              <children xsi:type="basic:CompositePart" xmi:id="_cCvw0KApEearzvHMhN-SAg" elementId="bostoncase.compositepart.overviewcontainer" accessibilityPhrase="" label="Overview" selectedElement="_gLDqAKApEearzvHMhN-SAg">
-                <children xsi:type="basic:Part" xmi:id="_gLDqAKApEearzvHMhN-SAg" elementId="bostoncase.part.statistics" containerData="1000" contributionURI="bundleclass://BostonCase/bostoncase.parts.LuceneStatistics" label="Statistics"/>
-                <children xsi:type="basic:CompositePart" xmi:id="_EI1VYKApEearzvHMhN-SAg" elementId="bostoncase.compositepart.overviewfields" containerData="6000" label="FieldSelection" horizontal="true">
-                  <children xsi:type="basic:Part" xmi:id="_P349gKApEearzvHMhN-SAg" elementId="bostoncase.part.details" containerData="400" contributionURI="bundleclass://BostonCase/interfaces.Console" label="Details"/>
-                  <children xsi:type="basic:Part" xmi:id="_4JqYMKApEearzvHMhN-SAg" elementId="bostoncase.part.fieldselecttop" containerData="200" contributionURI="bundleclass://BostonCase/interfaces.Console" label="FieldSelectTop"/>
-                  <children xsi:type="basic:Part" xmi:id="__zfQUKApEearzvHMhN-SAg" elementId="bostoncase.part.fieldsresults" containerData="600" contributionURI="bundleclass://BostonCase/interfaces.Console" label="Fields Results"/>
+              <children xsi:type="basic:CompositePart" xmi:id="_cCvw0KApEearzvHMhN-SAg" elementId="bostoncase.compositepart.overviewcontainer" containerData="" accessibilityPhrase="" label="Overview" selectedElement="_WLEnwLAMEeaGfPETKLtUAQ">
+                <children xsi:type="basic:PartSashContainer" xmi:id="_WLEnwLAMEeaGfPETKLtUAQ" elementId="bostoncase.partsashcontainer.0">
+                  <children xsi:type="basic:Part" xmi:id="_gLDqAKApEearzvHMhN-SAg" elementId="bostoncase.part.statistics" containerData="1700" contributionURI="bundleclass://BostonCase/bostoncase.parts.LuceneStatistics" label="Statistics"/>
+                  <children xsi:type="basic:Part" xmi:id="_7_AY8LAKEeaGfPETKLtUAQ" elementId="bostoncase.part.topselection" containerData="5000" contributionURI="bundleclass://BostonCase/bostoncase.parts.topSelectionPart" label="topSelection"/>
                 </children>
               </children>
               <children xsi:type="basic:Part" xmi:id="_utZO4IosEeauXYmQDjn7lw" elementId="bostoncase.part.queryhistory" contributionURI="bundleclass://BostonCase/interfaces.Console" label="Query History" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ"/>
@@ -25,9 +23,6 @@
             <children xsi:type="basic:PartStack" xmi:id="_n1WZAIosEeauXYmQDjn7lw" elementId="bostoncase.partstack.settings" containerData="500" accessibilityPhrase="settingsPartStack" selectedElement="_4NByEIosEeauXYmQDjn7lw">
               <children xsi:type="basic:Part" xmi:id="_4NByEIosEeauXYmQDjn7lw" elementId="bostoncase.part.settings" contributionURI="bundleclass://BostonCase/bostoncase.parts.SamplePart" label="settings" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ" closeable="true"/>
             </children>
-          </children>
-          <children xsi:type="basic:PartStack" xmi:id="_Coc-wKffEea4y58rmelNVw" elementId="bostoncase.partstack.0" containerData="1000">
-            <children xsi:type="basic:Part" xmi:id="_Hv5ZsKffEea4y58rmelNVw" elementId="bostoncase.part.time" contributionURI="bundleclass://BostonCase/bostoncase.parts.Time" label="Time"/>
           </children>
           <children xsi:type="basic:PartStack" xmi:id="_I_X_0IorEeauXYmQDjn7lw" elementId="bostoncase.partstack.vis" containerData="1000" selectedElement="_UdkhcIorEeauXYmQDjn7lw">
             <children xsi:type="basic:Part" xmi:id="_UdkhcIorEeauXYmQDjn7lw" elementId="bostoncase.part.console" contributionURI="bundleclass://BostonCase/interfaces.Console" label="Console" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ"/>

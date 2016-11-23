@@ -2,12 +2,8 @@ package interfaces;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import javax.inject.Named;
 
-import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.ui.di.Focus;
-import org.eclipse.e4.ui.model.application.ui.basic.MPart;
-import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Composite;
@@ -29,7 +25,7 @@ public class Console {
 	public void postConstruct(Composite parent) {
 		console = new StyledText(parent, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.H_SCROLL);
 		console.setDoubleClickEnabled(false);
-		console.setAlwaysShowScrollBars(false);
+//		console.setScrollBars( false);
 		console.setEditable(false);
 		INSTANCE = this;
 		isInitialized = true;

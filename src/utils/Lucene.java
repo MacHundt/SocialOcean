@@ -2,6 +2,7 @@ package utils;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -26,6 +27,7 @@ import org.apache.lucene.util.BytesRef;
 import org.eclipse.swt.widgets.Display;
 
 import bostoncase.parts.LuceneStatistics;
+import bostoncase.parts.TopSelectionPart;
 import interfaces.Console;
 import interfaces.ILuceneQuerySearcher;
 
@@ -132,10 +134,12 @@ public enum Lucene {
 	
 	
 	public void printStatistics() {
+
 		ArrayList<String> build = new ArrayList<>();
 		build.add("Index name: \t\t\t"+idxInfo.getIndexPath());
 		build.add("Lucene Version: \t\t"+idxInfo.getVersion());
-		build.add("Number of fieds: \t\t"+termCounts.size());
+		int fieldsCount = termCounts.size();
+		build.add("Number of fieds: \t\t"+fieldsCount);
 		build.add("Number of terms: \t\t"+numTerms);
 		build.add("Index filesize: \t\t\t"+idxInfo.getTotalFileSize()/1000000+" MB");
 		
@@ -145,6 +149,20 @@ public enum Lucene {
 		}
 		LuceneStatistics ls = LuceneStatistics.getInstance();
 		build.forEach(item->ls.printLuceneStatistics(item));
+		
+		TopSelectionPart tsp = TopSelectionPart.getInstance();
+		
+		Object[][] tableData = new Object[fieldsCount][tsp.detailsColumns];
+		
+		for (int i= 0; i< tableData.length; i++) {
+			tableData[i][0] = fn.get(i);		// field name
+			tableData[i][1] = new Long(termCounts.get(fn.get(i)).termCount);
+			DecimalFormat format = new DecimalFormat("##.##");
+			String s = format.format((termCounts.get(fn.get(i)).termCount*100.0 / numTerms));
+			tableData[i][2] = s + " %" ;
+		}
+		tsp.setDetailTable(tableData);
+		
 	}
 	
 
@@ -205,16 +223,20 @@ public enum Lucene {
 	 * @param topX
 	 * @throws IOException 
 	 */
-	public void searchTopXOfField(String field, int topX)  {
+	public TermStats[] searchTopXOfField(String field, int topX)  {
 		String[] fields = {field};
 		try {
 			// TODO put into external thread!
 			TermStats[] result = HighFreqTerms.getHighFreqTerms(reader, topX, fields);
+			
 			for (TermStats ts : result) {
 				System.out.println(ts.toString());
 			}
+			
+			return result;
 		} catch (Exception e) {
 			e.printStackTrace();
+			return null;
 		}
 		
 	}

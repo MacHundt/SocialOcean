@@ -14,7 +14,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.FutureTask;
@@ -29,7 +31,6 @@ import java.util.logging.Logger;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
-import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.MouseEvent;
@@ -45,11 +46,9 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
 
 
 
@@ -97,6 +96,12 @@ public class MapWidget extends Canvas {
     
     public static final class PointD {
         public double x, y;
+        
+        /**
+         * 
+         * @param x longitude
+         * @param y latitude
+         */
         public PointD(double x, double y) {
             this.x = x;
             this.y = y;
@@ -418,6 +423,9 @@ public class MapWidget extends Canvas {
     
     private Color waitBackground, waitForeground;
     
+    
+    private ArrayList<PointD> points = new ArrayList<>();
+    
     public MapWidget(Composite parent, int style) {
         this(parent, style, new Point(275091, 180145), 11);
     }
@@ -472,6 +480,9 @@ public class MapWidget extends Canvas {
         long t1 = System.currentTimeMillis();
         stats.dt = t1 - t0;
         //gc.drawString("dis ya draw", 20, 50);
+        
+        paintPoints(e);
+        
     }
     
     private void paintTile(GC gc, int dx, int dy, int x, int y) {
@@ -557,6 +568,7 @@ public class MapWidget extends Canvas {
     
     public Point getMapPosition() {
         return new Point(mapPosition.x, mapPosition.y);
+    	
     }
 
     public void setMapPosition(Point mapPosition) {
@@ -613,6 +625,49 @@ public class MapWidget extends Canvas {
         setZoom(getZoom() - 1);
         setMapPosition((mapPosition.x - dx) / 2, (mapPosition.y - dy) / 2);
         redraw();
+    }
+    
+    public void addPoint(PointD marker) {
+    	points.add(marker);
+    	redraw();
+    }
+    
+    private void paintPoints(PaintEvent e) {
+    	GC gc = e.gc;
+    	
+    	Color c1 = new Color(e.display, 50, 50, 200);
+		gc.setBackground(c1);
+		gc.fillRectangle(10, 15, 90, 60);
+
+		Color c2 = new Color(e.display, 105, 90, 60);
+		gc.setBackground(c2);
+		gc.fillRectangle(130, 15, 90, 60);
+
+		Color c3 = new Color(e.display, 33, 200, 100);
+		gc.setBackground(c3);
+		gc.fillRectangle(250, 15, 90, 60);
+		
+		c1.dispose();
+		c2.dispose();
+		c3.dispose();
+		
+		
+		Point pos = getMapPosition();
+		PointD ref = getLongitudeLatitude(pos);
+    	for (PointD p : points) {
+    		Point mapPoint = computePosition(p);
+    		System.out.println(mapPoint.toString());
+    		int dx = pos.x - mapPoint.x;
+    		int dy = pos.y - mapPoint.y;
+    		
+    		if (dx <0 || dy <0)
+    			continue;
+    		
+//    		gc.drawOval(dx, dy, 20, 20);
+    		gc.drawOval(dx, dy, 20, 20);
+//    		gc.drawLine(dx+10, dy+10, dx_long+10, dy_lat+10);
+		
+		}
     }
 
     public int getXTileCount() {
@@ -706,41 +761,6 @@ public class MapWidget extends Canvas {
         return getTileString(tileServer, xtile, ytile, zoom);
     }
     
-    
-    public final class MapBrowserComposite extends Composite {
-        private SashForm sashForm;
-
-        public MapBrowserComposite(Composite parent, int style) {
-            super(parent, style);
-            
-            setLayout(new FillLayout());
-            
-            sashForm = new SashForm(this, SWT.HORIZONTAL);
-            sashForm.setLayout(new FillLayout());
-            
-            
-        }
-    }
-    
-    
-    public static void main (String [] args) throws Exception {
-        Display display = new Display ();
-        Shell shell = new Shell(display);
-        shell.setText("Map Widget - SWT Native Map Browsing, Map data from openstreetmap.org");
-        shell.setSize(600, 710);
-        shell.setLocation(10, 10);
-        shell.setLayout (new FillLayout());
-        
-        
-        new MapWidget(shell, SWT.NONE);
-        shell.open ();
-        while (!shell.isDisposed ()) {
-            if (!display.readAndDispatch ()) display.sleep ();
-        }
-        display.dispose ();
-        
-        
-    }
 }
 
 

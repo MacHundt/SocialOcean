@@ -23,9 +23,9 @@ public class LuceneStatistics {
 	
 	@PostConstruct
 	public void postConstruct(Composite parent) {
-		console = new StyledText(parent, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
+		console = new StyledText(parent, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL );
 		console.setDoubleClickEnabled(false);
-		console.setAlwaysShowScrollBars(false);
+//		console.setBar  AlwaysShowScrollBars(false);
 		console.setEditable(false);
 		INSTANCE = this;
 		isInitialized = true;

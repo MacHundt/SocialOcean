@@ -118,12 +118,11 @@ public class LuceneSearch {
 		LuceneQuerySearcher lqs = LuceneQuerySearcher.INSTANCE;
 		Lucene l = Lucene.INSTANCE;
 		if (!l.isInitialized && !luceneIndex.isEmpty()) {
-			System.out.print("Loading Lucene Index ...");
 			LuceneIndexLoaderThread lilt = new LuceneIndexLoaderThread(l) {
 				@Override
 				public void execute() {
+					System.out.print("Loading Lucene Index ...");
 					l.initLucene(luceneIndex, lqs);
-					
 				}
 			};
 			lilt.start();
