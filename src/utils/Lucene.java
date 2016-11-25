@@ -150,6 +150,8 @@ public enum Lucene {
 		LuceneStatistics ls = LuceneStatistics.getInstance();
 		build.forEach(item->ls.printLuceneStatistics(item));
 		
+		// wait for TOPSELECTIONPart -- be created
+		
 		TopSelectionPart tsp = TopSelectionPart.getInstance();
 		
 		Object[][] tableData = new Object[fieldsCount][tsp.detailsColumns];
