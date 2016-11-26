@@ -20,12 +20,7 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.event.RowSorterEvent;
-import javax.swing.event.RowSorterListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import org.eclipse.e4.ui.di.Focus;
@@ -191,7 +186,7 @@ public class TopSelectionPart {
 			}
 		}
 		resultDataModel.fireTableStructureChanged();
-		results.setEnabled(false);
+//		results.setEnabled(false);
 		results.doLayout();
 	}
 	

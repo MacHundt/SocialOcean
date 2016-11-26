@@ -45,26 +45,22 @@ public class LuceneSearchHandler {
 			continue;
 		}
 		l.printToConsole("Query: "+type+" - '"+query+"'");
+		System.out.println("Query: "+type+" - '"+query+"'");
 		// GEO Test
 		if (query.equals("geo")) {
 			l.ADDGeoQuery(42.2279, 42.3969, -71.1908, -70.9235);
 		}
 		
-		// Get Field -> Top50 --> TEST
-		else if (query.equals("field40")) {
-			l.searchTopXOfField("content", 50);
-		}
-		
 		// Get Time Range TEST
 		else if (query.equals("time")) {
-			l.searchTimeRange(1366012800, 1366120800);
+			l.searchTimeRange(1366012800, 1366120800, true);
 		}
 		
 		// GET QUERY
 		else {
 			try {
 				Query q = l.getParser().parse(query);
-				l.ADDQuery(q);
+				l.ADDQuery(q, true);
 			} catch (ParseException e) {
 				System.out.println("Could not parse the Query: " + query);
 				e.printStackTrace();

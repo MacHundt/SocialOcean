@@ -34,6 +34,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 
 import bostoncase.handlers.LuceneSearchHandler;
+import impl.GetMinMaxDateThread;
+import impl.LuceneIndexLoaderThread;
 import impl.LuceneQuerySearcher;
 import utils.Lucene;
 
@@ -121,11 +123,24 @@ public class LuceneSearch {
 			LuceneIndexLoaderThread lilt = new LuceneIndexLoaderThread(l) {
 				@Override
 				public void execute() {
-					System.out.print("Loading Lucene Index ...");
+					System.out.println("Loading Lucene Index ...");
 					l.initLucene(luceneIndex, lqs);
 				}
 			};
 			lilt.start();
+			
+			GetMinMaxDateThread gmdt = new GetMinMaxDateThread(l) {
+				
+				@Override
+				public void execute() {
+					System.out.println("Get MinMax Date ...");
+					l.initMinDate();
+					l.initMaxDate();
+				}
+			};
+			gmdt.start();
+			
+			
 		} else {
 			System.out.println(" Could not load the index at path: '"+luceneIndex+"'");
 		}

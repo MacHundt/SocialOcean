@@ -2,7 +2,17 @@ package utils;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.DecimalFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -19,14 +29,12 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.spell.LuceneDictionary;
-import org.apache.lucene.search.suggest.InputIterator;
 import org.apache.lucene.spatial.geopoint.search.GeoPointInBBoxQuery;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.BytesRef;
-import org.eclipse.swt.widgets.Display;
 
+import bostoncase.parts.Histogram;
 import bostoncase.parts.LuceneStatistics;
+import bostoncase.parts.Time;
 import bostoncase.parts.TopSelectionPart;
 import interfaces.Console;
 import interfaces.ILuceneQuerySearcher;
@@ -56,6 +64,25 @@ public enum Lucene {
 	private List<String> fn;
 	private String[] idxFields = null;
 	
+	private TermStats[] catHisto = null;
+	
+	private Connection con = null;
+	
+	// START TIME
+//	private PreparedStatement pre_statement_min;
+//	private PreparedStatement pre_statement_max; 
+
+	private LocalDateTime dt_min = null;
+	private long utc_time_min;
+	public boolean hasStartTime = false;
+	private LocalDateTime dt_max = null;
+	private long utc_time_max;
+	public boolean hasStopTime = false;
+	
+	public static enum TimeBin {
+		SECONDS, MINUTES, HOURS, DAYS
+	}
+	
 //	public static void main(String[] args) {
 //		String formattedString = String.format("%s \t\t %.2f \t %d %s", "Test", 1*100/(float)4, 15, "%");       
 //		System.out.println(formattedString);
@@ -76,6 +103,10 @@ public enum Lucene {
 				System.out.println("Empty index.");
 				// showStatus("Empty index."); --> print on Console ..
 			}
+			
+//			pre_statement_min = con.prepareStatement("Select creationdate from tweetdata order by creationdate ASC Limit 1");
+//			pre_statement_max = con.prepareStatement("Select creationdate from tweetdata order by creationdate DESC Limit 1");
+		
 		} catch (IOException e) {
 			System.out.println("Could not create LuceneSearcher, path to index not found "+index);
 			e.printStackTrace();
@@ -194,15 +225,20 @@ public enum Lucene {
 		queryResults.remove(index);
 	}
 	
-	public void ADDQuery(Query query) {
+	public ScoreDoc[] ADDQuery(Query query, boolean print) {
 		serialCounter++;
 		queryStrings.add(query.toString());
 		ScoreDoc[] result = querySearcher.searchAll(query);
-		QueryResult qr = new QueryResult(query, result, serialCounter);
-		queryResults.add(qr);
-		
-		System.out.println(qr.toString());
-		printToConsole(qr.toString());
+//		QueryResult qr = new QueryResult(query, result, serialCounter);
+//		queryResults.add(qr);
+//		
+//		System.out.println(qr.toString());
+//		printToConsole(qr.toString());
+		if (print) {
+			System.out.println("("+serialCounter+") "+query.toString()+" #:"+result.length);
+			printToConsole("("+serialCounter+") "+query.toString()+" #:"+result.length);
+		}
+		return result;
 	}
 	
 	public void FUSEQuery(int index, Query newQuery) {
@@ -246,17 +282,20 @@ public enum Lucene {
 	
 	public void ADDGeoQuery(double minLat, double maxLat, double minLong, double maxLong) {
 		Query query = new GeoPointInBBoxQuery(geoField, minLat, maxLat, minLong, maxLong);
-		ADDQuery(query);
+		ADDQuery(query, true);
 	}
 	
-	public void searchTimeRange(long from, long to) {
+	public ScoreDoc[] searchTimeRange(long from, long to, boolean print) {
+		ScoreDoc[] result;
 		try {
 			Query query = parser.parse("date:["+from +" TO "+to +"]");
-			ADDQuery(query);
+			result = ADDQuery(query, print);
+			return result;
 		} catch (ParseException e) {
 			System.out.println("Could not Parse Date Search to Query");
 			e.printStackTrace();
 		}
+		return null;
 	}
 	
 	
@@ -313,5 +352,175 @@ public enum Lucene {
 		}
 		
 	}
+
+
+	public void showCatHisto() {
+		if (catHisto == null)
+			catHisto = searchTopXOfField("category", 20);
+		
+		Object[][] resulTable = new Object[catHisto.length][2];
+		for (int i= 0; i< catHisto.length; i++) {
+			TermStats ts = catHisto[i];
+			resulTable[i][0] = ts.termtext.utf8ToString();
+			resulTable[i][1] = new Integer(ts.docFreq);				
+		}
+		
+		// TODO Histogram Part must be created! 
+		Histogram histogram = Histogram.getInstance();
+		histogram.chnageDataSet(resulTable);
+		
+	}
+	
+	private Connection newConnection() {
+		String DATA = "boston";
+		String DBNAME = "masterproject_"+DATA;
+		String USER = "postgres";
+		String PASS = "postgres";
+		int PORT = 5432;
+		Connection c = null;
+		try {
+			c = DriverManager.getConnection("jdbc:postgresql://localhost:"+PORT+"/"+DBNAME, USER, PASS);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return c;
+	}
+	
+	private Connection getConnection() {
+		if (con == null) {
+			con = newConnection();
+		}
+		return con;
+		
+	}
+	
+	public void initMaxDate() {
+		try {
+			Connection c = newConnection();
+			Statement stmt = c.createStatement();
+			ResultSet rs = stmt.executeQuery("Select creationdate from tweetdata order by creationdate DESC Limit 1");
+//			ResultSet rs = pre_statement_max.executeQuery();
+			String maxDate = "";
+			while (rs != null && rs.next()) {
+				maxDate = rs.getString(1);
+			}
+			if (maxDate.isEmpty() || !maxDate.contains(" "))
+				return;
+			
+			String[] datetime_String = maxDate.split(" ");
+			String date_Str = datetime_String[0];
+			String time_Str = datetime_String[1];
+			String[] date_arr = date_Str.trim().split("-");
+			String[] time_arr = time_Str.trim().split(":");
+			if (date_arr.length == 3 && time_arr.length == 3) {
+				// DATE
+				int year = Integer.parseInt(date_arr[0]);
+				int month = Integer.parseInt(date_arr[1]);
+				int day = Integer.parseInt(date_arr[2]);
+				// TIME
+				int hour = Integer.parseInt(time_arr[0]);
+				int min = Integer.parseInt(time_arr[1]);
+				int sec = Integer.parseInt(time_arr[2]);
+			
+				LocalDate date = LocalDate.of(year, month, day);
+				LocalTime time = LocalTime.of(hour, min, sec);
+			
+				dt_max = LocalDateTime.of(date, time);
+				utc_time_max= dt_max.toEpochSecond(ZoneOffset.UTC);
+				hasStopTime = true;
+				
+				System.out.println(dt_max.toEpochSecond(ZoneOffset.UTC) + " = "+ dt_max.toString());
+			
+			}
+			c.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+		
+
+	public void initMinDate() {
+		
+		try {
+			Connection c = newConnection();
+			Statement stmt = c.createStatement();
+			ResultSet rs = stmt.executeQuery("Select creationdate from tweetdata order by creationdate ASC Limit 1");
+//			ResultSet rs = pre_statement_min.executeQuery();
+			String minDate = "";
+			while (rs != null && rs.next()) {
+				minDate = rs.getString(1);
+			}
+			if (minDate.isEmpty() || !minDate.contains(" "))
+				return;
+			
+			String[] datetime_String = minDate.split(" ");
+			String date_Str = datetime_String[0];
+			String time_Str = datetime_String[1];
+			String[] date_arr = date_Str.trim().split("-");
+			String[] time_arr = time_Str.trim().split(":");
+			if (date_arr.length == 3 && time_arr.length == 3) {
+				// DATE
+				int year = Integer.parseInt(date_arr[0]);
+				int month = Integer.parseInt(date_arr[1]);
+				int day = Integer.parseInt(date_arr[2]);
+				// TIME
+				int hour = Integer.parseInt(time_arr[0]);
+				int min = Integer.parseInt(time_arr[1]);
+				int sec = Integer.parseInt(time_arr[2]);
+			
+				LocalDate date = LocalDate.of(year, month, day);
+				LocalTime time = LocalTime.of(hour, min, sec);
+			
+				dt_min = LocalDateTime.of(date, time);
+				utc_time_min = dt_min.toEpochSecond(ZoneOffset.UTC);
+				hasStartTime = true;
+				
+				System.out.println(dt_min.toEpochSecond(ZoneOffset.UTC) + " = "+ dt_min.toString());
+			}
+			c.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	
+	public void createTimeLine(TimeBin binsize) {
+		
+		// From Start Date to StopDate .. make bins and plot
+		LocalDateTime dt_temp = dt_min;
+		ArrayList<TimeLineHelper> tl_data = new ArrayList<>();
+		
+		long temp_utc = utc_time_min;
+		while (temp_utc <= utc_time_max) {
+			
+			LocalDateTime dt_plus = dt_temp;
+			switch (binsize) {
+			case SECONDS:
+				dt_plus = dt_temp.plusSeconds(1);
+				break;
+			case MINUTES:
+				dt_plus = dt_temp.plusMinutes(1);
+				break;
+			case HOURS:
+				dt_plus = dt_temp.plusHours(1);
+				break;
+			case DAYS:
+				dt_plus = dt_temp.plusDays(1);
+				break;
+			}
+			long utc_plus = dt_plus.toEpochSecond(ZoneOffset.UTC);
+			ScoreDoc[] rs = searchTimeRange(temp_utc, utc_plus, false);
+			tl_data.add(new TimeLineHelper(dt_temp, rs.length));
+			
+			dt_temp = dt_plus;
+			temp_utc = utc_plus;
+		}
+		
+		Time time = Time.getInstance();
+		time.chnageDataSet(tl_data);
+		
+	}
+	
 	
 }
