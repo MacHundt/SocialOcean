@@ -66,9 +66,9 @@ public class Time {
 
 		// get a reference to the plot for further customisation...
 		final XYPlot plot = chart.getXYPlot();
-		plot.setBackgroundPaint(Color.lightGray);
-		plot.setDomainGridlinePaint(Color.white);
-		plot.setRangeGridlinePaint(Color.white);
+		plot.setBackgroundPaint(Color.white);
+		plot.setDomainGridlinePaint(Color.black);
+		plot.setRangeGridlinePaint(Color.black);
 
 		final XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
 		// renderer.setSeriesLinesVisible(0, false);

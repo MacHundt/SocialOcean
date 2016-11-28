@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -18,6 +17,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -88,11 +90,12 @@ public enum Lucene {
 //		System.out.println(formattedString);
 //	}
 	
-	public  int serialCounter = 0;
+	public int serialCounter = 0;
 	public boolean isInitialized = false;
 	
 	public void initLucene(String index, ILuceneQuerySearcher querySearcher) {
 		try {
+			
 			reader = DirectoryReader.open(FSDirectory.open(Paths.get(index)));
 			idxInfo = new IndexInfo(reader, index);
 			fn = idxInfo.getFieldNames();
@@ -103,6 +106,8 @@ public enum Lucene {
 				System.out.println("Empty index.");
 				// showStatus("Empty index."); --> print on Console ..
 			}
+			
+			isInitialized = true;
 			
 //			pre_statement_min = con.prepareStatement("Select creationdate from tweetdata order by creationdate ASC Limit 1");
 //			pre_statement_max = con.prepareStatement("Select creationdate from tweetdata order by creationdate DESC Limit 1");
@@ -121,7 +126,6 @@ public enum Lucene {
 		parser.setDateResolution(dateResolution);
 		this.querySearcher = querySearcher;
 		querySearcher.initQuerySearcher(searcher, analyzer);
-		isInitialized = true;
 		
 	}
 	
@@ -134,9 +138,9 @@ public enum Lucene {
 	}
 	
 	public void printLuceneFields() {
+		
 		// sort by names now
 		String[] idxFieldsCopy = idxFields.clone();
-		
 		// sort by term count
 		ValueComparator bvc = new ValueComparator(termCounts);
 		TreeMap<String, FieldTermCount> termCountsSorted = new TreeMap<String, FieldTermCount>(bvc);
@@ -165,7 +169,7 @@ public enum Lucene {
 	
 	
 	public void printStatistics() {
-
+		
 		ArrayList<String> build = new ArrayList<>();
 		build.add("Index name: \t\t\t"+idxInfo.getIndexPath());
 		build.add("Lucene Version: \t\t"+idxInfo.getVersion());
@@ -399,7 +403,8 @@ public enum Lucene {
 		try {
 			Connection c = newConnection();
 			Statement stmt = c.createStatement();
-			ResultSet rs = stmt.executeQuery("Select creationdate from tweetdata order by creationdate DESC Limit 1");
+//			ResultSet rs = stmt.executeQuery("Select creationdate from tweetdata order by creationdate DESC Limit 1");
+			ResultSet rs = stmt.executeQuery("Select max from tw_minmax_date");
 //			ResultSet rs = pre_statement_max.executeQuery();
 			String maxDate = "";
 			while (rs != null && rs.next()) {
@@ -445,7 +450,8 @@ public enum Lucene {
 		try {
 			Connection c = newConnection();
 			Statement stmt = c.createStatement();
-			ResultSet rs = stmt.executeQuery("Select creationdate from tweetdata order by creationdate ASC Limit 1");
+//			ResultSet rs = stmt.executeQuery("Select creationdate from tweetdata order by creationdate ASC Limit 1");
+			ResultSet rs = stmt.executeQuery("Select min from tw_minmax_date");
 //			ResultSet rs = pre_statement_min.executeQuery();
 			String minDate = "";
 			while (rs != null && rs.next()) {

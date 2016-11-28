@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry exported="true" kind="lib" path="libs/org.swtchart_0.10.0.v20160212.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/org.swtchart_0.10.0.v20160212.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://www.swtchart.org/doc/javadoc/index.html"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry exported="true" kind="lib" path="libs/org.swtchart.ext_0.10.0.v20160212.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jcommon-1.0.23.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/swingintegration.example_0.0.2.jar"/>

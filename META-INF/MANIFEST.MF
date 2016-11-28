@@ -175,7 +175,9 @@ Bundle-ClassPath: libs/lucene-analyzers-common-6.2.1.jar,
  libs/xpp3_min-1.1.4c.jar,
  libs/xsd-2.6.0.jar,
  libs/swingintegration.example_0.0.2.jar,
- libs/jcommon-1.0.23.jar
+ libs/jcommon-1.0.23.jar,
+ libs/org.swtchart_0.10.0.v20160212.jar,
+ libs/org.swtchart.ext_0.10.0.v20160212.jar
 Require-Bundle: org.eclipse.e4.core.di;bundle-version="1.6.1",
  org.eclipse.jface;bundle-version="3.12.0",
  org.eclipse.e4.ui.workbench;bundle-version="1.4.0",

@@ -20,8 +20,12 @@ public abstract class GetMinMaxDateThread extends Thread {
 			System.out.println(" Done");
 			l.printToConsole("Get MinMax-Date ... DONE");
 			
-			l.createTimeLine(Lucene.TimeBin.HOURS);
-			l.printToConsole("Print TimeLine ... DONE");
+//			while (!l.isInitialized)
+//				continue;
+//			
+//			l.createTimeLine(Lucene.TimeBin.HOURS);
+//			l.printToConsole("Print TimeLine ... DONE");
+			
 
 		} catch (Throwable t) {
 			t.printStackTrace();

@@ -19,9 +19,12 @@ public abstract class LuceneIndexLoaderThread extends Thread {
 			execute();
 			System.out.println(" Done");
 			l.printToConsole("Loading Lucene Index ... DONE");
-
+			
 			l.printStatistics();
 			l.showCatHisto();
+			
+			l.createTimeLine(Lucene.TimeBin.HOURS);
+			l.printToConsole("Print TimeLine ... DONE");
 
 		} catch (Throwable t) {
 			t.printStackTrace();
