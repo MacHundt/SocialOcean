@@ -1,36 +1,20 @@
 package bostoncase.parts;
 
 import java.awt.BorderLayout;
-import java.awt.Button;
-import java.awt.EventQueue;
 import java.awt.Frame;
-import java.awt.event.InputMethodEvent;
-import java.awt.event.InputMethodListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.swing.JApplet;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.event.CellEditorListener;
-import javax.swing.event.ChangeEvent;
 
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.awt.SWT_AWT;import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
-import org.geotools.coverageio.gdal.jp2ecw.JP2ECWFormat;
-import org.openstreetmap.gui.jmapviewer.JMapViewer;
 
 import swingintegration.example.EmbeddedSwingComposite;
 import utils.Swing_SWT;
