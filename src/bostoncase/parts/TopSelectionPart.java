@@ -177,6 +177,10 @@ public class TopSelectionPart {
 	
 	
 	public void setResultTable(Object[][] resultTableData) {
+		while (resultDataModel.getRowCount() > resultTableData.length) {
+			resultDataModel.removeRow(resultDataModel.getRowCount()-1);
+		}
+		
 		for (int i= 0; i< resultTableData.length; i++) {
 			if (i >= resultDataModel.getRowCount()) {
 				resultDataModel.addRow(new Object[resultColumns]);

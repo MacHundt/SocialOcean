@@ -1,6 +1,9 @@
  
 package bostoncase.parts;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
 import javax.annotation.PostConstruct;
 
 import org.eclipse.e4.ui.di.Focus;
@@ -24,7 +27,15 @@ public class GoogleMaps_BrowserPart {
 		 
          browser = new Browser(parent, SWT.NONE);
          browser.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-         browser.setUrl("https://www.google.com/maps/");
+         try {
+			browser.setUrl("https://www.google.com/maps/place/"
+			         + URLEncoder.encode("Boston", "UTF-8")
+			         + "/&output=embed");
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+//         browser.setUrl("https://www.google.com/maps/");
 		 
 		 // not supported at the moment by Google
 //        try {
