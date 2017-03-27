@@ -179,7 +179,8 @@ Bundle-ClassPath: libs/lucene-analyzers-common-6.2.1.jar,
  libs/org.swtchart_0.10.0.v20160212.jar,
  libs/org.swtchart.ext_0.10.0.v20160212.jar,
  libs/commons-logging-1.2.jar,
- libs/jxmapviewer2-2.2.jar
+ libs/jxmapviewer2-2.2.jar,
+ libs/jgraphx.jar
 Require-Bundle: org.eclipse.e4.core.di;bundle-version="1.6.1",
  org.eclipse.jface;bundle-version="3.12.0",
  org.eclipse.e4.ui.workbench;bundle-version="1.4.0",
@@ -192,7 +193,8 @@ Require-Bundle: org.eclipse.e4.core.di;bundle-version="1.6.1",
  org.eclipse.osgi,
  org.eclipse.equinox.registry,
  org.eclipse.equinox.app,
- org.eclipse.swt
+ org.eclipse.swt,
+ org.eclipse.core.contenttype
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: javax.annotation;version="1.0.0";resolution:=optional,
  javax.inject;version="1.0.0"

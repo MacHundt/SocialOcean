@@ -6,6 +6,9 @@ import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -23,12 +26,24 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.StoredField;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.spatial.geopoint.document.GeoPointField;
+import org.eclipse.core.commands.Command;
+import org.eclipse.core.commands.ParameterizedCommand;
+import org.eclipse.e4.core.commands.ECommandService;
+import org.eclipse.e4.core.commands.EHandlerService;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.widgets.Composite;
 
+import bostoncase.handlers.LuceneSearchHandler;
 import utils.Lucene;
 import utils.Swing_SWT;
 import utils.TermStats;
@@ -45,6 +60,12 @@ public class TopSelectionPart {
 	private JTable detail;
 	private DefaultTableModel detailsDataModel;
 	private int resultColumns = 4;
+	
+	private int details_rows = 7;
+	// content, tags, mentions, type, category, //crimetype, time, id )
+	
+	private String currentSelectedField = "";
+	
 	
 	@Inject
 	public TopSelectionPart() {
@@ -78,12 +99,14 @@ public class TopSelectionPart {
 		JButton resultBtn = new JButton(" >>>");
 		northSelection.add(resultBtn);
 		
+		JButton showBtn = new JButton("Show");
+		northSelection.add(showBtn);
 		
 		JSplitPane split = new JSplitPane();
 		panel.add(split, BorderLayout.CENTER);
 		
 		String[] header = {"Name", "Term count", "%"};
-		Object[][] data = new Object[7][detailsColumns];
+		Object[][] data = new Object[details_rows][detailsColumns];
 		detailsDataModel = new DefaultTableModel(data, header);
 		TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<DefaultTableModel>(detailsDataModel);
 		detail = new JTable(detailsDataModel);
@@ -102,8 +125,6 @@ public class TopSelectionPart {
 		resultPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 		split.setRightComponent(resultPane);
 		
-		split.validate();
-		split.setDividerLocation(0.5);
 		
 		resultBtn.addActionListener(new ActionListener() {
 			
@@ -127,11 +148,11 @@ public class TopSelectionPart {
 				}
 				if (selected == -1)
 					return;
-				String field = (String) detailsDataModel.getValueAt(detail.convertRowIndexToModel(selected), colIndexName);
-				if (field != null) {
-					System.out.println("Get top "+ topX +" from field "+field);
-					l.printToConsole("Get top "+ topX +" from field "+field);
-					TermStats[] result = l.searchTopXOfField(field, topX);
+				currentSelectedField = (String) detailsDataModel.getValueAt(detail.convertRowIndexToModel(selected), colIndexName);
+				if (currentSelectedField != null && !currentSelectedField.isEmpty()) {
+					System.out.println("Get top "+ topX +" from field "+currentSelectedField);
+					l.printToConsole("Get top "+ topX +" from field "+currentSelectedField);
+					TermStats[] result = l.searchTopXOfField(currentSelectedField, topX);
 					
 					Object[][] resulTable = new Object[result.length][4];
 					for (int i= 0; i< result.length; i++) {
@@ -148,11 +169,45 @@ public class TopSelectionPart {
 			}
 		});
 		
+		showBtn.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Lucene l = Lucene.INSTANCE;
+				while (!l.isInitialized) {
+					continue;
+				}
+				// get Selected Items from result Table
+				String query = currentSelectedField+":"+results.getModel().getValueAt(results.getSelectedRow(), 3);
+				System.out.println("Show "+results.getModel().getValueAt(results.getSelectedRow(), 3));
+				l.printToConsole("Show "+results.getModel().getValueAt(results.getSelectedRow(), 3));
+				
+				if (query.isEmpty()) {
+					return;
+				}
+				
+				// Query
+				ScoreDoc[] result = null;
+				try {
+					Query q = l.getParser().parse(query);
+					result = l.query(q, true);
+				} catch (ParseException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+				// Show in MAP
+				l.showInMap(result);
+				
+				
+			}
+		});
 		
+		split.setDividerLocation(0.5);
 		rootContainer.add(panel);
-		rootContainer.validate();
  		
 		frame.add(rootContainer);
+		frame.validate();
 		
 		INSTANCE = this;
 		isInitialized = true;

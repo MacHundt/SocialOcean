@@ -51,6 +51,8 @@ public enum LuceneQuerySearcher implements ILuceneQuerySearcher {
 			results = searcher.search(query, 10);
 			int numTotalHits = results.totalHits;
 			// Get ALL
+			if (numTotalHits < 1)
+				return results.scoreDocs;
 			results = searcher.search(query, numTotalHits);
 			hits = results.scoreDocs;
 			

@@ -39,6 +39,10 @@ public class LuceneSearchHandler {
 		if (query.startsWith("#")) {
 			query = query.replace("#", "tags:");
 		}
+		
+		if (query.startsWith("@")) {
+			query = query.replace("@", "mention:");
+		}
 
 		Lucene l = Lucene.INSTANCE;
 		while (!l.isInitialized) {
@@ -60,7 +64,7 @@ public class LuceneSearchHandler {
 		else {
 			try {
 				Query q = l.getParser().parse(query);
-				l.ADDQuery(q, true);
+				l.query(q, true);
 			} catch (ParseException e) {
 				System.out.println("Could not parse the Query: " + query);
 				e.printStackTrace();

@@ -23,6 +23,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.document.DateTools.Resolution;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
@@ -31,6 +32,7 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.spatial.geopoint.document.GeoPointField;
 import org.apache.lucene.spatial.geopoint.search.GeoPointInBBoxQuery;
 import org.apache.lucene.store.FSDirectory;
 
@@ -229,28 +231,39 @@ public enum Lucene {
 		queryResults.remove(index);
 	}
 	
-	public ScoreDoc[] ADDQuery(Query query, boolean print) {
+	public ScoreDoc[] query(Query query, boolean print) {
 		serialCounter++;
 		queryStrings.add(query.toString());
 		ScoreDoc[] result = querySearcher.searchAll(query);
-//		QueryResult qr = new QueryResult(query, result, serialCounter);
-//		queryResults.add(qr);
-//		
-//		System.out.println(qr.toString());
-//		printToConsole(qr.toString());
 		if (print) {
 			System.out.println("("+serialCounter+") "+query.toString()+" #:"+result.length);
 			printToConsole("("+serialCounter+") "+query.toString()+" #:"+result.length);
 		}
+		
 		return result;
 	}
 	
-	public void FUSEQuery(int index, Query newQuery) {
+//	public ScoreDoc[] ADDQuery(Query query, boolean print) {
+//		serialCounter++;
+//		queryStrings.add(query.toString());
+//		ScoreDoc[] result = querySearcher.searchAll(query);
+//		if (print) {
+//			System.out.println("("+serialCounter+") "+query.toString()+" #:"+result.length);
+//			printToConsole("("+serialCounter+") "+query.toString()+" #:"+result.length);
+//		}
+//		return result;
+//	}
+//	
+//	public void FUSEQuery(int index, Query newQuery) {
+//	
+//		// fuse query this index - delete index, add new, inc serial
+//		serialCounter++;
+//		ScoreDoc[] result = querySearcher.fuseQuery(queryResults.get(index).query, newQuery);
+//		
+//	}
 	
-		// fuse query this index - delete index, add new, inc serial
-		serialCounter++;
-		ScoreDoc[] result = querySearcher.fuseQuery(queryResults.get(index).query, newQuery);
-		
+	public IndexSearcher getIndexSearcher () {
+		return searcher;
 	}
 	
 	public void FUSEQueries(ArrayList<Integer> queryIndexes) {
@@ -286,14 +299,14 @@ public enum Lucene {
 	
 	public void ADDGeoQuery(double minLat, double maxLat, double minLong, double maxLong) {
 		Query query = new GeoPointInBBoxQuery(geoField, minLat, maxLat, minLong, maxLong);
-		ADDQuery(query, true);
+		query(query, true);
 	}
 	
 	public ScoreDoc[] searchTimeRange(long from, long to, boolean print) {
 		ScoreDoc[] result;
 		try {
 			Query query = parser.parse("date:["+from +" TO "+to +"]");
-			result = ADDQuery(query, print);
+			result = query(query, print);
 			return result;
 		} catch (ParseException e) {
 			System.out.println("Could not Parse Date Search to Query");
@@ -525,6 +538,26 @@ public enum Lucene {
 		
 		Time time = Time.getInstance();
 		time.chnageDataSet(tl_data);
+		
+	}
+
+	
+	public void showInMap(ScoreDoc[] result) {
+		//  Show on Map
+		if (result != null) {
+			for (ScoreDoc entry : result) {
+				int docID = entry.doc;
+				try {
+					Document document = searcher.doc(docID);
+					System.out.println(document.getField("id").stringValue());
+					double lat = ((GeoPointField)document.getField("geo")).getLat();
+					double lon = ((GeoPointField)document.getField("geo")).getLon();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		}
 		
 	}
 	

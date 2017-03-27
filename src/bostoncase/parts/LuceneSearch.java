@@ -148,16 +148,14 @@ public class LuceneSearch {
 		
 //		## BUILD GUI
 		
-//		Composite composite = new Composite(tabFolder, SWT.NONE);
-//		tbtmLuceneSearch.setControl(composite);
 		parent.setLayout(new GridLayout(4, false));
 		
-		Button btnAdd = new Button(parent, SWT.RADIO);
-		btnAdd.setSelection(true);
-		btnAdd.setText("ADD");
-		
-		Button btnFuse = new Button(parent, SWT.RADIO);
-		btnFuse.setText("FUSE");
+//		Button btnAdd = new Button(parent, SWT.RADIO);
+//		btnAdd.setSelection(true);
+//		btnAdd.setText("ADD");
+//		
+//		Button btnFuse = new Button(parent, SWT.RADIO);
+//		btnFuse.setText("FUSE");
 		
 		text = new Text(parent, SWT.BORDER);
 		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -180,10 +178,10 @@ public class LuceneSearch {
                 parameters.put("QueryString", query);
                 parameters.put("indexpath", luceneIndex);
                 
-                String type = "ADD";
-                if (btnFuse.getSelection())
-                	type = "FUSE";
-                parameters.put("type", type);
+//                String type = "ADD";
+//                if (btnFuse.getSelection())
+//                	type = "FUSE";
+//                parameters.put("type", type);
                 
                 final ParameterizedCommand pcmd = ParameterizedCommand.generateCommand(command, parameters);
                 
