@@ -5,6 +5,7 @@ import javax.inject.Named;
 
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
 import org.eclipse.e4.core.di.annotations.CanExecute;
 import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.core.di.annotations.Optional;
@@ -45,6 +46,7 @@ public class LuceneSearchHandler {
 		}
 
 		Lucene l = Lucene.INSTANCE;
+		ScoreDoc[] result = null;
 		while (!l.isInitialized) {
 			continue;
 		}
@@ -52,25 +54,27 @@ public class LuceneSearchHandler {
 		System.out.println("Query: "+type+" - '"+query+"'");
 		// GEO Test
 		if (query.equals("geo")) {
-			l.ADDGeoQuery(42.2279, 42.3969, -71.1908, -70.9235);
+			result = l.ADDGeoQuery(42.2279, 42.3969, -71.1908, -70.9235);
 		}
 		
 		// Get Time Range TEST
 		else if (query.equals("time")) {
-			l.searchTimeRange(1366012800, 1366120800, true);
+			result = l.searchTimeRange(1366012800, 1366120800, true);
 		}
 		
 		// GET QUERY
 		else {
 			try {
 				Query q = l.getParser().parse(query);
-				l.query(q, true);
+				result = l.query(q, true);
 			} catch (ParseException e) {
 				System.out.println("Could not parse the Query: " + query);
 				e.printStackTrace();
 				return;
 			}
 		}
+		
+		l.showInMap(result, true);
 	}
 	
 	

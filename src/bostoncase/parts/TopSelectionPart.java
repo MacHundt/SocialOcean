@@ -196,9 +196,8 @@ public class TopSelectionPart {
 					e1.printStackTrace();
 				}
 				
-				// Show in MAP
-				l.showInMap(result);
-				
+				// Show in MAP  --> Clear LIST = remove all Markers
+				l.showInMap(result, true);
 				
 			}
 		});

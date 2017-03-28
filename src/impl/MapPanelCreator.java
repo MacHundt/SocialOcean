@@ -18,6 +18,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
 
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -48,28 +49,34 @@ public class MapPanelCreator {
 	private static ImageIcon tweetIcon_n;
 	private static ImageIcon tweetIcon_;
 	
+	private static boolean loadedIcons = false;
+	
+	
+	public static void loadTweetIcons() {
+		// ## LOAD Icons
+		ImageDescriptor st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/tweet.png");
+		org.eclipse.swt.graphics.Image img = st.createImage();
+		BufferedImage image = Swing_SWT.convertToAWT(img.getImageData());
+		tweetIcon_ = new ImageIcon(image);
+
+		st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/tweetn.png");
+		img = st.createImage();
+		image = Swing_SWT.convertToAWT(img.getImageData());
+		tweetIcon_n = new ImageIcon(image);
+
+		st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/tweetp.png");
+		img = st.createImage();
+		image = Swing_SWT.convertToAWT(img.getImageData());
+		tweetIcon_p = new ImageIcon(image);
+
+	}
+	
 	public static JPanel getMapPanel() {
 		if (mapPanel != null) {
 			return mapPanel;
 		} else {
 			
 			mapPanel = new JPanel(new BorderLayout());
-
-			// ## LOAD Icons
-			ImageDescriptor st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/tweet.png");
-			org.eclipse.swt.graphics.Image img = st.createImage();
-			BufferedImage image = Swing_SWT.convertToAWT(img.getImageData());
-			ImageIcon tweetIcon_ = new ImageIcon(image);
-			
-			st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/tweetn.png");
-			img = st.createImage();
-			image = Swing_SWT.convertToAWT(img.getImageData());
-			ImageIcon tweetIcon_n = new ImageIcon(image);
-			
-			st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/tweetp.png");
-			img = st.createImage();
-			image = Swing_SWT.convertToAWT(img.getImageData());
-			ImageIcon tweetIcon_p = new ImageIcon(image);
 
 			final List<TileFactory> factories = new ArrayList<TileFactory>();
 
@@ -114,6 +121,16 @@ public class MapPanelCreator {
 
 			mapViewer.addMouseWheelListener(new ZoomMouseWheelListenerCursor(mapViewer));
 			
+//			PropertyChangeListener changed = new PropertyChangeListener() {
+//				
+//				@Override
+//				public void propertyChange(PropertyChangeEvent evt) {
+//					// TODO Auto-generated method stub
+//					
+//				}
+//			};
+//			mapViewer.addPropertyChangeListener(listener);
+			
 			JPanel panel = new JPanel();
 			JLabel label = new JLabel("Select a TileFactory ");
 			
@@ -144,6 +161,7 @@ public class MapPanelCreator {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					System.out.println("WOW - this works :))");
+					mapViewer.removeAll();
 					GeoPosition frankfurt = new GeoPosition(50.11, 8.68);
 					GeoPosition wiesbaden = new GeoPosition(50,  5, 0, 8, 14, 0);
 			        GeoPosition mainz     = new GeoPosition(50,  0, 0, 8, 16, 0);
@@ -209,7 +227,7 @@ public class MapPanelCreator {
 			south.add(btn, BorderLayout.WEST);
 			south.add(rem, BorderLayout.EAST);
 			
-			mapPanel.add(south, BorderLayout.SOUTH);
+//			mapPanel.add(south, BorderLayout.SOUTH);
 			mapPanel.add(mapViewer, BorderLayout.CENTER);
 			mapPanel.add(panel, BorderLayout.NORTH);
 			
@@ -217,8 +235,75 @@ public class MapPanelCreator {
 		}
 	}
 	
-	private void clearWayPoints() {
-		waypoints.clear();
+	public static TweetWayPoint createTweetWayPoint(String label, double sentiment, double lat, double lon ) {
+		
+		if (!loadedIcons) {
+			loadTweetIcons();
+			loadedIcons = true;
+		}
+		
+		GeoPosition geo = new GeoPosition(lat, lon);
+		
+		ImageIcon icon = null;
+		// Check the sentiment for the right icon
+		if (sentiment > 0.5)
+			icon = tweetIcon_p;
+		else if (sentiment < -0.5) 
+			icon = tweetIcon_n;
+		else 
+			icon = tweetIcon_;
+			
+		return new TweetWayPoint(label, icon, geo);
+	}
+	
+	
+	public static void addWayPoint(TweetWayPoint marker) {
+		waypoints.add(marker);
+		mapViewer.add(marker.getButton());
+		
+		// FSAVE points
+	}
+	
+	
+	public static void showWayPointsOnMap() {
+		
+		SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+            	
+            	swingWaypointPainter.setWaypoints(waypoints);
+        		mapViewer.setAddressLocation(mapViewer.getCenterPosition());
+        		mapViewer.setOverlayPainter(swingWaypointPainter);
+        		
+        		System.out.println(swingWaypointPainter.getWaypoints().size());
+        		
+        		// Set the focus
+        		mapViewer.setZoom(16);
+//        		mapViewer.setAddressLocation(mapViewer.getCenterPosition());
+            }
+        });
+		
+	}
+	
+	
+	public static void addWayPointsToMap(ArrayList<SwingWaypoint> markers) {
+		
+		for (SwingWaypoint point : markers) {
+			waypoints.add(point);
+		}
+		swingWaypointPainter.setWaypoints(waypoints);
+		mapViewer.repaint();
+		mapViewer.setAddressLocation(mapViewer.getCenterPosition());
+	}
+	
+	
+	
+	public static void clearWayPoints(boolean clearList) {
+		if (mapPanel == null) {
+			MapPanelCreator.getMapPanel();
+		}
+		if (clearList)
+			waypoints.clear();
+		mapViewer.removeAll();
 		mapViewer.repaint();
 	}
 	

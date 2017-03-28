@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -40,6 +41,8 @@ import bostoncase.parts.Histogram;
 import bostoncase.parts.LuceneStatistics;
 import bostoncase.parts.Time;
 import bostoncase.parts.TopSelectionPart;
+import impl.MapPanelCreator;
+import impl.SwingWaypoint;
 import interfaces.Console;
 import interfaces.ILuceneQuerySearcher;
 
@@ -297,9 +300,9 @@ public enum Lucene {
 	}
 	
 	
-	public void ADDGeoQuery(double minLat, double maxLat, double minLong, double maxLong) {
+	public ScoreDoc[] ADDGeoQuery(double minLat, double maxLat, double minLong, double maxLong) {
 		Query query = new GeoPointInBBoxQuery(geoField, minLat, maxLat, minLong, maxLong);
-		query(query, true);
+		return query(query, true);
 	}
 	
 	public ScoreDoc[] searchTimeRange(long from, long to, boolean print) {
@@ -388,33 +391,11 @@ public enum Lucene {
 		
 	}
 	
-	private Connection newConnection() {
-		String DATA = "boston";
-		String DBNAME = "masterproject_"+DATA;
-		String USER = "postgres";
-		String PASS = "postgres";
-		int PORT = 5432;
-		Connection c = null;
-		try {
-			c = DriverManager.getConnection("jdbc:postgresql://localhost:"+PORT+"/"+DBNAME, USER, PASS);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return c;
-	}
 	
-	private Connection getConnection() {
-		if (con == null) {
-			con = newConnection();
-		}
-		return con;
-		
-	}
 	
 	public void initMaxDate() {
 		try {
-			Connection c = newConnection();
+			Connection c = DBManager.getConnection();
 			Statement stmt = c.createStatement();
 //			ResultSet rs = stmt.executeQuery("Select creationdate from tweetdata order by creationdate DESC Limit 1");
 			ResultSet rs = stmt.executeQuery("Select max from tw_minmax_date");
@@ -461,7 +442,7 @@ public enum Lucene {
 	public void initMinDate() {
 		
 		try {
-			Connection c = newConnection();
+			Connection c = DBManager.getConnection();
 			Statement stmt = c.createStatement();
 //			ResultSet rs = stmt.executeQuery("Select creationdate from tweetdata order by creationdate ASC Limit 1");
 			ResultSet rs = stmt.executeQuery("Select min from tw_minmax_date");
@@ -542,21 +523,57 @@ public enum Lucene {
 	}
 
 	
-	public void showInMap(ScoreDoc[] result) {
+	public void showInMap(ScoreDoc[] result, boolean clearList) {
 		//  Show on Map
 		if (result != null) {
-			for (ScoreDoc entry : result) {
-				int docID = entry.doc;
-				try {
-					Document document = searcher.doc(docID);
-					System.out.println(document.getField("id").stringValue());
-					double lat = ((GeoPointField)document.getField("geo")).getLat();
-					double lon = ((GeoPointField)document.getField("geo")).getLon();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+			
+			Connection c = DBManager.getConnection();
+			try {
+				Statement stmt = c.createStatement();
+				MapPanelCreator.clearWayPoints(clearList);
+				for (ScoreDoc entry : result) {
+					int docID = entry.doc;
+					try {
+						Document document = searcher.doc(docID);
+//						System.out.println(document.getField("id").stringValue());
+						long hashgeo = (document.getField("geo")).numericValue().longValue();
+						double lat = GeoPointField.decodeLatitude(hashgeo);
+						double lon = GeoPointField.decodeLongitude(hashgeo);
+						String id = (document.getField("id")).stringValue();
+						String type = (document.getField("type")).stringValue();
+						String query = "";
+						double sentiment = 0;
+						switch(type) {
+							case "twitter": 
+								query = "Select t.sentiment from tweetdata as t where t.tweetid = "+Long.parseLong(id);
+								break;
+							case "flickr" : 
+								query = "Select t.sentiment from flickrdata as t where t.\"photoID\" = "+Long.parseLong(id);
+								
+								break;
+							default: 
+								query = "Select t.sentiment from tweetdata as t where t.tweetid = "+Long.parseLong(id);
+						}
+						
+						ResultSet rs = stmt.executeQuery(query);
+						
+						while (rs.next()) {
+//							System.out.println("senti: "+rs.getInt(1));
+							sentiment = rs.getInt(1);
+						}
+						
+						MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(docID+"", sentiment, lat, lon));
+						
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
+			MapPanelCreator.showWayPointsOnMap();
 		}
 		
 	}
