@@ -524,58 +524,89 @@ public enum Lucene {
 
 	
 	public void showInMap(ScoreDoc[] result, boolean clearList) {
-		//  Show on Map
+		// Show on Map
 		if (result != null) {
-			
-			Connection c = DBManager.getConnection();
-			try {
-				Statement stmt = c.createStatement();
+			if (clearList)
 				MapPanelCreator.clearWayPoints(clearList);
-				for (ScoreDoc entry : result) {
-					int docID = entry.doc;
-					try {
-						Document document = searcher.doc(docID);
-//						System.out.println(document.getField("id").stringValue());
-						long hashgeo = (document.getField("geo")).numericValue().longValue();
-						double lat = GeoPointField.decodeLatitude(hashgeo);
-						double lon = GeoPointField.decodeLongitude(hashgeo);
-						String id = (document.getField("id")).stringValue();
-						String type = (document.getField("type")).stringValue();
-						String query = "";
-						double sentiment = 0;
-						switch(type) {
-							case "twitter": 
-								query = "Select t.sentiment from tweetdata as t where t.tweetid = "+Long.parseLong(id);
-								break;
-							case "flickr" : 
-								query = "Select t.sentiment from flickrdata as t where t.\"photoID\" = "+Long.parseLong(id);
-								
-								break;
-							default: 
-								query = "Select t.sentiment from tweetdata as t where t.tweetid = "+Long.parseLong(id);
-						}
-						
-						ResultSet rs = stmt.executeQuery(query);
-						
-						while (rs.next()) {
-//							System.out.println("senti: "+rs.getInt(1));
-							sentiment = rs.getInt(1);
-						}
-						
-						MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(docID+"", sentiment, lat, lon));
-						
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
+
+			// Connection c = DBManager.getConnection();
+			// try {
+			// Statement stmt = c.createStatement();
+			//
+			// for (ScoreDoc entry : result) {
+			// int docID = entry.doc;
+			// try {
+			// Document document = searcher.doc(docID);
+			//// System.out.println(document.getField("id").stringValue());
+			// long hashgeo =
+			// (document.getField("geo")).numericValue().longValue();
+			// double lat = GeoPointField.decodeLatitude(hashgeo);
+			// double lon = GeoPointField.decodeLongitude(hashgeo);
+			// String id = (document.getField("id")).stringValue();
+			// String type = (document.getField("type")).stringValue();
+			// String query = "";
+			// double sentiment = 0;
+			// switch(type) {
+			// case "twitter":
+			// query = "Select t.sentiment from tweetdata as t where t.tweetid =
+			// "+Long.parseLong(id);
+			// break;
+			// case "flickr" :
+			// query = "Select t.sentiment from flickrdata as t where
+			// t.\"photoID\" = "+Long.parseLong(id);
+			//
+			// break;
+			// default:
+			// query = "Select t.sentiment from tweetdata as t where t.tweetid =
+			// "+Long.parseLong(id);
+			// }
+			//
+			// // Get Sentiment from Database // Lucene is faster
+			// ResultSet rs = stmt.executeQuery(query);
+			//
+			// while (rs.next()) {
+			//// System.out.println("senti: "+rs.getInt(1));
+			// sentiment = rs.getInt(1);
+			// }
+			//
+			// MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(docID+"",
+			// sentiment, lat, lon));
+			//
+			// } catch (IOException e1) {
+			// // TODO Auto-generated catch block
+			// e1.printStackTrace();
+			// }
+			// }
+			// } catch (SQLException e) {
+			// // TODO Auto-generated catch block
+			// e.printStackTrace();
+			// }
+
+			for (ScoreDoc entry : result) {
+				int docID = entry.doc;
+				try {
+					Document document = searcher.doc(docID);
+					// System.out.println(document.getField("id").stringValue());
+					long hashgeo = (document.getField("geo")).numericValue().longValue();
+					double lat = GeoPointField.decodeLatitude(hashgeo);
+					double lon = GeoPointField.decodeLongitude(hashgeo);
+					String id = (document.getField("id")).stringValue();
+					// String type = (document.getField("type")).stringValue();
+					String query = "";
+//					double sentiment = Double.parseDouble((document.getField("sentiment")).stringValue());
+//					MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(docID + "", sentiment, lat, lon));
+					String sentiment = (document.getField("sentiment")).stringValue();
+					MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(docID + "", sentiment, lat, lon));
+
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
 				}
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
+
 			MapPanelCreator.showWayPointsOnMap();
 		}
-		
+
 	}
 	
 	

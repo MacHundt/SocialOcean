@@ -1,7 +1,6 @@
 package impl;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
@@ -12,11 +11,9 @@ import java.util.HashMap;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.implementations.MultiGraph;
-import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.ui.view.Viewer;
 
 import utils.DBManager;
@@ -24,38 +21,59 @@ import utils.DBManager;
 public class GraphPanelCreator1 {
 	
 	private static JPanel graphPanel = null;
-
+//	private static Graph graph = new MultiGraph("embedded");
+//	private static Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+//	private static View view = viewer.getDefaultView();
+	
 	public static JPanel getGraphPanel() {
 		
 		if (graphPanel != null) {
 			return graphPanel;
 		} else {
 			
+			System.setProperty("org.graphstream.ui.j2dviewer.renderer", "org.graphstream.ui.j2dviewer.renderer.JComponentRenderer");
+			JPanel graphPanel = null;
+			Graph graph = new MultiGraph("embedded");
+			Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+			
 			graphPanel = new JPanel(new BorderLayout());
-			
-			SwingUtilities.invokeLater(new Runnable() {
-	            public void run() {
-	            	
-	            	Graph graph = new SingleGraph("Tutorial 1");
-	                Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_GUI_THREAD);
-	                
-	                viewer.enableAutoLayout();
-	                
-	                graph.addNode("A");
-	                graph.addNode("B");
-	                graph.addNode("C");
-	                graph.addEdge("AB", "A", "B");
-	                graph.addEdge("BC", "B", "C");
-	                graph.addEdge("CA", "C", "A");
+			graph.addNode("A");
+			graph.addNode("B");
+			graph.addNode("C");
+			graph.addEdge("AB", "A", "B");
+			graph.addEdge("BC", "B", "C");
+			graph.addEdge("CA", "C", "A");
 
-	                graph.addAttribute("ui.quality");
-	                graph.addAttribute("ui.antialias");
-	                
-	                graphPanel.add((Component) viewer.getDefaultView(), BorderLayout.CENTER);
-	            }
-	        });
+			graph.addAttribute("ui.quality");
+			graph.addAttribute("ui.antialias");
 			
-			System.setProperty("gs.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
+
+//			graphPanel.add((JComponent)viewer.getDefaultView(), BorderLayout.CENTER);
+//			SwingUtilities.invokeLater(new Runnable() {
+//	            public void run() {
+//	            	
+////	            	Graph graph = new SingleGraph("Tutorial 1");
+////	                Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_GUI_THREAD);
+//	            	
+////	            	WARNUNG: "gs.ui.renderer" is deprecated, use "org.graphstream.ui.renderer" instead.
+//	            	
+////	                View view = viewer.addDefaultView(true);
+//	                
+//	                graph.addNode("A");
+//	                graph.addNode("B");
+//	                graph.addNode("C");
+//	                graph.addEdge("AB", "A", "B");
+//	                graph.addEdge("BC", "B", "C");
+//	                graph.addEdge("CA", "C", "A");
+//
+//	                graph.addAttribute("ui.quality");
+//	                graph.addAttribute("ui.antialias");
+//	                
+//	                graphPanel.add((Component)view, BorderLayout.CENTER);
+//	            }
+//	        });
+			
+			
 			
 //			Graph graph = new MultiGraph("embedded");
 //			Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);

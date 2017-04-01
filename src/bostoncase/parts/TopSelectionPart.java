@@ -6,9 +6,6 @@ import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -26,24 +23,15 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.StoredField;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.spatial.geopoint.document.GeoPointField;
-import org.eclipse.core.commands.Command;
-import org.eclipse.core.commands.ParameterizedCommand;
-import org.eclipse.e4.core.commands.ECommandService;
-import org.eclipse.e4.core.commands.EHandlerService;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.widgets.Composite;
 
-import bostoncase.handlers.LuceneSearchHandler;
 import utils.Lucene;
 import utils.Swing_SWT;
 import utils.TermStats;
@@ -61,8 +49,8 @@ public class TopSelectionPart {
 	private DefaultTableModel detailsDataModel;
 	private int resultColumns = 4;
 	
-	private int details_rows = 7;
-	// content, tags, mentions, type, category, //crimetype, time, id )
+	private int details_rows = 8;
+	// content, tags, mentions, type, category, //crimetype, time, id, sentiment )
 	
 	private String currentSelectedField = "";
 	
@@ -192,10 +180,8 @@ public class TopSelectionPart {
 					Query q = l.getParser().parse(query);
 					result = l.query(q, true);
 				} catch (ParseException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				
 				// Show in MAP  --> Clear LIST = remove all Markers
 				l.showInMap(result, true);
 				

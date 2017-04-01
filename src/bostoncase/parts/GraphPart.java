@@ -15,7 +15,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.widgets.Composite;
 
-import impl.GraphPanelCreator2;
+import impl.GraphPanelCreator1;
 import swingintegration.example.EmbeddedSwingComposite;
 import utils.Swing_SWT;
 
@@ -58,7 +58,7 @@ public class GraphPart {
  		
 		rootContainer = new JApplet();
 		
-		JPanel panel = GraphPanelCreator2.getGraphPanel();
+		JPanel panel = GraphPanelCreator1.getGraphPanel();
 		
 		rootContainer.add(panel);
 		rootContainer.validate();

@@ -150,9 +150,9 @@ public class LuceneSearch {
 		
 		parent.setLayout(new GridLayout(4, false));
 		
-//		Button btnAdd = new Button(parent, SWT.RADIO);
-//		btnAdd.setSelection(true);
-//		btnAdd.setText("ADD");
+		Button btnAdd = new Button(parent, SWT.CHECK);
+		btnAdd.setSelection(true);
+		btnAdd.setText("ADD");
 //		
 //		Button btnFuse = new Button(parent, SWT.RADIO);
 //		btnFuse.setText("FUSE");
@@ -195,6 +195,19 @@ public class LuceneSearch {
 			}
 		});
 		btnSearch.setText("Search");
+		
+		Button btnClear = new Button(parent, SWT.BUTTON1);
+		btnClear.setText("Clear");
+		btnClear.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				
+				// TODO
+				// Clear all Results, Map, Graph
+				System.out.println("Clear ALL");
+			}
+		});
+		
 	}
 	
 	
