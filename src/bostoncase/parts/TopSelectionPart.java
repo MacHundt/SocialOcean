@@ -50,7 +50,7 @@ public class TopSelectionPart {
 	private int resultColumns = 4;
 	
 	private int details_rows = 8;
-	// content, tags, mentions, type, category, //crimetype, time, id, sentiment )
+	// content, tags, mentions, type, category, //crimetype, time, id, sentiment, hasURL )
 	
 	private String currentSelectedField = "";
 	

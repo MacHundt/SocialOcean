@@ -37,13 +37,14 @@ import org.apache.lucene.spatial.geopoint.document.GeoPointField;
 import org.apache.lucene.spatial.geopoint.search.GeoPointInBBoxQuery;
 import org.apache.lucene.store.FSDirectory;
 
+import bostoncase.parts.Console;
 import bostoncase.parts.Histogram;
 import bostoncase.parts.LuceneStatistics;
+import bostoncase.parts.QueryHistory;
 import bostoncase.parts.Time;
 import bostoncase.parts.TopSelectionPart;
 import impl.MapPanelCreator;
 import impl.SwingWaypoint;
-import interfaces.Console;
 import interfaces.ILuceneQuerySearcher;
 
 // as singleton
@@ -138,12 +139,27 @@ public enum Lucene {
 		
 	}
 	
+	
 	public void printToConsole(String msg) {
 		while (!Console.isInitialized) {
 			continue;
 		}
 		Console c = Console.getInstance();
 		c.outputConsole(msg);
+	}
+	
+	
+	public void clearQueryHistroy() {
+		if (QueryHistory.isInitialized) {
+			QueryHistory history = QueryHistory.getInstance();
+			history.clearHistory();
+			queryStrings.clear();
+		}
+	}
+	
+	public void clearMap() {
+		last_result = null;
+		MapPanelCreator.clearWayPoints(true);
 	}
 	
 	public void printLuceneFields() {
@@ -278,6 +294,14 @@ public enum Lucene {
 			printToConsole("("+serialCounter+") "+query.toString()+" #:"+result.length);
 		}
 		
+		if (QueryHistory.isInitialized) {
+			QueryHistory history = QueryHistory.getInstance();
+			if (type.length() > 2) {
+				history.addQuery(type+"\t"+query.toString());
+			} else {
+				history.addQuery(query.toString());
+			}
+		}
 		return result;
 	}
 	
@@ -660,7 +684,7 @@ public enum Lucene {
 //					double sentiment = Double.parseDouble((document.getField("sentiment")).stringValue());
 //					MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(docID + "", sentiment, lat, lon));
 					String sentiment = (document.getField("sentiment")).stringValue();
-					MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(docID + "", sentiment, lat, lon));
+					MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, sentiment, lat, lon));
 
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block

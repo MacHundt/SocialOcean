@@ -16,17 +16,6 @@ import utils.Lucene;
 public class LuceneSearchHandler {
 	
 	
-//	private String index = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/lucene_index";
-	
-	// get the map
-	// result table
-	
-	// get the Console
-	
-//	@Execute
-//	public void execute(EPartService partService, EModelService service, MWindow window,IApplicationContext context , @Optional @Named("QueryString") String query, @Optional @Named("indexpath") String index,
-//			@Optional @Named("type") String type) {
-	
 	@Execute
 	public void execute(@Optional @Named("QueryString") String query, @Optional @Named("type") String type) {
 		

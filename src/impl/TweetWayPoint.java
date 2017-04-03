@@ -3,12 +3,19 @@ package impl;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 
 import org.jxmapviewer.viewer.GeoPosition;
+
+import utils.DBManager;
 
 
 public class TweetWayPoint  extends SwingWaypoint {
@@ -19,7 +26,8 @@ public class TweetWayPoint  extends SwingWaypoint {
         super(text, coord);
         this.text = text;
         
-        button = new JButton(text.substring(0, 1));
+//        button = new JButton(text.substring(0, 1));
+        button = new JButton("Tweet");
 	    button.setIcon(icon);
         
         button.setSize(26, 26);
@@ -36,7 +44,41 @@ public class TweetWayPoint  extends SwingWaypoint {
 
         @Override
         public void mouseClicked(MouseEvent e) {
-            JOptionPane.showMessageDialog(button, "You clicked on " + text);
+        	String details = "";
+        	Connection c = DBManager.getConnection();
+        	try {
+				Statement stmt = c.createStatement();
+				String query = "select t.\"tweetScreenName\", t.\"tweetContent\", t.creationdate, t.sentiment, t.category, t.\"containsUrl\"  from tweetdata as t where t.tweetid = "+text;
+				ResultSet rs = stmt.executeQuery(query);
+				while (rs.next()) {
+					String scName = rs.getString(1);
+					String content = rs.getString(2);
+					String date = rs.getString(3);
+					int sentiment = rs.getInt(4);
+					String category = rs.getString(5);
+					boolean hasUrl = rs.getBoolean(6);
+					
+					
+					details += "\n"+scName+" wrote on "+date+":";
+					if (content.length() > 70) {
+						// next line 
+						details += "\n"+content.substring(0, 80);
+						details += "\n"+content.substring(80, content.length());
+					} else {
+						details += "\n"+content;
+					}
+					details += "\nSentiment: \t"+sentiment;
+					details += "\nCategory: \t"+category;
+					details += "\nhasURL: \t"+((hasUrl)? "true":"false");
+					
+					
+				}
+				
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+            JOptionPane.showMessageDialog(button, details, "Details", JOptionPane.INFORMATION_MESSAGE ,button.getIcon());
         }
 
         @Override

@@ -249,6 +249,8 @@ public class LuceneSearch {
 				// TODO
 				// Clear all Results, Map, Graph
 				System.out.println("Clear ALL");
+				l.clearQueryHistroy();
+				l.clearMap();
 			}
 		});
 		

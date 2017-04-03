@@ -1,4 +1,4 @@
-package interfaces;
+package bostoncase.parts;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -9,24 +9,24 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 
-public class Console {
+public class QueryHistory {
 	
-	private static Console INSTANCE;
+	private static QueryHistory INSTANCE;
 	public static boolean isInitialized = false;
 	
-	private StyledText console;
+	private StyledText history;
 	
 	@Inject
-	public Console() {
+	public QueryHistory() {
 		
 	}
 	
 	@PostConstruct
 	public void postConstruct(Composite parent) {
-		console = new StyledText(parent, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.H_SCROLL);
-		console.setDoubleClickEnabled(false);
+		history = new StyledText(parent, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.H_SCROLL);
+		history.setDoubleClickEnabled(false);
 //		console.setScrollBars( false);
-		console.setEditable(false);
+		history.setEditable(false);
 		INSTANCE = this;
 		isInitialized = true;
 	}
@@ -35,7 +35,7 @@ public class Console {
 	
 	@Focus
 	public void onFocus() {
-		console.setFocus();
+		history.setFocus();
 	}
 	
 	
@@ -48,13 +48,13 @@ public class Console {
 //	}
 	
 	
-	public void outputConsole(String output) {
+	public void addQuery(String output) {
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
 				try {
-					console.setText(console.getText()+"\n"
+					history.setText(history.getText()+"\n"
 							+ output);
-					console.update();
+					history.update();
 				} catch (Throwable t) {
 					t.printStackTrace();
 					System.out.println(" Could not print to Console");
@@ -65,8 +65,12 @@ public class Console {
 	}
 	
 	
-	public static Console getInstance() {
-         return INSTANCE;
+	public void clearHistory() {
+		history.setText("");
 	}
 	
+	
+	public static QueryHistory getInstance() {
+         return INSTANCE;
+	}
 }

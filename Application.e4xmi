@@ -17,7 +17,7 @@
                       <children xsi:type="basic:Part" xmi:id="_7_AY8LAKEeaGfPETKLtUAQ" elementId="bostoncase.part.topselection" containerData="5000" contributionURI="bundleclass://BostonCase/bostoncase.parts.TopSelectionPart" label="topSelection"/>
                     </children>
                   </children>
-                  <children xsi:type="basic:Part" xmi:id="_utZO4IosEeauXYmQDjn7lw" elementId="bostoncase.part.queryhistory" contributionURI="bundleclass://BostonCase/interfaces.Console" label="Query History" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ"/>
+                  <children xsi:type="basic:Part" xmi:id="_utZO4IosEeauXYmQDjn7lw" elementId="bostoncase.part.queryhistory" contributionURI="bundleclass://BostonCase/bostoncase.parts.QueryHistory" label="Query History" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ"/>
                 </children>
                 <children xsi:type="basic:PartStack" xmi:id="_ngQSwIosEeauXYmQDjn7lw" elementId="bostoncase.partstack.map" containerData="5000" selectedElement="_LGak0IorEeauXYmQDjn7lw">
                   <children xsi:type="basic:Part" xmi:id="_LGak0IorEeauXYmQDjn7lw" elementId="bostoncase.part.map" containerData="" contributionURI="bundleclass://BostonCase/bostoncase.parts.MapPart" label="Map" iconURI="platform:/plugin/BostonCase/icons/Map32.png"/>
@@ -28,7 +28,7 @@
                 </children>
               </children>
               <children xsi:type="basic:PartStack" xmi:id="_I_X_0IorEeauXYmQDjn7lw" elementId="bostoncase.partstack.vis" containerData="1000" selectedElement="_UdkhcIorEeauXYmQDjn7lw">
-                <children xsi:type="basic:Part" xmi:id="_UdkhcIorEeauXYmQDjn7lw" elementId="bostoncase.part.console" contributionURI="bundleclass://BostonCase/interfaces.Console" label="Console" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ"/>
+                <children xsi:type="basic:Part" xmi:id="_UdkhcIorEeauXYmQDjn7lw" elementId="bostoncase.part.console" contributionURI="bundleclass://BostonCase/bostoncase.parts.Console" label="Console" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ"/>
                 <children xsi:type="basic:Part" xmi:id="_4zh_kLM4EeaFV8chLnp6Gg" elementId="bostoncase.part.histogram" contributionURI="bundleclass://BostonCase/bostoncase.parts.Histogram" label="Histogram"/>
                 <children xsi:type="basic:Part" xmi:id="_t_I9YLOPEeaD75P0e42SYA" elementId="bostoncase.part.timeline" contributionURI="bundleclass://BostonCase/bostoncase.parts.Time" label="Timeline"/>
               </children>

@@ -395,10 +395,7 @@ public class MapPanelCreator {
         		mapViewer.setAddressLocation(mapViewer.getCenterPosition());
         		mapViewer.setOverlayPainter(swingWaypointPainter);
         		
-        		System.out.println(swingWaypointPainter.getWaypoints().size());
-        		
         		// Set the focus
-        		mapViewer.setZoom(16);
 //        		mapViewer.setAddressLocation(mapViewer.getCenterPosition());
             }
         });
@@ -413,7 +410,6 @@ public class MapPanelCreator {
 		}
 		swingWaypointPainter.setWaypoints(waypoints);
 		mapViewer.repaint();
-		mapViewer.setAddressLocation(mapViewer.getCenterPosition());
 	}
 	
 	
