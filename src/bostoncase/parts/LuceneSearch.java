@@ -27,6 +27,9 @@ import org.eclipse.e4.ui.di.Persist;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -148,14 +151,53 @@ public class LuceneSearch {
 		
 //		## BUILD GUI
 		
-		parent.setLayout(new GridLayout(4, false));
+		parent.setLayout(new GridLayout(5, false));
 		
 		Button btnAdd = new Button(parent, SWT.CHECK);
-		btnAdd.setSelection(true);
+		btnAdd.setSelection(false);
 		btnAdd.setText("ADD");
-//		
-//		Button btnFuse = new Button(parent, SWT.RADIO);
-//		btnFuse.setText("FUSE");
+		
+		
+		Button btnFuse = new Button(parent, SWT.CHECK);
+		btnFuse.setText("FUSE");
+		
+		
+		btnAdd.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent arg0) {
+				// if Fuse is selected -> de select
+				if (btnFuse.getSelection() && btnAdd.getSelection()) {
+					btnFuse.setSelection(false);
+				}
+				if (btnAdd.getSelection())
+					l.setQeryType(btnAdd.getText());
+				else 
+					l.setQeryType("");
+			}
+			@Override
+			public void widgetDefaultSelected(SelectionEvent arg0) {
+			}
+		});
+		
+		btnFuse.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent arg0) {
+				// if ADD is selected -> de select
+				if (btnAdd.getSelection() && btnFuse.getSelection()) {
+					btnAdd.setSelection(false);
+				}
+				
+				if (btnFuse.getSelection())
+					l.setQeryType(btnFuse.getText());
+				else 
+					l.setQeryType("");
+			}
+			@Override
+			public void widgetDefaultSelected(SelectionEvent arg0) {
+			}
+		});
 		
 		text = new Text(parent, SWT.BORDER);
 		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -178,10 +220,12 @@ public class LuceneSearch {
                 parameters.put("QueryString", query);
                 parameters.put("indexpath", luceneIndex);
                 
-//                String type = "ADD";
-//                if (btnFuse.getSelection())
-//                	type = "FUSE";
-//                parameters.put("type", type);
+                String type = "";
+                if (btnAdd.getSelection())
+                	type = "ADD";
+                if (btnFuse.getSelection())
+                	type = "FUSE";
+                parameters.put("type", type);
                 
                 final ParameterizedCommand pcmd = ParameterizedCommand.generateCommand(command, parameters);
                 

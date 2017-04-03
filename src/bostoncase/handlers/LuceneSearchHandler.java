@@ -62,11 +62,12 @@ public class LuceneSearchHandler {
 			result = l.searchTimeRange(1366012800, 1366120800, true);
 		}
 		
+		
 		// GET QUERY
 		else {
 			try {
 				Query q = l.getParser().parse(query);
-				result = l.query(q, true);
+				result = l.query(q, type, true);
 			} catch (ParseException e) {
 				System.out.println("Could not parse the Query: " + query);
 				e.printStackTrace();

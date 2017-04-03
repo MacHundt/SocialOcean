@@ -86,6 +86,10 @@ public enum Lucene {
 	private long utc_time_max;
 	public boolean hasStopTime = false;
 	
+	private ScoreDoc[] last_result = null;
+	private String last_query = "";
+	private String query_type = "";
+	
 	public static enum TimeBin {
 		SECONDS, MINUTES, HOURS, DAYS
 	}
@@ -234,10 +238,41 @@ public enum Lucene {
 		queryResults.remove(index);
 	}
 	
-	public ScoreDoc[] query(Query query, boolean print) {
+	
+	/**
+	 * This method queries the Lucene Index.
+	 * If <code>type</code> is an empty string the query is processed normally.
+	 * If <code>type</code> equals "ADD", "this query OR last_query" is processed.
+	 * If <code>type</code> equals "FUSE", "this query AND last_query" is processed.
+	 * @param query
+	 * @param type
+	 * @param print
+	 * @return result ScoreDoc[]
+	 */
+	public ScoreDoc[] query(Query query, String type, boolean print) {
 		serialCounter++;
 		queryStrings.add(query.toString());
+		if (type.equals("ADD") && last_query.length() > 2) {
+			try {
+				String newQuery = query.toString() + " OR ("+last_query+")";
+				query = parser.parse(newQuery);
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+		} else if (type.equals("FUSE") && last_query.length() > 2) {
+			try {
+				String newQuery = query.toString() + " AND ("+last_query+")";
+				query = parser.parse(newQuery);
+				System.out.println(">>> "+type+": \t"+query.toString());
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+		}
+		
 		ScoreDoc[] result = querySearcher.searchAll(query);
+		last_query = query.toString();
+		last_result = result;
+		
 		if (print) {
 			System.out.println("("+serialCounter+") "+query.toString()+" #:"+result.length);
 			printToConsole("("+serialCounter+") "+query.toString()+" #:"+result.length);
@@ -245,6 +280,22 @@ public enum Lucene {
 		
 		return result;
 	}
+	
+	
+	public ScoreDoc[] mergeScoreDocs( ScoreDoc[] result) {
+		ScoreDoc[] new_result = new ScoreDoc[last_result.length + result.length];
+		int i = 0;
+		for (ScoreDoc doc : last_result) {
+			new_result[i++] = doc;
+		}
+		for (ScoreDoc doc : result) {
+			new_result[i++] = doc;
+		}
+		
+		return new_result;
+	}
+
+	
 	
 //	public ScoreDoc[] ADDQuery(Query query, boolean print) {
 //		serialCounter++;
@@ -300,16 +351,22 @@ public enum Lucene {
 	}
 	
 	
+	// Geo Filter
 	public ScoreDoc[] ADDGeoQuery(double minLat, double maxLat, double minLong, double maxLong) {
 		Query query = new GeoPointInBBoxQuery(geoField, minLat, maxLat, minLong, maxLong);
-		return query(query, true);
+		ScoreDoc[] last = last_result.clone();
+		ScoreDoc[] geoFilter = query(query, "", true);
+		// filter from last
+		
+		return geoFilter;
 	}
 	
+	// Time Filter
 	public ScoreDoc[] searchTimeRange(long from, long to, boolean print) {
 		ScoreDoc[] result;
 		try {
 			Query query = parser.parse("date:["+from +" TO "+to +"]");
-			result = query(query, print);
+			result = query(query, "", print);
 			return result;
 		} catch (ParseException e) {
 			System.out.println("Could not Parse Date Search to Query");
@@ -318,7 +375,14 @@ public enum Lucene {
 		return null;
 	}
 	
+
+	public ScoreDoc[] getLastResult() {
+		return last_result;
+	}
 	
+	public void reset_lastResult() {
+		last_result = null;
+	}
 	
 	
 	public QueryParser getParser() {
@@ -607,6 +671,14 @@ public enum Lucene {
 			MapPanelCreator.showWayPointsOnMap();
 		}
 
+	}
+
+	public void setQeryType(String text) {
+		query_type = text;
+	}
+	
+	public String getQeryType() {
+		return query_type;
 	}
 	
 	

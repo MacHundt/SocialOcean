@@ -176,9 +176,10 @@ public class TopSelectionPart {
 				
 				// Query
 				ScoreDoc[] result = null;
+				
 				try {
 					Query q = l.getParser().parse(query);
-					result = l.query(q, true);
+					result = l.query(q, l.getQeryType(), true);
 				} catch (ParseException e1) {
 					e1.printStackTrace();
 				}
