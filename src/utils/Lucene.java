@@ -1,5 +1,6 @@
 package utils;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.Connection;
@@ -15,8 +16,10 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.TreeMap;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -25,16 +28,31 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.geo.Polygon;
 import org.apache.lucene.document.DateTools.Resolution;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.LeafReaderContext;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.classic.QueryParser.Operator;
+import org.apache.lucene.queryparser.xml.QueryBuilderFactory;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.BooleanQuery.Builder;
+import org.apache.lucene.search.DisjunctionMaxQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.LeafCollector;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TopDocsCollector;
+import org.apache.lucene.search.TopScoreDocCollector;
+import org.apache.lucene.search.TotalHitCountCollector;
 import org.apache.lucene.spatial.geopoint.document.GeoPointField;
 import org.apache.lucene.spatial.geopoint.search.GeoPointInBBoxQuery;
+import org.apache.lucene.spatial.geopoint.search.GeoPointInPolygonQuery;
 import org.apache.lucene.store.FSDirectory;
 
 import bostoncase.parts.Console;
@@ -66,11 +84,12 @@ public enum Lucene {
 	private  int numTerms = 0;
 	private  Map<String, FieldTermCount> termCounts;
 	
-	private  ArrayList<String> queryStrings = new ArrayList<>();
+	private  ArrayList<Query> queryHistory = new ArrayList<>();
 	private  ArrayList<QueryResult> queryResults = new ArrayList<>();
+	private  int currentPointer;
 	
 	private List<String> fn;
-	private String[] idxFields = null;
+	private String[] idxFields = null;		// ALL Fields which are indexed
 	
 	private TermStats[] catHisto = null;
 	
@@ -91,9 +110,22 @@ public enum Lucene {
 	private String last_query = "";
 	private String query_type = "";
 	
+	private MultiFieldQueryParser mq = null;
+	
 	public static enum TimeBin {
 		SECONDS, MINUTES, HOURS, DAYS
 	}
+	
+	
+	public enum QueryTypes {
+		ADD, FUSE, NORMAL
+	}
+	
+	
+	private static Color grey = new Color(240,240,240,50);		// light grey, high opacity		--> NORMAL
+	private static Color green = new Color(67,245,12,120);		// light green, high opacity	--> FUSE
+	private static Color blue = new Color(12,210,245,120);		// light blue, high opacity		--> ADD
+	
 	
 //	public static void main(String[] args) {
 //		String formattedString = String.format("%s \t\t %.2f \t %d %s", "Test", 1*100/(float)4, 15, "%");       
@@ -117,6 +149,8 @@ public enum Lucene {
 				// showStatus("Empty index."); --> print on Console ..
 			}
 			
+			mq = new MultiFieldQueryParser(idxFields, analyzer);
+			mq.setDefaultOperator(mq.AND_OPERATOR);
 			isInitialized = true;
 			
 //			pre_statement_min = con.prepareStatement("Select creationdate from tweetdata order by creationdate ASC Limit 1");
@@ -153,8 +187,9 @@ public enum Lucene {
 		if (QueryHistory.isInitialized) {
 			QueryHistory history = QueryHistory.getInstance();
 			history.clearHistory();
-			queryStrings.clear();
 		}
+		queryHistory.clear();
+		last_query = "";
 	}
 	
 	public void clearMap() {
@@ -243,15 +278,17 @@ public enum Lucene {
 	
 	public void resetQueryHistory() {
 		serialCounter = 0;
-		queryStrings.clear();
+		queryHistory.clear();
 		queryResults.clear();
+		currentPointer = 0;
 	}
 	
 	public void deleteAtIndex(int index) {
-		if (index >= queryStrings.size())
+		if (index >= queryHistory.size())
 			return;
-		queryStrings.remove(index);
+		queryHistory.remove(index);
 		queryResults.remove(index);
+		currentPointer--;
 	}
 	
 	
@@ -267,29 +304,97 @@ public enum Lucene {
 	 */
 	public ScoreDoc[] query(Query query, String type, boolean print) {
 		serialCounter++;
-		queryStrings.add(query.toString());
-		if (type.equals("ADD") && last_query.length() > 2) {
-			try {
-				String newQuery = query.toString() + " OR ("+last_query+")";
-				query = parser.parse(newQuery);
-			} catch (ParseException e) {
-				e.printStackTrace();
+		ScoreDoc[] result = null;
+		
+		// ADD
+		try {
+			if (type.equals("ADD") && !last_query.isEmpty()) {
+				String newQuery = "";
+				if (query.toString().startsWith("GeoPointInBBoxQuery") || last_query.startsWith("GeoPointInBBoxQuery")) {
+					// merge the both results by hand  
+//					ArrayList<Query> last_two = new ArrayList<>();
+//					last_two.add(queryHistory.get(queryHistory.size()-1));
+//					last_two.add(query);
+//					DisjunctionMaxQuery union = new DisjunctionMaxQuery(last_two, 0);
+//					result = querySearcher.searchAll(union);
+					result = querySearcher.searchAll(query);
+					result = mergeScoreDocs(result);
+				} 
+				// TODO The same with TIME
+				else if (query.toString().startsWith("Time") || last_query.startsWith("Time")) {
+					
+				}
+				
+				else {
+					newQuery = query.toString() + " OR ("+last_query+")";
+					query = parser.parse(newQuery);
+				}
+			
+			} 
+//		FUSE
+			else if (type.equals("FUSE") && !last_query.isEmpty()) {
+				String newQuery = "";
+				if (query.toString().startsWith("GeoPointInBBoxQuery") || last_query.startsWith("GeoPointInBBoxQuery")) {
+					// FUSE and Geo is a selection!
+					// 1) case: last_query is empty --> nothing to FUSE, we are not here
+					// 2) case: last_result AND new_result -- get the CUT manually when fields overlap!
+					// -- AND
+					
+					result = querySearcher.searchAll(query);
+					if (result.length< 100000 || last_result.length < 100000)
+						result = cutScoreDocs(result);
+					
+					
+//					String[] fields = getFieldsFromQueries() 
+//					String[] usedFields = {"tags", "geo"};
+//					String[] queries = new String[2];
+//					queries[0] = queryHistory.get(queryHistory.size()-1).toString();
+//					queries[1] = query.toString();
+//					Query nQ = mq.parse(queries, usedFields, analyzer);
+//					result = querySearcher.searchAll(query);
+					
+////					BooleanQuery bq = BooleanQuery.Builder.class.newInstance().build();
+//					Builder bq = new Builder();
+//					bq.add(queryHistory.get(queryHistory.size()-1), Occur.MUST);
+//					bq.add(query, Occur.MUST);
+//					result = querySearcher.searchAll(bq.build());
+					
+					
+				} 
+				// TODO The same with TIME
+				else if (query.toString().startsWith("Time") || last_query.startsWith("Time")) {
+					
+				}
+				
+				else {
+					newQuery = "("+query.toString()+")" + " AND ("+last_query+")";
+					query = parser.parse(newQuery);
+					last_query = query.toString();
+					result = querySearcher.searchAll(query);
+				}
+				
+//				System.out.println("FUSE: \nLastQuery: "+ queryHistory.get(queryHistory.size()-1).toString() +""
+//						+ "\nQuery: "+ query.toString());
+//				
+//				Builder bq = new Builder();
+//				bq.add(queryHistory.get(queryHistory.size()-1), Occur.MUST);
+//				bq.add(query, Occur.FILTER);
+//				result = querySearcher.searchAll(bq.build());
+				
+			} 
+			
+//			NORMAL
+			else {
+				last_query = query.toString();
+				result = querySearcher.searchAll(query);
 			}
-		} else if (type.equals("FUSE") && last_query.length() > 2) {
-			try {
-				String newQuery = query.toString() + " AND ("+last_query+")";
-				query = parser.parse(newQuery);
-				System.out.println(">>> "+type+": \t"+query.toString());
-			} catch (ParseException e) {
-				e.printStackTrace();
-			}
+			
+		} catch (ParseException e) {
+			e.printStackTrace();
 		}
 		
-		ScoreDoc[] result = querySearcher.searchAll(query);
-		last_query = query.toString();
-		last_result = result;
 		
-		if (print) {
+		if (print && result != null) {
 			System.out.println("("+serialCounter+") "+query.toString()+" #:"+result.length);
 			printToConsole("("+serialCounter+") "+query.toString()+" #:"+result.length);
 		}
@@ -302,11 +407,45 @@ public enum Lucene {
 				history.addQuery(query.toString());
 			}
 		}
+		
+		queryHistory.add(query);
+		last_result = result;
 		return result;
 	}
 	
 	
+	
+	
+	private ScoreDoc[] cutScoreDocs(ScoreDoc[] result) {
+		if (last_result == null)
+			return result;
+		
+		// NAIV --> selection / filter  Find x in y
+		
+		ArrayList<ScoreDoc> finding = new ArrayList<>();
+		for (ScoreDoc x : last_result) {
+			for (ScoreDoc y : result) {
+				if (x.doc == y.doc) {
+					finding.add(x);
+					break;
+				}
+			}
+		}
+		
+		ScoreDoc[] out = new ScoreDoc[finding.size()];
+		for (int i = 0; i < finding.size(); i++) {
+			out[i] = finding.get(i);
+		}
+		
+		return out;
+	}
+
+
 	public ScoreDoc[] mergeScoreDocs( ScoreDoc[] result) {
+		
+		if (last_result == null)
+			return result;
+		
 		ScoreDoc[] new_result = new ScoreDoc[last_result.length + result.length];
 		int i = 0;
 		for (ScoreDoc doc : last_result) {
@@ -321,28 +460,10 @@ public enum Lucene {
 
 	
 	
-//	public ScoreDoc[] ADDQuery(Query query, boolean print) {
-//		serialCounter++;
-//		queryStrings.add(query.toString());
-//		ScoreDoc[] result = querySearcher.searchAll(query);
-//		if (print) {
-//			System.out.println("("+serialCounter+") "+query.toString()+" #:"+result.length);
-//			printToConsole("("+serialCounter+") "+query.toString()+" #:"+result.length);
-//		}
-//		return result;
-//	}
-//	
-//	public void FUSEQuery(int index, Query newQuery) {
-//	
-//		// fuse query this index - delete index, add new, inc serial
-//		serialCounter++;
-//		ScoreDoc[] result = querySearcher.fuseQuery(queryResults.get(index).query, newQuery);
-//		
-//	}
-	
 	public IndexSearcher getIndexSearcher () {
 		return searcher;
 	}
+	
 	
 	public void FUSEQueries(ArrayList<Integer> queryIndexes) {
 		
@@ -377,13 +498,15 @@ public enum Lucene {
 	
 	// Geo Filter
 	public ScoreDoc[] ADDGeoQuery(double minLat, double maxLat, double minLong, double maxLong) {
+		@SuppressWarnings("deprecation")
 		Query query = new GeoPointInBBoxQuery(geoField, minLat, maxLat, minLong, maxLong);
-		ScoreDoc[] last = last_result.clone();
-		ScoreDoc[] geoFilter = query(query, "", true);
-		// filter from last
+		ScoreDoc[] geoFilter = query(query, getQeryType(), true);
+		
+		addnewQueryResult(geoFilter, query);
 		
 		return geoFilter;
 	}
+	
 	
 	// Time Filter
 	public ScoreDoc[] searchTimeRange(long from, long to, boolean print) {
@@ -477,6 +600,51 @@ public enum Lucene {
 		Histogram histogram = Histogram.getInstance();
 		histogram.chnageDataSet(resulTable);
 		
+	}
+	
+	
+	
+	public void changeHistogramm(ScoreDoc[] data) {
+		
+		if (!Histogram.isInitialized)
+			return;
+		
+		Histogram histogram = Histogram.getInstance();
+		HashMap<String, Integer> counter = new HashMap<>();
+		
+			for (ScoreDoc doc : data) {
+				Document document = null;
+				try {
+				document = searcher.doc(doc.doc);
+				} catch (IOException e) {
+					continue;
+				}
+				String field = "";
+				
+				if ((document.getField("category")) == null)
+					continue;
+				
+				field = (document.getField("category")).stringValue();
+
+				if (counter.containsKey(field)) {
+					counter.put(field, (counter.get(field) + 1));
+				} else {
+					counter.put(field, 1);
+				}
+			}
+		
+		
+		int size = counter.keySet().size();
+		
+		Object[][] resulTable = new Object[size][2];
+		int i = 0;
+		for (String key : counter.keySet()) {
+			resulTable[i][0] = key;
+			resulTable[i][1] = counter.get(key);
+			i++;
+		}
+		
+		histogram.chnageDataSet(resulTable);
 	}
 	
 	
@@ -703,6 +871,42 @@ public enum Lucene {
 	
 	public String getQeryType() {
 		return query_type;
+	}
+	
+	
+	public Color getColor() {
+		Color c;
+		
+		if (query_type.equals(Lucene.QueryTypes.ADD.toString())) {
+			c = blue;
+//			c = Color.BLUE;
+		} else if (query_type.equals(Lucene.QueryTypes.FUSE.toString())) {
+			c = green;
+//			c = Color.GREEN;
+		} else {
+			c = grey;
+//			c = Color.GRAY;
+		}
+		
+		return c;
+	}
+
+
+	public void showLastResult() {
+		
+//		currentPointer--;
+//		showInMap(queryResults.get(currentPointer).result, true);
+//		changeHistogramm(queryResults.get(currentPointer).result);
+//		System.out.println(currentPointer);
+//		last_result = queryResults.get(currentPointer).result;
+		
+	}
+	
+	public void addnewQueryResult(ScoreDoc[] result, Query query) {
+		
+//		queryResults.add(new QueryResult(query, result, 0));
+//		currentPointer = queryResults.size()-1;
+//		System.out.println(currentPointer);
 	}
 	
 	

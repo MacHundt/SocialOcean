@@ -4,12 +4,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.index.LeafReaderContext;
+import org.apache.lucene.search.CollectorManager;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.LeafCollector;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TopDocsCollector;
 
 import interfaces.ILuceneQuerySearcher;
+import thredds.inventory.CollectionManager;
 
 public enum LuceneQuerySearcher implements ILuceneQuerySearcher {
 	
@@ -46,6 +51,10 @@ public enum LuceneQuerySearcher implements ILuceneQuerySearcher {
 	@Override
 	public ScoreDoc[] searchAll(Query query) {
 		TopDocs results;
+		
+		// should be faster
+//		searcher.search(query, CollectorManager<Collector, T>)
+		
 		ScoreDoc[] hits = null;
 		try {
 			results = searcher.search(query, 10);

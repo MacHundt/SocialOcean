@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="libs/lucene-analyzers-common-6.5.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/lucene-backward-codecs-6.5.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/lucene-codecs-6.5.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/lucene-core-6.5.0.jar" sourcepath="/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/libs/lucene-src_6.5.0/core.zip"/>
+	<classpathentry exported="true" kind="lib" path="libs/lucene-grouping-6.5.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/lucene-join-6.5.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/lucene-misc-6.5.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/lucene-queries-6.5.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/lucene-queryparser-6.5.0.jar" sourcepath="/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/libs/lucene-src_6.5.0/queryparser.zip"/>
+	<classpathentry exported="true" kind="lib" path="libs/lucene-spatial-6.5.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/lucene-suggest-6.5.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/gephi-toolkit-0.9.1-all.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="jar:platform:/resource/BostonCase/libs/gephi-toolkit-0.9.1-javadoc.jar!/"/>
@@ -188,17 +199,6 @@
 	<classpathentry exported="true" kind="lib" path="libs/xsd-2.6.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jfreechart-1.0.19.jar" sourcepath="/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/libs/jfreechart-1.0.19.zip"/>
 	<classpathentry exported="true" kind="lib" path="libs/java-sdk-3.5.1-jar-with-dependencies.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/lucene-grouping-6.2.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/lucene-highlighter-6.2.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/lucene-join-6.2.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/lucene-misc-6.2.1.jar" sourcepath="/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/libs/lucene-6.2.1_src.zip"/>
-	<classpathentry exported="true" kind="lib" path="libs/lucene-suggest-6.2.1.jar" sourcepath="/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/libs/lucene-6.2.1_src.zip"/>
-	<classpathentry exported="true" kind="lib" path="libs/lucene-analyzers-common-6.2.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/lucene-backward-codecs-6.2.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/lucene-codecs-6.2.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/lucene-core-6.2.1.jar" sourcepath="/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/libs/lucene-6.2.1_src.zip"/>
-	<classpathentry exported="true" kind="lib" path="libs/lucene-queryparser-6.2.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/lucene-spatial-6.2.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>

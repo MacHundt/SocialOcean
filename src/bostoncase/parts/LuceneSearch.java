@@ -27,13 +27,16 @@ import org.eclipse.e4.ui.di.Persist;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Device;
+import org.eclipse.swt.internal.gtk.GdkColor;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
 
 import bostoncase.handlers.LuceneSearchHandler;
@@ -84,6 +87,12 @@ public class LuceneSearch {
 	
 	@PostConstruct
 	public void postConstruct(Composite parent) {
+		
+		Display display = Display.getCurrent();
+		Color red = display.getSystemColor(SWT.COLOR_RED);
+		Color grey = display.getSystemColor(SWT.COLOR_GRAY);
+		Color green = display.getSystemColor(SWT.COLOR_DARK_GREEN);
+		Color blue = display.getSystemColor(SWT.COLOR_BLUE);
 		
 		InputStream input = null;
 		try {
@@ -151,16 +160,21 @@ public class LuceneSearch {
 		
 //		## BUILD GUI
 		
-		parent.setLayout(new GridLayout(5, false));
+		parent.setLayout(new GridLayout(8, false));
 		
-		Button btnAdd = new Button(parent, SWT.CHECK);
+		
+		Button btnAdd = new Button(parent, SWT.CHECK );
 		btnAdd.setSelection(false);
 		btnAdd.setText("ADD");
+		btnAdd.setForeground(blue);
+//		btnAdd.setForeground(new Color (device, l.getColor().getRed(), l.getColor().getGreen(), l.getColor().getBlue()));
 		
 		
-		Button btnFuse = new Button(parent, SWT.CHECK);
+		
+		Button btnFuse = new Button(parent, SWT.CHECK );
 		btnFuse.setText("FUSE");
-		
+		btnFuse.setForeground(green);
+//		btnFuse.setForeground(new Color (device, l.getColor().getRed(), l.getColor().getGreen(), l.getColor().getBlue()));
 		
 		btnAdd.addSelectionListener(new SelectionListener() {
 			
@@ -200,7 +214,7 @@ public class LuceneSearch {
 		});
 		
 		text = new Text(parent, SWT.BORDER);
-		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
 		text.setMessage("Enter query");
 		
 		Button btnSearch = new Button(parent, SWT.NONE);
@@ -239,18 +253,41 @@ public class LuceneSearch {
 			}
 		});
 		btnSearch.setText("Search");
+		btnSearch.setBackground(red);
+		btnSearch.setForeground(red);
+		
+		Button btnBack = new Button(parent, SWT.BUTTON1);
+		btnBack.setText("Back");
+		btnBack.setBackground(grey);
+		
+		btnBack.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				
+				// TODO Graph
+				// Clear all Results, Map, Graph
+				System.out.println("Back");
+				l.printToConsole("Back");
+				l.showLastResult();
+			}
+		});
+		
 		
 		Button btnClear = new Button(parent, SWT.BUTTON1);
 		btnClear.setText("Clear");
+		btnClear.setBackground(grey);
+		
 		btnClear.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
 				
-				// TODO
+				// TODO Graph
 				// Clear all Results, Map, Graph
-				System.out.println("Clear ALL");
+				System.out.println("CLEAR");
+				l.printToConsole("CLEAR");
 				l.clearQueryHistroy();
 				l.clearMap();
+				l.showCatHisto();
 			}
 		});
 		

@@ -1,6 +1,8 @@
 package impl;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -61,8 +63,10 @@ public class MapPanelCreator {
 	private static boolean loadedIcons = false;
 	
 	private static Point startPoint;
-	private static Rectangle geoSelection = new Rectangle();
 	
+	private static double[] geoSelection = new double[4];
+	
+	private static Color grey = new Color(240,240,240,50);		// light grey, high opacity		--> NORMAL
 	
 	public static void loadTweetIcons() {
 		// ## LOAD Icons
@@ -89,6 +93,7 @@ public class MapPanelCreator {
 		} else {
 			
 			mapPanel = new JPanel(new BorderLayout());
+					
 
 			final List<TileFactory> factories = new ArrayList<TileFactory>();
 
@@ -96,7 +101,7 @@ public class MapPanelCreator {
 			TileFactoryInfo veInfo = new VirtualEarthTileFactoryInfo(VirtualEarthTileFactoryInfo.MAP);
 			TileFactoryInfo googlemaps = new TileFactoryInfo("" 
 					+ "GoogleMaps", 2, // min
-					15, // max allowed zoom level
+					18, // max allowed zoom level
 					max, // max zoom level
 					256, // tile size (must be square!!)
 					true, true, // x/y orientation is normal
@@ -137,48 +142,81 @@ public class MapPanelCreator {
 				public void mouseReleased(MouseEvent e) {
 //					System.out.println("Button "+e.getButton()+" Released at: "+e.getPoint() );
 					
-					// Right Click  --> Geo Search!
+					// Right Click  Release Geo Search!
 					if (e.getButton() == 3) {
-						System.out.println("Button "+e.getButton()+" Pressed at: "+e.getPoint());
+//						System.out.println("Button "+e.getButton()+" Released at: "+e.getPoint());
 						
 						int topX = (int) Math.min(startPoint.getX(), e.getPoint().getX());
 						int topY = (int) Math.min(startPoint.getY(), e.getPoint().getY());
 						int width = (int) Math.abs(startPoint.getX() - e.getPoint().getX());
 						int height = (int) Math.abs(startPoint.getY() - e.getPoint().getY());
 						
-//						geoSelection.setBounds((int)topX, (int)topY, (int)width, (int) height);
+						Rectangle rec = new Rectangle((int)topX, (int)topY, (int)width, (int) height);
+						System.out.println(">>> GEO-Selection: "+rec.toString());
 						
-						// Geo Selection on
-						System.out.println("Geo Selection Rectangle ("+topX+" "+ topY +" TO "+topX+width +" "+ topY+height+")");
-						// convert to Lat Long
+						// CONVERT to Lat Long
 //						mapViewer.convertGeoPositionToPoint(pos)
 						GeoPosition p1 = mapViewer.convertPointToGeoPosition(new Point(topX, topY));
 						GeoPosition p2 = mapViewer.convertPointToGeoPosition(new Point(topX+width, topY+height));
-						System.out.println("Geo Selection BBOX in Space ("+p2.getLatitude()+" "+ p1.getLatitude() +" , "+p2.getLongitude() +" "+ p1.getLongitude()+")");
+						
+						geoSelection[0] = p1.getLongitude();
+						geoSelection[1] = p1.getLatitude();
+						geoSelection[2] = p2.getLongitude();
+						geoSelection[3] = p2.getLatitude();
 						
 						Lucene l = Lucene.INSTANCE;
 						ScoreDoc[] result = null;
 						while (!l.isInitialized) {
 							continue;
 						}
+						
+						Graphics g = mapViewer.getGraphics();
+				        g.clearRect(topX,topY,width,height);
+						mapViewer.paint(g);
+						mapViewer.validate();
+						
+						
 						// GEO Test
-						// result = l.ADDGeoQuery(42.2279, 42.3969, -71.1908, -70.9235);
-						result = l.ADDGeoQuery(p2.getLatitude(), p1.getLatitude(), p2.getLongitude(), p1.getLongitude());
+//						result = l.ADDGeoQuery(42.2279, 42.3969, -71.1908, -70.9235);
+						
+//						int afterDot = 5;
+//						double minLat = Math.min(normalizedCoordinate(p2.getLatitude(), afterDot), normalizedCoordinate(p1.getLatitude(), afterDot));
+//						double maxLat = Math.max(normalizedCoordinate(p2.getLatitude(), afterDot), normalizedCoordinate(p1.getLatitude(), afterDot));
+//						double minLong = Math.min(normalizedCoordinate(p1.getLongitude(), afterDot), normalizedCoordinate(p2.getLongitude(), afterDot));
+//						double maxLong = Math.max(normalizedCoordinate(p1.getLongitude(), afterDot), normalizedCoordinate(p2.getLongitude(), afterDot));
+						double minLat = Math.min(p2.getLatitude(), p1.getLatitude());
+						double maxLat = Math.max(p2.getLatitude(), p1.getLatitude());
+						double minLong = Math.min(p1.getLongitude(), p2.getLongitude());
+						double maxLong = Math.max(p1.getLongitude(), p2.getLongitude());
+						
+//						System.out.println(">>> BBOX Rec( "+ geoSelection[0] +" "+geoSelection[1]+ ", "+geoSelection[2]+" "+geoSelection[3]+")");
+						System.out.println(">>> BBOX for Lucene("+minLat+" "+ maxLat +" , "+minLong +" "+ maxLong+")");
+						
+						result = l.ADDGeoQuery(minLat, maxLat, minLong, maxLong);
 						l.showInMap(result, true);
+						l.changeHistogramm(result);
 					}
 					
 				}
 				
+				
+//				private double normalizedCoordinate(double latitude, int afterDot) {
+//					
+//					String s = latitude+"";
+//					int dotIndex = s.indexOf(".");
+//					if (s.length() > (dotIndex+afterDot))
+//						s = s.substring(0, (dotIndex+afterDot));
+//					
+//					return Double.parseDouble(s);
+//				}
+
 				@Override
 				public void mousePressed(MouseEvent e) {
 //					System.out.println("Button "+e.getButton()+" Pressed at: "+e.getPoint());
-					
 					// Right Click
 					if (e.getButton() == 3) {
-						System.out.println("Button "+e.getButton()+" Pressed at: "+e.getPoint());
 						startPoint = e.getPoint();
 					}
-					
 				}
 				
 				@Override
@@ -205,18 +243,33 @@ public class MapPanelCreator {
 					
 					// Paint Rectangle   --> Geo Selection
 					if (e.getButton() == 3) {
-//						System.out.println("From X   TO   "+e.getPoint());
-						double topX = Math.min(startPoint.getX(), e.getPoint().getX());
-						double topY = Math.min(startPoint.getY(), e.getPoint().getY());
-						double width = Math.abs(startPoint.getX() - e.getPoint().getX());
-						double height = Math.abs(startPoint.getY() - e.getPoint().getY());
+//						System.out.println("From "+startPoint.toString()+"   TO   "+e.getPoint().toString());
+						int topX = (int) Math.min(startPoint.getX(), e.getPoint().getX());
+						int topY = (int) Math.min(startPoint.getY(), e.getPoint().getY());
+						int width = (int) Math.abs(startPoint.getX() - e.getPoint().getX());
+						int height = (int) Math.abs(startPoint.getY() - e.getPoint().getY());
 						
-						geoSelection.setBounds((int)topX, (int)topY, (int)width, (int) height);
-						
-						// Paint Rectangle on Map  --> updateView
-						// repaint(geoSelection)
+						Graphics g = mapViewer.getGraphics();
+						SwingUtilities.invokeLater(new Runnable() {
+				            public void run() {
+				            	Color c;
+				            	Lucene l = Lucene.INSTANCE;
+								if (!l.isInitialized) {
+									c = grey;
+								} else {
+									c = l.getColor();
+								}
+				            	g.setColor(c);
+				                g.fillRect(topX,topY,width,height);
+				                g.setColor(Color.BLACK);
+				                g.drawRect(topX,topY,width,height);
+				            	g.setColor(new Color(0,0,0,100));
+				            	g.fillRect(topX, topY, width, height);
+				            }
+				        });
+						mapViewer.paint(g);
+						mapViewer.validate();
 					}
-					
 				}
 			});
 			
@@ -335,6 +388,7 @@ public class MapPanelCreator {
 		}
 	}
 	
+
 	public static TweetWayPoint createTweetWayPoint(String label, String sentiment, double lat, double lon ) {
 		
 		if (!loadedIcons) {
@@ -355,27 +409,6 @@ public class MapPanelCreator {
 			
 		return new TweetWayPoint(label, icon, geo);
 	}
-	
-//	public static TweetWayPoint createTweetWayPoint(String label, double sentiment, double lat, double lon ) {
-//		
-//		if (!loadedIcons) {
-//			loadTweetIcons();
-//			loadedIcons = true;
-//		}
-//		
-//		GeoPosition geo = new GeoPosition(lat, lon);
-//		
-//		ImageIcon icon = null;
-//		// Check the sentiment for the right icon
-//		if (sentiment > 0.5)
-//			icon = tweetIcon_p;
-//		else if (sentiment < -0.5) 
-//			icon = tweetIcon_n;
-//		else 
-//			icon = tweetIcon_;
-//			
-//		return new TweetWayPoint(label, icon, geo);
-//	}
 	
 	
 	public static void addWayPoint(TweetWayPoint marker) {

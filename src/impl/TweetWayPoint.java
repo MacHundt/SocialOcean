@@ -21,6 +21,8 @@ import utils.DBManager;
 public class TweetWayPoint  extends SwingWaypoint {
     private final JButton button;
     private final String text;
+    
+    private int breakLineAT = 80;
 
     public TweetWayPoint(String text, ImageIcon icon, GeoPosition coord) {
         super(text, coord);
@@ -60,10 +62,10 @@ public class TweetWayPoint  extends SwingWaypoint {
 					
 					
 					details += "\n"+scName+" wrote on "+date+":";
-					if (content.length() > 70) {
+					if (content.length() > breakLineAT) {
 						// next line 
-						details += "\n"+content.substring(0, 80);
-						details += "\n"+content.substring(80, content.length());
+						details += "\n"+content.substring(0, breakLineAT);
+						details += "\n"+content.substring(breakLineAT, content.length());
 					} else {
 						details += "\n"+content;
 					}

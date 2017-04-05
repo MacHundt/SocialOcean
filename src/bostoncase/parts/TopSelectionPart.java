@@ -2,6 +2,7 @@
 package bostoncase.parts;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -49,7 +50,7 @@ public class TopSelectionPart {
 	private DefaultTableModel detailsDataModel;
 	private int resultColumns = 4;
 	
-	private int details_rows = 8;
+	private int details_rows = 9;
 	// content, tags, mentions, type, category, //crimetype, time, id, sentiment, hasURL )
 	
 	private String currentSelectedField = "";
@@ -62,6 +63,10 @@ public class TopSelectionPart {
 	
 	@PostConstruct
 	public void postConstruct(Composite parent) {
+		
+//		Display display = Display.getCurrent();
+//		org.eclipse.swt.graphics.Color red = display.getSystemColor(SWT.COLOR_RED);
+		
 		Swing_SWT util = new Swing_SWT();
 		parent.addControlListener(util.CleanResize);
 		
@@ -88,6 +93,9 @@ public class TopSelectionPart {
 		northSelection.add(resultBtn);
 		
 		JButton showBtn = new JButton("Show");
+//		showBtn.setBackground(new Color(255,0,0));
+		showBtn.setForeground(new Color(255,0,0));
+		
 		northSelection.add(showBtn);
 		
 		JSplitPane split = new JSplitPane();
@@ -176,16 +184,17 @@ public class TopSelectionPart {
 				
 				// Query
 				ScoreDoc[] result = null;
-				
+				Query q = null;
 				try {
-					Query q = l.getParser().parse(query);
+					q = l.getParser().parse(query);
 					result = l.query(q, l.getQeryType(), true);
 				} catch (ParseException e1) {
 					e1.printStackTrace();
 				}
 				// Show in MAP  --> Clear LIST = remove all Markers
 				l.showInMap(result, true);
-				
+				l.changeHistogramm(result);
+				l.addnewQueryResult(result, q);
 			}
 		});
 		

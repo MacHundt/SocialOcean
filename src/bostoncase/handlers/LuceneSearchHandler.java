@@ -41,13 +41,15 @@ public class LuceneSearchHandler {
 		}
 		l.printToConsole("Query: "+type+" - '"+query+"'");
 		System.out.println("Query: "+type+" - '"+query+"'");
-		// GEO Test
-		if (query.equals("geo")) {
-			result = l.ADDGeoQuery(42.2279, 42.3969, -71.1908, -70.9235);
-		}
+//		// GEO Test
+//		if (query.equals("geo")) {
+//			result = l.ADDGeoQuery(42.2279, 42.3969, -71.1908, -70.9235);
+//		}
+		
+		Query q = null;
 		
 		// Get Time Range TEST
-		else if (query.equals("time")) {
+		if (query.equals("time")) {
 			result = l.searchTimeRange(1366012800, 1366120800, true);
 		}
 		
@@ -55,7 +57,7 @@ public class LuceneSearchHandler {
 		// GET QUERY
 		else {
 			try {
-				Query q = l.getParser().parse(query);
+				q = l.getParser().parse(query);
 				result = l.query(q, type, true);
 			} catch (ParseException e) {
 				System.out.println("Could not parse the Query: " + query);
@@ -65,6 +67,8 @@ public class LuceneSearchHandler {
 		}
 		
 		l.showInMap(result, true);
+		l.changeHistogramm(result);
+		l.addnewQueryResult(result, q);
 	}
 	
 	
