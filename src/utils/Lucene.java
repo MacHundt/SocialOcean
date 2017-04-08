@@ -1,11 +1,10 @@
 package utils;
 
 import java.awt.Color;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -19,41 +18,27 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 import java.util.TreeMap;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.geo.Polygon;
 import org.apache.lucene.document.DateTools.Resolution;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.queryparser.classic.QueryParser.Operator;
-import org.apache.lucene.queryparser.xml.QueryBuilderFactory;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.BooleanQuery.Builder;
-import org.apache.lucene.search.DisjunctionMaxQuery;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.LeafCollector;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopDocsCollector;
-import org.apache.lucene.search.TopScoreDocCollector;
-import org.apache.lucene.search.TotalHitCountCollector;
 import org.apache.lucene.spatial.geopoint.document.GeoPointField;
 import org.apache.lucene.spatial.geopoint.search.GeoPointInBBoxQuery;
-import org.apache.lucene.spatial.geopoint.search.GeoPointInPolygonQuery;
 import org.apache.lucene.store.FSDirectory;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.XMLWriter;
 
 import bostoncase.parts.Console;
 import bostoncase.parts.Histogram;
@@ -61,8 +46,8 @@ import bostoncase.parts.LuceneStatistics;
 import bostoncase.parts.QueryHistory;
 import bostoncase.parts.Time;
 import bostoncase.parts.TopSelectionPart;
+import impl.GraphML_Helper;
 import impl.MapPanelCreator;
-import impl.SwingWaypoint;
 import interfaces.ILuceneQuerySearcher;
 
 // as singleton
@@ -344,7 +329,6 @@ public enum Lucene {
 					if (result.length< 100000 || last_result.length < 100000)
 						result = cutScoreDocs(result);
 					
-					
 //					String[] fields = getFieldsFromQueries() 
 //					String[] usedFields = {"tags", "geo"};
 //					String[] queries = new String[2];
@@ -365,6 +349,9 @@ public enum Lucene {
 				else if (query.toString().startsWith("Time") || last_query.startsWith("Time")) {
 					
 				}
+				
+				// TODO FUSE -- when sources types are different
+				// TODO FUSE -- 
 				
 				else {
 					newQuery = "("+query.toString()+")" + " AND ("+last_query+")";
@@ -777,6 +764,108 @@ public enum Lucene {
 		time.chnageDataSet(tl_data);
 		
 	}
+	
+	public void changeTimeLine(TimeBin binsize, ScoreDoc[] result  ) {
+		
+		// From Start Date to StopDate .. make bins and plot
+		LocalDateTime dt_temp = dt_min;
+		ArrayList<TimeLineHelper> tl_data = new ArrayList<>();
+		
+		// TODO Get New MIN - MAX
+		// TODO always fuse the result with last_result  ( TEST!! )
+		// Or by hand .. put result into Buckets (after min max ) -> create buckets ... print
+		long minDate = Long.MAX_VALUE;
+		long maxDate = Long.MIN_VALUE;
+		
+		for (ScoreDoc doc : result) {
+
+			int docID = doc.doc;
+			Document document;
+			try {
+				document = searcher.doc(docID);
+				// System.out.println(document.getField("id").stringValue());
+				System.out.println("ID: "+docID);
+				long time = (document.getField("date")).numericValue().longValue();
+				if (time > maxDate) {
+					maxDate = time;
+				}
+				if (time < minDate) {
+					minDate = time;
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		}
+
+		long temp_utc = utc_time_min;
+		while (temp_utc <= utc_time_max) {
+			
+			LocalDateTime dt_plus = dt_temp;
+			switch (binsize) {
+			case SECONDS:
+				dt_plus = dt_temp.plusSeconds(1);
+				break;
+			case MINUTES:
+				dt_plus = dt_temp.plusMinutes(1);
+				break;
+			case HOURS:
+				dt_plus = dt_temp.plusHours(1);
+				break;
+			case DAYS:
+				dt_plus = dt_temp.plusDays(1);
+				break;
+			}
+			long utc_plus = dt_plus.toEpochSecond(ZoneOffset.UTC);
+			
+			ScoreDoc[] rs = searchTimeRange(temp_utc, utc_plus, false);
+			
+			tl_data.add(new TimeLineHelper(dt_temp, rs.length));
+			
+			dt_temp = dt_plus;
+			temp_utc = utc_plus;
+		}
+		
+		Time time = Time.getInstance();
+		time.chnageDataSet(tl_data);
+		
+	}
+	
+	
+	/**
+	 * This method creates an external mention.graphml file, to open it with other programs:
+	 * For every mention (@) that is found in the result set a directed edge is created.
+	 * @param result
+	 * @param clearList booean
+	 * @throws ParseException 
+	 */
+	public void createGraphML_Mention(ScoreDoc[] result, boolean clearList)  {
+		try {
+			String newQuery = "(has@:true)" + " AND (" + last_query + ")";
+			Query nquery = parser.parse(newQuery);
+			ScoreDoc[] fusedMention = querySearcher.searchAll(nquery);
+			
+			GraphML_Helper.createGraphML_Mention(fusedMention, searcher, "/Users/michaelhundt/Desktop/test.graphml");
+			
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	/**
+	 * This method creates an external domain.graphml file, to open it with other programs:
+	 * For every domain that is found in the result set a domain node is created and an edge from the user node
+	 * @param result
+	 * @param clearList booean
+	 */
+	public void createGraphML_Domain(ScoreDoc[] result, boolean clearList) {
+		
+	}
+	
+	
+	
 
 	
 	public void showInMap(ScoreDoc[] result, boolean clearList) {
@@ -784,6 +873,15 @@ public enum Lucene {
 		if (result != null) {
 			if (clearList)
 				MapPanelCreator.clearWayPoints(clearList);
+			
+			
+			if (result.length > 10000) {
+				
+				// Cluster -- Do something: -- LEVEL of Detail <---> Zoom
+				// Or only show those that I see on the Display
+				System.out.println("( to many )");
+				return;
+			}
 
 			// Connection c = DBManager.getConnection();
 			// try {

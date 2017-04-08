@@ -50,8 +50,8 @@ public class TopSelectionPart {
 	private DefaultTableModel detailsDataModel;
 	private int resultColumns = 4;
 	
-	private int details_rows = 9;
-	// content, tags, mentions, type, category, //crimetype, time, id, sentiment, hasURL )
+	private int details_rows = 10;
+	// content, tags, mentions, type, category, //crimetype, time, id, sentiment, hasURL, has@ )
 	
 	private String currentSelectedField = "";
 	
@@ -195,6 +195,8 @@ public class TopSelectionPart {
 				l.showInMap(result, true);
 				l.changeHistogramm(result);
 				l.addnewQueryResult(result, q);
+				
+				l.createGraphML_Mention(result, true);
 			}
 		});
 		

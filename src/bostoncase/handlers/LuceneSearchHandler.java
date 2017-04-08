@@ -11,6 +11,7 @@ import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.core.di.annotations.Optional;
 
 import utils.Lucene;
+import utils.Lucene.TimeBin;
 
 
 public class LuceneSearchHandler {
@@ -66,9 +67,11 @@ public class LuceneSearchHandler {
 			}
 		}
 		
-		l.showInMap(result, true);
+//		l.showInMap(result, true);
 		l.changeHistogramm(result);
 		l.addnewQueryResult(result, q);
+		
+//		l.changeTimeLine(TimeBin.HOURS, result);
 	}
 	
 	
