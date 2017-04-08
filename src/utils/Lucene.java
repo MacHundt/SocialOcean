@@ -846,12 +846,34 @@ public enum Lucene {
 			Query nquery = parser.parse(newQuery);
 			ScoreDoc[] fusedMention = querySearcher.searchAll(nquery);
 			
-			GraphML_Helper.createGraphML_Mention(fusedMention, searcher, "/Users/michaelhundt/Desktop/test.graphml");
+			GraphML_Helper.createGraphML_Mention(fusedMention, searcher, true, "/Users/michaelhundt/Desktop/mention"+last_query+".graphml");
 			
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
 	}
+	
+	
+	/**
+	 * This method creates an external mention.graphml file, to open it with other programs:
+	 * For every mention (@) that is found in the result set a directed edge is created.
+	 * @param result
+	 * @param clearList booean
+	 * @throws ParseException 
+	 */
+	public void createGraphML_Retweet(ScoreDoc[] result, boolean clearList)  {
+		try {
+			String newQuery = "(isRetweet:true)" + " AND (" + last_query + ")";
+			Query nquery = parser.parse(newQuery);
+			ScoreDoc[] fusedMention = querySearcher.searchAll(nquery);
+			
+			GraphML_Helper.createGraphML_Mention(fusedMention, searcher, true, "/Users/michaelhundt/Desktop/retweet"+last_query+".graphml");
+			
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	
 	
 	/**

@@ -195,6 +195,9 @@ public class MapPanelCreator {
 						result = l.ADDGeoQuery(minLat, maxLat, minLong, maxLong);
 						l.showInMap(result, true);
 						l.changeHistogramm(result);
+						
+						l.createGraphML_Mention(result, true);
+						l.createGraphML_Retweet(result, true);
 					}
 					
 				}

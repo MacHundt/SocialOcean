@@ -24,34 +24,35 @@ import utils.DBManager;
 public class GraphML_Helper {
 
 	
+	
+	
+	
 	/**
 	 * This method creates an external mention.graphml file, to open it with other programs:
 	 * For every mention (@) that is found in the result set a directed edge is created.
 	 * @param result
 	 * @param filename 
 	 * @param searcher LuceneSearcher
+	 * @param directed 
 	 * @throws ParseException 
 	 */
-	public static void createGraphML_Mention(ScoreDoc[] result, IndexSearcher searcher, String filename)  {
+	public static void createGraphML_Mention(ScoreDoc[] result, IndexSearcher searcher, boolean directed, String filename)  {
 
 		// result -> FUSE with Has@ -> Doc -> ID -> DB -> Content (get all @)
-		
 		// TODO if not clear list  -> try -- LOAD old graph file and 
 		
 		// HEADER
-		
         org.dom4j.Document graphMLDoc = DocumentHelper.createDocument();
         Element root = graphMLDoc.addElement( "graphml", getXMLNamesspace() );
         
         addHeader(root);
-        addKeys(root);
+        addKeysMentionGraph(root);
         
-//        Element graph = root.addElement("graph");
         Element graph = root.addElement("graph", getXMLNamesspace()); 				
         graph.addAttribute(QName.get("id", "", getXMLNamesspace()), "G"); 	
-        graph.addAttribute(QName.get("edgedefault", "", getXMLNamesspace()), "undirected"); 	
+        graph.addAttribute(QName.get("edgedefault", "", getXMLNamesspace()), (directed) ? "directed" : "undirected"); 	
         graph.addAttribute(QName.get("parse.order", "", getXMLNamesspace()), "free"); 	
-        // Optimize Parser
+        // TODO Optimize Parser
         
         HashMap<String, String> nodeNames = new HashMap<>();   // screenName -> id
         int nodesCounter = 0;
@@ -59,9 +60,6 @@ public class GraphML_Helper {
 		try {
 			Connection c = DBManager.getConnection();
 			Statement stmt = c.createStatement();
-			// ResultSet rs = stmt.executeQuery("Select creationdate from
-			// tweetdata order by creationdate ASC Limit 1");
-			// ResultSet rs = pre_statement_min.executeQuery();
 
 			for (ScoreDoc doc : result) {
 				int docID = doc.doc;
@@ -104,7 +102,6 @@ public class GraphML_Helper {
 				ResultSet rs = stmt.executeQuery(query);
 				
 				boolean isEmpty = true;
-				
 				while (rs.next()) {
 					isEmpty = false;
 					screenName = rs.getString(1);
@@ -136,8 +133,10 @@ public class GraphML_Helper {
 					nodeNames.put(screenName, nodeID);
 					Element nodes = graph.addElement("node", getXMLNamesspace()); 				
 					nodes.addAttribute(QName.get("id", "", getXMLNamesspace()), nodeID); 			
-					Element data = nodes.addElement("data", getXMLNamesspace()); 				
-					data.addAttribute(QName.get("key", "", getXMLNamesspace()), "fol").addText(""+followers); 	
+					Element data = nodes.addElement("data", getXMLNamesspace()); 		
+					data.addAttribute(QName.get("key", "", getXMLNamesspace()), "label").addText(screenName); 
+					Element data2 = nodes.addElement("data", getXMLNamesspace()); 
+					data2.addAttribute(QName.get("key", "", getXMLNamesspace()), "fol").addText(""+followers); 	
 				} else {
 					nodeID = nodeNames.get(screenName);
 				}
@@ -153,19 +152,22 @@ public class GraphML_Helper {
 						nodeNames.put(target, nodeID);
 						Element nodes = graph.addElement("node", getXMLNamesspace()); 				
 						nodes.addAttribute(QName.get("id", "", getXMLNamesspace()), nodeID); 			
-						Element data = nodes.addElement("data", getXMLNamesspace()); 				
-						data.addAttribute(QName.get("key", "", getXMLNamesspace()), "fol").addText(""+followers); 	
+						Element data = nodes.addElement("data", getXMLNamesspace()); 	
+						data.addAttribute(QName.get("key", "", getXMLNamesspace()), "label").addText(target); 
+						Element data2 = nodes.addElement("data", getXMLNamesspace()); 
+						data2.addAttribute(QName.get("key", "", getXMLNamesspace()), "fol").addText(""+followers); 	
 					} else {
 						nodeID = nodeNames.get(target);
 					}
 					
-					// ADD Edge:  source to Target
+			// ADD Edge:  source to Target
 					Element edges = graph.addElement("edge", getXMLNamesspace()); 				
 					edges.addAttribute(QName.get("source", "", getXMLNamesspace()), ""+sourceID); 
 					edges.addAttribute(QName.get("target", "", getXMLNamesspace()), ""+nodeID);
 					Element data = edges.addElement("data", getXMLNamesspace()); 				
 					data.addAttribute(QName.get("key", "", getXMLNamesspace()), "senti").addText(""+sentiment); 	
-					data.addAttribute(QName.get("key", "", getXMLNamesspace()), "cat").addText(""+category); 
+					Element data2 = edges.addElement("data", getXMLNamesspace()); 
+					data2.addAttribute(QName.get("key", "", getXMLNamesspace()), "cat").addText(""+category); 
 					
 				}
 
@@ -183,8 +185,7 @@ public class GraphML_Helper {
 		}
 	}
 	
-	private static void addKeys(Element root) {
-		
+	private static void addKeysMentionGraph(Element root) {
 		
 //		***************  NODES *******************
 		Element key = root.addElement("key", getXMLNamesspace()); 				
@@ -193,9 +194,13 @@ public class GraphML_Helper {
 		key.addAttribute(QName.get("attr.name", "", getXMLNamesspace()), "followers"); 
 		key.addAttribute(QName.get("attr.type", "", getXMLNamesspace()), "double"); 
 		
+		Element label = root.addElement("key", getXMLNamesspace()); 				
+		label.addAttribute(QName.get("id", "", getXMLNamesspace()), "label"); 				// followers
+		label.addAttribute(QName.get("for", "", getXMLNamesspace()), "node"); 
+		label.addAttribute(QName.get("attr.name", "", getXMLNamesspace()), "label"); 
+		label.addAttribute(QName.get("attr.type", "", getXMLNamesspace()), "string"); 
 		
 //		***************  EDGES *******************
-		
 		Element senti = root.addElement("key", getXMLNamesspace()); 				
 		senti.addAttribute(QName.get("id", "", getXMLNamesspace()), "senti"); 			// sentiment
 		senti.addAttribute(QName.get("for", "", getXMLNamesspace()), "edge"); 
@@ -205,25 +210,14 @@ public class GraphML_Helper {
 		Element cat = root.addElement("key", getXMLNamesspace()); 				
 		cat.addAttribute(QName.get("id", "", getXMLNamesspace()), "cat"); 				// category
 		cat.addAttribute(QName.get("for", "", getXMLNamesspace()), "edge"); 
-		cat.addAttribute(QName.get("attr.name", "", getXMLNamesspace()), "sentiment"); 
-		cat.addAttribute(QName.get("attr.type", "", getXMLNamesspace()), "double"); 
-
+		cat.addAttribute(QName.get("attr.name", "", getXMLNamesspace()), "category"); 
+		cat.addAttribute(QName.get("attr.type", "", getXMLNamesspace()), "string"); 
 	}
 	
 
 	private static void addHeader(Element root) {
-		
-//		<?xml version="1.0" encoding="UTF-8"?>
-//		<graphml xmlns="http://graphml.graphdrawing.org/xmlns/graphml" 
-//		xmlns:visone="http://visone.info/xmlns" 
-//		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-//		xmlns:y="http://www.yworks.com/xml/graphml" 
-//		xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns/graphml http://www.yworks.com/xml/schema/graphml/1.0/ygraphml.xsd"
-		
 	    root.addAttribute(QName.get("schemaLocation", "xsi", "http://www.w3.org/2001/XMLSchema-instance"),
 	            "http://graphml.graphdrawing.org/xmlns/graphml http://www.yworks.com/xml/schema/graphml/1.0/ygraphml.xsd");
-		
-
 	}
 	
 	private static String getXMLNamesspace() {

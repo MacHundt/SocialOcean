@@ -197,6 +197,7 @@ public class TopSelectionPart {
 				l.addnewQueryResult(result, q);
 				
 				l.createGraphML_Mention(result, true);
+				l.createGraphML_Retweet(result, true);
 			}
 		});
 		
