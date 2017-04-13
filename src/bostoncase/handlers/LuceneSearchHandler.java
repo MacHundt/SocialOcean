@@ -68,6 +68,7 @@ public class LuceneSearchHandler {
 		}
 		
 		l.showInMap(result, true);
+		
 		l.changeHistogramm(result);
 		l.addnewQueryResult(result, q);
 		

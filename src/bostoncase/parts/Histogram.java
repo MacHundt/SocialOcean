@@ -38,6 +38,8 @@ public class Histogram {
 	Color black = new Color(Display.getDefault(), 0, 0, 0);
 	
 	
+	
+	
 	@PostConstruct
 	public void postConstruct(Composite parent) {
 		
@@ -45,8 +47,8 @@ public class Histogram {
 		
 		 // set titles
         chart.getTitle().setText("");
-        chart.getAxisSet().getXAxis(0).getTitle().setText("Categories");
         chart.getAxisSet().getYAxis(0).getTitle().setText("Frequency");
+        chart.getAxisSet().getXAxis(0).getTitle().setText("Categories");
 		chart.getAxisSet().getXAxis(0).enableCategory(true);
 		chart.setForeground(black);
 		chart.getTitle().setForeground(black);
@@ -160,18 +162,18 @@ public class Histogram {
 				chart.getAxisSet().getXAxis(0).setCategorySeries(categories);
 				
 				barSeries = (IBarSeries) chart.getSeriesSet().createSeries(
-						SeriesType.BAR, "bar series");
+						SeriesType.BAR, "categories ");
 				barSeries.setYSeries(dataSeries);
 				barSeries.getLabel().setFormat("##.0");
 //				barSeries.setBarColor(bar_color);
 				barSeries.setBarColor(pink);
+				
 				barSeries.setBarPadding(35);
+				
 				chart.getAxisSet().adjustRange();
 				chart.redraw();
 			}
 		});
-		
-		
 		
 //		comp.getDisplay().asyncExec(new Runnable() {
 //			
@@ -185,6 +187,16 @@ public class Histogram {
 //			}
 //		});
 		
+	}
+	
+	
+	private Color getColor(String catName) {
+		Color back = pink = new Color(Display.getDefault(), 0, 0, 0);
+		
+		switch(catName) {
+		}
+		
+		return back;
 	}
 	
 	

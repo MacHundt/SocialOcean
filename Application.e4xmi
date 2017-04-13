@@ -13,7 +13,7 @@
                 <children xsi:type="basic:PartStack" xmi:id="_nKjIgIosEeauXYmQDjn7lw" elementId="bostoncase.partstack.datalayers" containerData="2000" selectedElement="_cCvw0KApEearzvHMhN-SAg">
                   <children xsi:type="basic:CompositePart" xmi:id="_cCvw0KApEearzvHMhN-SAg" elementId="bostoncase.compositepart.overviewcontainer" containerData="" accessibilityPhrase="" label="Overview" selectedElement="_WLEnwLAMEeaGfPETKLtUAQ">
                     <children xsi:type="basic:PartSashContainer" xmi:id="_WLEnwLAMEeaGfPETKLtUAQ" elementId="bostoncase.partsashcontainer.0">
-                      <children xsi:type="basic:Part" xmi:id="_gLDqAKApEearzvHMhN-SAg" elementId="bostoncase.part.statistics" containerData="1400" contributionURI="bundleclass://BostonCase/bostoncase.parts.LuceneStatistics" label="Statistics"/>
+                      <children xsi:type="basic:Part" xmi:id="_gLDqAKApEearzvHMhN-SAg" elementId="bostoncase.part.statistics" visible="false" containerData="1400" contributionURI="bundleclass://BostonCase/bostoncase.parts.LuceneStatistics" label="Statistics"/>
                       <children xsi:type="basic:Part" xmi:id="_7_AY8LAKEeaGfPETKLtUAQ" elementId="bostoncase.part.topselection" containerData="5000" contributionURI="bundleclass://BostonCase/bostoncase.parts.TopSelectionPart" label="topSelection"/>
                     </children>
                   </children>
@@ -22,7 +22,7 @@
                 <children xsi:type="basic:PartStack" xmi:id="_ngQSwIosEeauXYmQDjn7lw" elementId="bostoncase.partstack.map" containerData="5000" selectedElement="_LGak0IorEeauXYmQDjn7lw">
                   <children xsi:type="basic:Part" xmi:id="_LGak0IorEeauXYmQDjn7lw" elementId="bostoncase.part.map" containerData="" contributionURI="bundleclass://BostonCase/bostoncase.parts.MapPart" label="Map" iconURI="platform:/plugin/BostonCase/icons/Map32.png"/>
                 </children>
-                <children xsi:type="basic:PartStack" xmi:id="_n1WZAIosEeauXYmQDjn7lw" elementId="bostoncase.partstack.settings" visible="false" containerData="1200" accessibilityPhrase="settingsPartStack" selectedElement="_M9Y_oBMGEeenmLxjomef8A">
+                <children xsi:type="basic:PartStack" xmi:id="_n1WZAIosEeauXYmQDjn7lw" elementId="bostoncase.partstack.settings" containerData="1200" accessibilityPhrase="settingsPartStack" selectedElement="_M9Y_oBMGEeenmLxjomef8A">
                   <children xsi:type="basic:Part" xmi:id="_4NByEIosEeauXYmQDjn7lw" elementId="bostoncase.part.settings" visible="false" contributionURI="bundleclass://BostonCase/bostoncase.parts.SamplePart" label="settings" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ" closeable="true"/>
                   <children xsi:type="basic:Part" xmi:id="_M9Y_oBMGEeenmLxjomef8A" elementId="bostoncase.part.graph" contributionURI="bundleclass://BostonCase/bostoncase.parts.GraphPart" label="Graph" tooltip="Social Graph"/>
                 </children>
@@ -34,11 +34,11 @@
               </children>
             </children>
           </children>
-          <children xsi:type="basic:CompositePart" xmi:id="_wm4GUMLSEeaZZbPopcVK-g" elementId="bostoncase.compositepart.timestory" accessibilityPhrase="timestory" label="Timestory">
+          <children xsi:type="basic:CompositePart" xmi:id="_wm4GUMLSEeaZZbPopcVK-g" elementId="bostoncase.compositepart.timestory" visible="false" accessibilityPhrase="timestory" label="Timestory">
             <children xsi:type="basic:Part" xmi:id="_0FCPQMLSEeaZZbPopcVK-g" elementId="bostoncase.part.timelinecurator" contributionURI="bundleclass://BostonCase/bostoncase.parts.TimeLineStoryPart" label="TimeLineCurator"/>
           </children>
-          <children xsi:type="basic:CompositePart" xmi:id="_4exA4MLYEeaZZbPopcVK-g" elementId="bostoncase.compositepart.0" label="MapStory">
-            <children xsi:type="basic:Part" xmi:id="_8BWW0MLYEeaZZbPopcVK-g" elementId="bostoncase.part.mapstorypart" contributionURI="bundleclass://BostonCase/bostoncase.parts.StoryMapPart" label="MapStoryPart"/>
+          <children xsi:type="basic:CompositePart" xmi:id="_4exA4MLYEeaZZbPopcVK-g" elementId="bostoncase.compositepart.0" visible="false" label="MapStory">
+            <children xsi:type="basic:Part" xmi:id="_8BWW0MLYEeaZZbPopcVK-g" elementId="bostoncase.part.mapstorypart" visible="false" contributionURI="bundleclass://BostonCase/bostoncase.parts.StoryMapPart" label="MapStoryPart"/>
           </children>
         </children>
       </children>

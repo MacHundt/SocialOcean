@@ -4,6 +4,7 @@ package bostoncase.parts;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -83,16 +84,22 @@ public class TopSelectionPart {
 		northSelection.setLayout(new FlowLayout(FlowLayout.LEFT));
 		
 		JLabel lblNewLabel = new JLabel("get Top X");
+		Font standard = lblNewLabel.getFont();
+		Font newFont = new Font(standard.getFontName(), standard.getStyle(), 11);
+		
+		lblNewLabel.setFont(newFont);
 		northSelection.add(lblNewLabel);
 		
 		JSpinner spinner = new JSpinner(new SpinnerNumberModel(50, 1, 1000, 1));
-		
+		spinner.setFont(newFont);
 		northSelection.add(spinner);
 		
 		JButton resultBtn = new JButton(" >>>");
+		resultBtn.setFont(newFont);
 		northSelection.add(resultBtn);
 		
 		JButton showBtn = new JButton("Show");
+		showBtn.setFont(newFont);
 //		showBtn.setBackground(new Color(255,0,0));
 		showBtn.setForeground(new Color(255,0,0));
 		

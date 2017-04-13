@@ -30,6 +30,9 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -91,6 +94,9 @@ public class LuceneSearch {
 		Color grey = display.getSystemColor(SWT.COLOR_GRAY);
 		Color green = display.getSystemColor(SWT.COLOR_DARK_GREEN);
 		Color blue = display.getSystemColor(SWT.COLOR_BLUE);
+//		Font standard = display.getSystemFont();
+//		FontData[] fd = standard.getFontData();
+//		Font newFont = new Font(display, fd[0].getName(), 13, fd[0].getStyle());
 		
 		InputStream input = null;
 		try {
@@ -165,13 +171,13 @@ public class LuceneSearch {
 		btnAdd.setSelection(false);
 		btnAdd.setText("ADD");
 		btnAdd.setForeground(blue);
+//		btnAdd.setFont(newFont);
 //		btnAdd.setForeground(new Color (device, l.getColor().getRed(), l.getColor().getGreen(), l.getColor().getBlue()));
-		
-		
 		
 		Button btnFuse = new Button(parent, SWT.CHECK );
 		btnFuse.setText("FUSE");
 		btnFuse.setForeground(green);
+//		btnFuse.setFont(newFont);
 //		btnFuse.setForeground(new Color (device, l.getColor().getRed(), l.getColor().getGreen(), l.getColor().getBlue()));
 		
 		btnAdd.addSelectionListener(new SelectionListener() {
@@ -213,9 +219,11 @@ public class LuceneSearch {
 		
 		text = new Text(parent, SWT.BORDER);
 		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+//		text.setFont(newFont);
 		text.setMessage("Enter query");
 		
 		Button btnSearch = new Button(parent, SWT.NONE);
+//		btnSearch.setFont(newFont);
 		btnSearch.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
@@ -255,6 +263,7 @@ public class LuceneSearch {
 		btnSearch.setForeground(red);
 		
 		Button btnBack = new Button(parent, SWT.BUTTON1);
+//		btnBack.setFont(newFont);
 		btnBack.setText("Back");
 		btnBack.setBackground(grey);
 		
@@ -272,6 +281,7 @@ public class LuceneSearch {
 		
 		
 		Button btnClear = new Button(parent, SWT.BUTTON1);
+//		btnClear.setFont(newFont);
 		btnClear.setText("Clear");
 		btnClear.setBackground(grey);
 		
