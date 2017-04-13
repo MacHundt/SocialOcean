@@ -42,7 +42,6 @@ import org.jxmapviewer.viewer.TileFactory;
 import org.jxmapviewer.viewer.TileFactoryInfo;
 import org.jxmapviewer.viewer.WaypointPainter;
 
-import com.itextpdf.text.log.SysoLogger;
 
 import utils.Lucene;
 import utils.Swing_SWT;

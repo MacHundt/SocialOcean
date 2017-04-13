@@ -26,9 +26,6 @@ import javax.swing.JPanel;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.graphstream.graph.Graph;
-import org.graphstream.graph.implementations.MultiGraph;
-import org.graphstream.ui.view.Viewer;
 
 import utils.DBManager;
 import utils.Swing_SWT;
@@ -228,53 +225,6 @@ public class GraphPanelCreator1 {
 //	        this.repaint();
 //	    }
 //	}
-	
 
-	protected static void updateGraph(Viewer viewer, Graph graph) throws SQLException {
-		
-//		graphComponent.clear
-//		graph.getModel().beginUpdate();
-//		try
-//		{
-//			graph.selectAll();
-//			for (Object b: graph.getSelectionCells()) {
-//				graph.getModel().remove(b);
-//			}
-//		}
-//		finally
-//		{
-//			graph.getModel().endUpdate();
-//		}
-		
-		Connection c = DBManager.getConnection();
-		Statement stmt;
-		stmt = c.createStatement();
-		ResultSet rs = stmt.executeQuery("Select * from graph_edges");
-		
-		int lines = 0;
-		HashMap<Integer, String> nodes = new HashMap<>();
-		
-		while (rs != null && rs.next()) {
-			
-			int source = rs.getInt(1);
-			int target = rs.getInt(2);
-			String source_name = rs.getString(3);
-			String target_name = rs.getString(4);
-			int count = rs.getInt(7);
-			
-			if (!nodes.containsKey(source)) {
-				nodes.put(source, source_name);
-			}
-			if (!nodes.containsKey(target)) {
-				nodes.put(target, target_name);
-			}
-			
-			
-		}
-		
-		System.out.println(lines + " ResultLines");
-//		ResultSet rs = stmt.executeQuery("Select creationdate from tweetdata order by creationdate ASC Limit 1");
-		
-	}
 
 }
