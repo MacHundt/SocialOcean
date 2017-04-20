@@ -1,7 +1,6 @@
 package utils;
 
 import java.awt.Color;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.Connection;
@@ -35,10 +34,6 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.spatial.geopoint.document.GeoPointField;
 import org.apache.lucene.spatial.geopoint.search.GeoPointInBBoxQuery;
 import org.apache.lucene.store.FSDirectory;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
 
 import bostoncase.parts.Console;
 import bostoncase.parts.Histogram;
@@ -123,9 +118,75 @@ public enum Lucene {
 
 	public int serialCounter = 0;
 	public boolean isInitialized = false;
+	
 
 	public void initLucene(String index, ILuceneQuerySearcher querySearcher) {
 		try {
+			
+			String pass = "VwKhvTEkzzVdL2tPyFZX";
+			
+			// ### JSch ###
+//			JSch jsch = new JSch();
+//			Session session = jsch.getSession("socialocean", "charon01.inf.uni-konstanz.de", 2212);
+//			// username and password will be given via UserInfo interface.
+//			session.setPassword(pass);
+//			session.connect(); 		// throws exception
+//
+//			Channel channel = session.openChannel("sftp");
+//			channel.connect();
+//			ChannelSftp c = (ChannelSftp) channel;
+//			
+//			String h = c.getHome();
+			
+			
+
+			// ### commons-vfs2 ###
+			// FileSystemOptions fsOptions = new FileSystemOptions();
+			// SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(fsOptions,
+			// "no");
+			// FileSystemManager fsManager = VFS.getManager();
+			//// sftp://socialocean@charon01.inf.uni-konstanz.de:2212/public/LuceneIndex/lucene_index
+			// String uri = "sftp://socialocean@charon01.inf.uni-konstanz.de:2212/public/LuceneIndex/lucene_index";
+//			FileObject fo = fsManager.resolveFile(uri, fsOptions);
+			
+//			URL url = new URL ("ftp://socialocean:"+pass+"@charon01.inf.uni-konstanz.de/LuceneIndex/lucene_index");
+//			URLConnection urlc = url.openConnection();
+//			InputStream is = urlc.getInputStream();
+//			BufferedInputStream bis = new BufferedInputStream(is);
+//			String path = urlc.getURL().getPath();
+//			URI path2 = url.toURI();
+//			reader = DirectoryReader.open(FSDirectory.open(Paths.get(path2)));
+			
+			
+			
+			
+//			### commons-net  -- doesn't work
+//			FTPSClient client = new FTPSClient();
+//			
+//			client.connect("charon01.inf.uni-konstanz.de", 2212);
+//			client.login("socialocean", pass);
+//			
+//			if (client.isConnected()) {
+//                // Obtain a list of filenames in the current working
+//                // directory. When no file found an empty array will
+//                // be returned.
+//                String[] names = client.listNames();
+//                for (String name : names) {
+//                    System.out.println("Name = " + name);
+//                }
+//                
+//                FTPFile[] ftpDirs = client.listDirectories();
+//                FTPFile[] ftpFiles = client.listFiles();
+//                for (FTPFile ftpFile : ftpFiles) {
+//                    // Check if FTPFile is a regular file
+//                    if (ftpFile.getType() == FTPFile.FILE_TYPE) {
+//                        System.out.println("FTPFile: " + ftpFile.getName() +
+//                                "; " + FileUtils.byteCountToDisplaySize(
+//                                ftpFile.getSize()));
+//                    }
+//                }
+//            }
+//            client.logout();
 
 			reader = DirectoryReader.open(FSDirectory.open(Paths.get(index)));
 			idxInfo = new IndexInfo(reader, index);
@@ -152,7 +213,6 @@ public enum Lucene {
 			e.printStackTrace();
 			return;
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		searcher = new IndexSearcher(reader);
