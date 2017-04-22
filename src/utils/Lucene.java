@@ -35,6 +35,7 @@ import org.apache.lucene.spatial.geopoint.document.GeoPointField;
 import org.apache.lucene.spatial.geopoint.search.GeoPointInBBoxQuery;
 import org.apache.lucene.store.FSDirectory;
 
+import bostoncase.parts.CategoriesPart;
 import bostoncase.parts.Console;
 import bostoncase.parts.Histogram;
 import bostoncase.parts.LuceneStatistics;
@@ -70,6 +71,9 @@ public enum Lucene {
 
 	private List<String> fn;
 	private String[] idxFields = null; // ALL Fields which are indexed
+	
+	// content, tags, mentions, type, category, isRetweet //crimetype, //date, //id, sentiment, hasURL, has@ )
+	private String[] detailsToShow = {"category", "content", "has@", "hasURL", "isRetweet", "mention", "sentiment", "tags", "type"};
 
 	private TermStats[] catHisto = null;
 
@@ -296,18 +300,33 @@ public enum Lucene {
 		// wait for TOPSELECTIONPart -- be created
 
 		TopSelectionPart tsp = TopSelectionPart.getInstance();
-
-		Object[][] tableData = new Object[fieldsCount][tsp.detailsColumns];
-
-		for (int i = 0; i < tableData.length; i++) {
-			tableData[i][0] = fn.get(i); // field name
-			tableData[i][1] = new Long(termCounts.get(fn.get(i)).termCount);
-			DecimalFormat format = new DecimalFormat("##.##");
-			String s = format.format((termCounts.get(fn.get(i)).termCount * 100.0 / numTerms));
-			tableData[i][2] = s + " %";
+		
+		// fields - date, geo, id, path
+		Object[][] tableData = new Object[detailsToShow.length][tsp.detailsColumns];
+		int detailsToShow_counter = detailsToShow.length-1;
+		for (int i = 0; i < fn.size(); i++) {
+			
+			String fieldname = fn.get(i);	// field name
+			if (isInDetails(fieldname) && detailsToShow_counter >= 0) {
+				int index = detailsToShow_counter--;
+				tableData[index][0] = fieldname; 
+				tableData[index][1] = new Long(termCounts.get(fn.get(i)).termCount);
+				DecimalFormat format = new DecimalFormat("##.##");
+				String s = format.format((termCounts.get(fn.get(i)).termCount * 100.0 / numTerms));
+				tableData[index][2] = s + " %";
+			}
 		}
 		tsp.setDetailTable(tableData);
 
+	}
+	
+	private boolean isInDetails(String name) {
+		for (String s : detailsToShow) {
+			if (s.equals(name)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public void changeAnalyser(Analyzer newAnalyser) {
@@ -642,16 +661,20 @@ public enum Lucene {
 
 		// TODO Histogram Part must be created!
 		Histogram histogram = Histogram.getInstance();
-		histogram.chnageDataSet(resulTable);
+//		CategoriesPart categories = CategoriesPart.getInstance();
 
+		histogram.chnageDataSet(resulTable);
+//		categories.chnageDataSet(resulTable);
+		
 	}
 
 	public void changeHistogramm(ScoreDoc[] data) {
 
-		if (!Histogram.isInitialized)
+		if (!Histogram.isInitialized & !CategoriesPart.isInitialized)
 			return;
 
 		Histogram histogram = Histogram.getInstance();
+//		CategoriesPart categories = CategoriesPart.getInstance();
 		HashMap<String, Integer> counter = new HashMap<>();
 
 		for (ScoreDoc doc : data) {
@@ -684,8 +707,9 @@ public enum Lucene {
 			resulTable[i][1] = counter.get(key);
 			i++;
 		}
-
+		
 		histogram.chnageDataSet(resulTable);
+//		categories.chnageDataSet(resulTable);
 	}
 
 	public void initMaxDate() {

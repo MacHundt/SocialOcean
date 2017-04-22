@@ -31,6 +31,7 @@
                 <children xsi:type="basic:Part" xmi:id="_UdkhcIorEeauXYmQDjn7lw" elementId="bostoncase.part.console" contributionURI="bundleclass://BostonCase/bostoncase.parts.Console" label="Console" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ"/>
                 <children xsi:type="basic:Part" xmi:id="_4zh_kLM4EeaFV8chLnp6Gg" elementId="bostoncase.part.histogram" contributionURI="bundleclass://BostonCase/bostoncase.parts.Histogram" label="Histogram"/>
                 <children xsi:type="basic:Part" xmi:id="_t_I9YLOPEeaD75P0e42SYA" elementId="bostoncase.part.timeline" contributionURI="bundleclass://BostonCase/bostoncase.parts.Time" label="Timeline"/>
+                <children xsi:type="basic:Part" xmi:id="_brSc8CeKEeeipJjBZrtd_A" elementId="bostoncase.part.categories" toBeRendered="false" visible="false" contributionURI="bundleclass://BostonCase/bostoncase.parts.CategoriesPart" label="Categories"/>
               </children>
             </children>
           </children>

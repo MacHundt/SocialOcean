@@ -51,9 +51,6 @@ public class TopSelectionPart {
 	private DefaultTableModel detailsDataModel;
 	private int resultColumns = 4;
 	
-	private int details_rows = 10;
-	// content, tags, mentions, type, category, //crimetype, time, id, sentiment, hasURL, has@ )
-	
 	private String currentSelectedField = "";
 	
 	
@@ -109,7 +106,7 @@ public class TopSelectionPart {
 		panel.add(split, BorderLayout.CENTER);
 		
 		String[] header = {"Name", "Term count", "%"};
-		Object[][] data = new Object[details_rows][detailsColumns];
+		Object[][] data = new Object[1][detailsColumns];
 		detailsDataModel = new DefaultTableModel(data, header);
 		TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<DefaultTableModel>(detailsDataModel);
 		detail = new JTable(detailsDataModel);

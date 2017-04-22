@@ -1,7 +1,9 @@
  
 package bostoncase.parts;
 
+import java.awt.EventQueue;
 import java.awt.Frame;
+import java.util.Arrays;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -10,13 +12,11 @@ import javax.swing.JApplet;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.knowm.xchart.CategoryChart;
 import org.knowm.xchart.CategoryChartBuilder;
-import org.swtchart.IBarSeries;
-import org.swtchart.ISeries.SeriesType;
+import org.knowm.xchart.CategorySeries;
+import org.knowm.xchart.XChartPanel;
 
 
 public class CategoriesPart {
@@ -29,8 +29,9 @@ public class CategoriesPart {
 	public CategoriesPart() {
 		
 	}
-	
+	CategoryChart chart;
 	Composite comp;
+	XChartPanel<CategoryChart> chartPanel;
 //	DefaultCategoryDataset dataset ;
 	
 	
@@ -44,12 +45,24 @@ public class CategoriesPart {
 
 		String plotTitle = "";
 		String xaxis = "Category";
-		String yaxis = "Frequency";
+		String yaxis = "Count";
 		
-	    CategoryChart chart = new CategoryChartBuilder().width(800).height(600).title("Score Histogram").xAxisTitle("Score").yAxisTitle("Number").build();
+	    chart = new CategoryChartBuilder().xAxisTitle("Categories").yAxisTitle("Count").build();
+	    chart.getStyler().setHasAnnotations(false);
+	    chart.getStyler().setLegendVisible(true);
+	  
+	    chartPanel = new XChartPanel<CategoryChart>(chart);
+	    
+	    chart.addSeries(" ", Arrays.asList(new String[] { " " }), Arrays.asList(new Integer[] {0}));
 
+	    
+//	    chart.addSeries("Sport", Arrays.asList(new String[] { " " }), Arrays.asList(new Integer[] { 4 }));
+//	    chart.addSeries("Health", Arrays.asList(new String[] { "B" }), Arrays.asList(new Integer[] { 5 }));
+//	    chart.addSeries("News", Arrays.asList(new String[] { "C" }), Arrays.asList(new Integer[] { 9 }));
+//	    chart.addSeries("Politics", Arrays.asList(new String[] { "D" }), Arrays.asList(new Integer[] { 6 }));
+//	    chart.addSeries("Fun", Arrays.asList(new String[] { "E" }), Arrays.asList(new Integer[] { 5 }));
 		
-//		rootContainer.add(panel);
+		rootContainer.add(chartPanel);
 		rootContainer.validate();
 
 		frame.add(rootContainer);
@@ -62,6 +75,10 @@ public class CategoriesPart {
 	
 	public void chnageDataSet(Object[][] resulTable) {
 		
+		for (String key : chart.getSeriesMap().keySet()) {
+			chart.removeSeries(key);
+		}
+		
 		double[] dataSeries = new double[resulTable.length];
 		String[] categories = new String[resulTable.length];
 		
@@ -70,25 +87,48 @@ public class CategoriesPart {
 			categories[i] = (String) resulTable[i][0];
 		}
 		
-		
-		comp.getDisplay().asyncExec(new Runnable() {
-			
-			@Override
+		EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				for (int i = 0; i < resulTable.length; i++) {
-					Integer val = (Integer) resulTable[i][1];
-					String col = (String) resulTable[i][0];
+				try {
+					int i = 0;
+					for (String cat : categories) {
+						String[] cat_col = {cat};
+						Integer[] val = {i++};
+						
+						CategorySeries series = chart.addSeries(cat, Arrays.asList(cat_col), Arrays.asList(val));
+//						series.setFillColor(getColor(cat));
+					}
+					chartPanel.revalidate();
+					chartPanel.repaint();
 					
-//					dataset.addValue(val.doubleValue() , "category" , col  );
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 			}
 		});
 		
+//		comp.getDisplay().asyncExec(new Runnable() {
+//			
+//			@Override
+//			public void run() {
+//				int i = 0;
+//				for (String cat : categories) {
+//					String[] cat_col = {cat};
+//					Integer[] val = {i++};
+//					
+//					CategorySeries series = chart.addSeries(cat, Arrays.asList(cat_col), Arrays.asList(val));
+////					series.setFillColor(getColor(cat));
+//
+//				}
+//				chartPanel.revalidate();
+//			}
+//		});
+		
 	}
 	
 	
-	private Color getColor(String catName) {
-		Color back = new Color(Display.getDefault(), 0, 0, 0);
+	private java.awt.Color getColor(String catName) {
+		java.awt.Color back = new java.awt.Color(0, 0, 0);
 		
 		switch(catName) {
 		}

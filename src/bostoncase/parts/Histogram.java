@@ -9,7 +9,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.jfree.data.category.DefaultCategoryDataset;
 import org.swtchart.Chart;
 import org.swtchart.IBarSeries;
 import org.swtchart.ISeries.SeriesType;
@@ -47,7 +46,7 @@ public class Histogram {
 		
 		 // set titles
         chart.getTitle().setText("");
-        chart.getAxisSet().getYAxis(0).getTitle().setText("Frequency");
+        chart.getAxisSet().getYAxis(0).getTitle().setText("Count");
         chart.getAxisSet().getXAxis(0).getTitle().setText("Categories");
 		chart.getAxisSet().getXAxis(0).enableCategory(true);
 		chart.setForeground(black);
@@ -60,85 +59,11 @@ public class Histogram {
 		chart.getAxisSet().getYAxis(0).getTick().setForeground(black);
 		chart.getLegend().setForeground(black);
         
-        chart.getLegend().setVisible(false);
+        chart.getLegend().setVisible(true);
 		
         // adjust the axis range
-        
 		chart.setRedraw(true);
 		chart.setEnabled(true);
-
-      
-
-//		comp = new Composite(parent, SWT.NONE | SWT.EMBEDDED);
-//		Frame frame = SWT_AWT.new_Frame(comp);
-//
-//		JApplet rootContainer = new JApplet();
-//
-//		dataset = new DefaultCategoryDataset();
-//		
-//		String plotTitle = "";
-//		String xaxis = "Category";
-//		String yaxis = "Frequency";
-//		PlotOrientation orientation = PlotOrientation.VERTICAL;
-//		boolean show = false;
-//		boolean toolTips = true;
-//		boolean urls = false;
-//		
-//		JFreeChart chart = ChartFactory.createBarChart(
-//				plotTitle, 
-//				xaxis, yaxis, 
-//		         dataset,
-//		         orientation, 
-//		         show, toolTips, urls);
-//		
-////		JFreeChart chart = ChartFactory.createXYBarChart(plotTitle, xaxis, false,
-////				yaxis, dataset, orientation, show, toolTips, urls);
-//		
-//		Plot plot = chart.getPlot();
-//		chart.setBorderVisible(false);
-//		chart.setBackgroundPaint(java.awt.Color.WHITE);
-//		chart.getTitle().setPaint(java.awt.Color.BLACK);
-//		plot.setBackgroundPaint(java.awt.Color.white);
-//		
-////		final XYPlot plot = chart.getXYPlot();
-////		plot.setBackgroundPaint(java.awt.Color.white);
-////		plot.setDomainGridlinePaint(java.awt.Color.black);
-////		plot.setRangeGridlinePaint(java.awt.Color.black);
-//		
-////		BarRenderer barRenderer = (BarRenderer) plot.getRenderer();
-////		barRenderer.setBarPainter(new BarPainter);
-////		
-////		barRenderer.setSeriesPaint(0, bar_color);
-////		plot.setBackgroundPaint(Color.lightGray);
-//		
-//		
-//		ChartPanel panel = new ChartPanel(chart);
-//		panel.addChartMouseListener(new ChartMouseListener() {
-//			
-//			@Override
-//			public void chartMouseMoved(ChartMouseEvent event) {
-//				// TODO Auto-generated method stub
-//			}
-//			
-//			@Override
-//			public void chartMouseClicked(ChartMouseEvent event) {
-//				ChartEntity enti = event.getEntity();
-//				if (enti instanceof CategoryItemEntity) {
-//					CategoryItemEntity cie = (CategoryItemEntity) enti;
-//					String selectedCat = (String) cie.getCategory();
-//					System.out.println(selectedCat);
-//					
-//					// TODO .. do something with it.
-//					
-//				}
-//			}
-//		});
-//
-//		rootContainer.add(panel);
-//		rootContainer.validate();
-//
-//		frame.add(rootContainer);
-
 
 		INSTANCE = this;
 		isInitialized = true;
@@ -159,19 +84,41 @@ public class Histogram {
 			
 			@Override
 			public void run() {
-				chart.getAxisSet().getXAxis(0).setCategorySeries(categories);
-				
-				barSeries = (IBarSeries) chart.getSeriesSet().createSeries(
-						SeriesType.BAR, "categories ");
-				barSeries.setYSeries(dataSeries);
-				barSeries.getLabel().setFormat("##.0");
-//				barSeries.setBarColor(bar_color);
-				barSeries.setBarColor(pink);
-				
-				barSeries.setBarPadding(35);
-				
+				// for every category a barSeries
+				int i = 0;
+				for (String s : categories) {
+					String[] cat = {s};
+					double[] val = {dataSeries[i]};
+					chart.getAxisSet().getXAxis(0).setCategorySeries(cat);
+					// set Color for Cat
+					barSeries = (IBarSeries) chart.getSeriesSet().createSeries(
+							SeriesType.BAR, s );
+					barSeries.setYSeries(val);
+					barSeries.getLabel().setFormat("##.0");
+					
+					barSeries.setBarColor(getColor(s));
+					barSeries.setBarPadding(5);
+					
+					i++;
+					
+				}
 				chart.getAxisSet().adjustRange();
 				chart.redraw();
+				
+//				chart.getAxisSet().getXAxis(0).setCategorySeries(categories);
+//				
+//				barSeries = (IBarSeries) chart.getSeriesSet().createSeries(
+//						SeriesType.BAR, "categories ");
+//				
+//				barSeries.setYSeries(dataSeries);
+//				barSeries.getLabel().setFormat("##.0");
+////				barSeries.setBarColor(bar_color);
+//				barSeries.setBarColor(pink);
+//				
+//				barSeries.setBarPadding(35);
+//				
+//				chart.getAxisSet().adjustRange();
+//				chart.redraw();
 			}
 		});
 		
@@ -191,12 +138,52 @@ public class Histogram {
 	
 	
 	private Color getColor(String catName) {
-		Color back = pink = new Color(Display.getDefault(), 0, 0, 0);
+		Color color = new Color(Display.getDefault(), 0, 0, 0);
 		
-		switch(catName) {
+		switch (catName.toLowerCase()) {
+		case "computers_technology":
+			color = new Color(Display.getDefault(), 228, 26, 28);
+			break;
+		case "education":
+			color = new Color(Display.getDefault(), 102, 99, 14);
+			break;
+		case "family":
+			color = new Color(Display.getDefault(), 65, 148, 134);
+			break;
+		case "food":
+			color = new Color(Display.getDefault(), 91, 157, 90);
+			break;
+		case "health":
+			color = new Color(Display.getDefault(), 145, 87, 155);
+			break;
+		case "marketing":
+			color = new Color(Display.getDefault(), 218, 109, 59);
+			break;
+		case "music":
+			color = new Color(Display.getDefault(), 255, 174, 19);
+			break;
+		case "news_media":
+			color = new Color(Display.getDefault(), 247, 240, 50);
+			break;
+		case "other":
+			color = new Color(Display.getDefault(), 182, 117, 42);
+			break;
+		case "pets":
+			color = new Color(Display.getDefault(), 210, 109, 122);
+			break;
+		case "politics":
+			color = new Color(Display.getDefault(), 221, 136, 181);
+			break;
+		case "recreation_sports":
+			color = new Color(Display.getDefault(), 153, 153, 153);
+			break;
+
+		default:
+			color = pink;
+			break;
 		}
 		
-		return back;
+		return color;
 	}
 	
 	

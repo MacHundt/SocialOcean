@@ -15,7 +15,7 @@ import org.eclipse.core.runtime.FileLocator;
 
 public class DBManager {
 	
-	private static boolean local = false;
+	private static boolean local = true;
 	
 	private static Connection newConnection() {
 		String DATA = "boston";
