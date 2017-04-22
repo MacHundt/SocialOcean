@@ -49,6 +49,9 @@ public class DBManager {
 				USER =  prop.getProperty("username");
 				PASS = prop.getProperty("pw");
 //				PASS = "\'"+PASS+"\'";
+				// ADD SSL=true & ssl Factory
+				// @see https://bowerstudios.com/node/739
+				DBNAME = DBNAME+"?ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory";
 				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -56,10 +59,9 @@ public class DBManager {
 			}
 		}
 		
-		
 		String connection_str = "jdbc:postgresql://"+HOST+":"+PORT+"/"+DBNAME;
 		try {
-			c = DriverManager.getConnection(connection_str, USER, PASS);
+			c = DriverManager.getConnection(connection_str.trim(), USER.trim(), PASS.trim());
 		} catch (SQLException e) {
 			System.err.println("Could not connect to DB \n"
 					+ ""+connection_str);
