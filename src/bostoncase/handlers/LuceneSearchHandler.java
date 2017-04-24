@@ -70,7 +70,7 @@ public class LuceneSearchHandler {
 		l.showInMap(result, true);
 		
 		l.changeHistogramm(result);
-		l.addnewQueryResult(result, q);
+//		l.addnewQueryResult(result, q);
 		
 		l.createGraphML_Mention(result, true);
 		l.createGraphML_Retweet(result, true);

@@ -46,10 +46,12 @@ public class TopSelectionPart {
 	private Composite composite;
 	private JTable results;
 	private DefaultTableModel resultDataModel;
-	public int detailsColumns = 3;
+	public int detailsColumns = 2;
 	private JTable detail;
+	// content, tags, mentions, type, category, isRetweet //crimetype, //date, //id, sentiment, hasURL, has@ )
+	public String[] detailsToShow = {"category", "content", "has@", "hasURL", "isRetweet", "mention", "sentiment", "tags", "type"};
 	private DefaultTableModel detailsDataModel;
-	private int resultColumns = 4;
+	private int resultColumns = 3;
 	
 	private String currentSelectedField = "";
 	
@@ -105,7 +107,8 @@ public class TopSelectionPart {
 		JSplitPane split = new JSplitPane();
 		panel.add(split, BorderLayout.CENTER);
 		
-		String[] header = {"Name", "Term count", "%"};
+//		String[] header = {"Name", "Term count", "%"};
+		String[] header = {"Field", "Term count"};
 		Object[][] data = new Object[1][detailsColumns];
 		detailsDataModel = new DefaultTableModel(data, header);
 		TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<DefaultTableModel>(detailsDataModel);
@@ -115,7 +118,8 @@ public class TopSelectionPart {
 		JScrollPane detailsPane = new JScrollPane(detail);
 		split.setLeftComponent(detailsPane);
 		
-		String[] result_header = {"Rank", "Freq", "Field", "Text"};
+//		String[] result_header = {"Rank", "Freq", "Field", "Text"};
+		String[] result_header = {"Rank", "Freq", "Text"};
 		Object[][] result_data = new Object[8][resultColumns];
 		resultDataModel = new DefaultTableModel(result_data, result_header);
 		results = new JTable(resultDataModel);
@@ -154,13 +158,13 @@ public class TopSelectionPart {
 					l.printToConsole("Get top "+ topX +" from field "+currentSelectedField);
 					TermStats[] result = l.searchTopXOfField(currentSelectedField, topX);
 					
-					Object[][] resulTable = new Object[result.length][4];
+					Object[][] resulTable = new Object[result.length][resultColumns];
 					for (int i= 0; i< result.length; i++) {
 						TermStats ts = result[i];
 						resulTable[i][0] = i;						// Rank
 						resulTable[i][1] = ts.docFreq;				
-						resulTable[i][2] = ts.field;
-						resulTable[i][3] = ts.termtext.utf8ToString();
+//						resulTable[i][2] = ts.field;
+						resulTable[i][2] = ts.termtext.utf8ToString();
 					}
 					
 					setResultTable(resulTable);
@@ -178,9 +182,9 @@ public class TopSelectionPart {
 					continue;
 				}
 				// get Selected Items from result Table
-				String query = currentSelectedField+":"+results.getModel().getValueAt(results.getSelectedRow(), 3);
-				System.out.println("Show "+results.getModel().getValueAt(results.getSelectedRow(), 3));
-				l.printToConsole("Show "+results.getModel().getValueAt(results.getSelectedRow(), 3));
+				String query = currentSelectedField+":"+results.getModel().getValueAt(results.getSelectedRow(), resultColumns-1 );
+				System.out.println("Show "+results.getModel().getValueAt(results.getSelectedRow(), resultColumns-1));
+				l.printToConsole("Show "+results.getModel().getValueAt(results.getSelectedRow(), resultColumns-1));
 				
 				if (query.isEmpty()) {
 					return;
@@ -198,7 +202,7 @@ public class TopSelectionPart {
 				// Show in MAP  --> Clear LIST = remove all Markers
 				l.showInMap(result, true);
 				l.changeHistogramm(result);
-				l.addnewQueryResult(result, q);
+//				l.addnewQueryResult(result, q);
 				
 				l.createGraphML_Mention(result, true);
 				l.createGraphML_Retweet(result, true);

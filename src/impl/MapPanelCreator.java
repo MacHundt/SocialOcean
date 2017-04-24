@@ -30,6 +30,7 @@ import javax.swing.event.MouseInputListener;
 
 import org.apache.lucene.search.ScoreDoc;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.ui.help.AbstractHelpUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.OSMTileFactoryInfo;
@@ -92,7 +93,6 @@ public class MapPanelCreator {
 		} else {
 			
 			mapPanel = new JPanel(new BorderLayout());
-					
 
 			final List<TileFactory> factories = new ArrayList<TileFactory>();
 

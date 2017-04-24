@@ -2,7 +2,9 @@ package utils;
 
 import java.awt.Color;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -72,9 +74,6 @@ public enum Lucene {
 	private List<String> fn;
 	private String[] idxFields = null; // ALL Fields which are indexed
 	
-	// content, tags, mentions, type, category, isRetweet //crimetype, //date, //id, sentiment, hasURL, has@ )
-	private String[] detailsToShow = {"category", "content", "has@", "hasURL", "isRetweet", "mention", "sentiment", "tags", "type"};
-
 	private TermStats[] catHisto = null;
 
 	private Connection con = null;
@@ -241,8 +240,16 @@ public enum Lucene {
 			QueryHistory history = QueryHistory.getInstance();
 			history.clearHistory();
 		}
+		
+//		if (Console.isInitialized) {
+//			Console console = Console.getInstance();
+//			console.clear();
+//		}
+		
 		queryHistory.clear();
 		last_query = "";
+		currentPointer = 0;
+		queryResults.clear();
 	}
 
 	public void clearMap() {
@@ -302,26 +309,26 @@ public enum Lucene {
 		TopSelectionPart tsp = TopSelectionPart.getInstance();
 		
 		// fields - date, geo, id, path
-		Object[][] tableData = new Object[detailsToShow.length][tsp.detailsColumns];
-		int detailsToShow_counter = detailsToShow.length-1;
+		Object[][] tableData = new Object[tsp.detailsToShow.length][tsp.detailsColumns];
+		int detailsToShow_counter = tsp.detailsToShow.length-1;
 		for (int i = 0; i < fn.size(); i++) {
 			
 			String fieldname = fn.get(i);	// field name
-			if (isInDetails(fieldname) && detailsToShow_counter >= 0) {
+			if (isInDetails(fieldname, tsp.detailsToShow) && detailsToShow_counter >= 0) {
 				int index = detailsToShow_counter--;
 				tableData[index][0] = fieldname; 
 				tableData[index][1] = new Long(termCounts.get(fn.get(i)).termCount);
-				DecimalFormat format = new DecimalFormat("##.##");
-				String s = format.format((termCounts.get(fn.get(i)).termCount * 100.0 / numTerms));
-				tableData[index][2] = s + " %";
+//				DecimalFormat format = new DecimalFormat("##.##");
+//				String s = format.format((termCounts.get(fn.get(i)).termCount * 100.0 / numTerms));
+//				tableData[index][2] = s + " %";
 			}
 		}
 		tsp.setDetailTable(tableData);
 
 	}
 	
-	private boolean isInDetails(String name) {
-		for (String s : detailsToShow) {
+	private boolean isInDetails(String name, String[] details) {
+		for (String s : details) {
 			if (s.equals(name)) {
 				return true;
 			}
@@ -485,6 +492,8 @@ public enum Lucene {
 		}
 
 		queryHistory.add(query);
+		
+		addnewQueryResult(result, query);
 		last_result = result;
 		return result;
 	}
@@ -572,7 +581,7 @@ public enum Lucene {
 		Query query = new GeoPointInBBoxQuery(geoField, minLat, maxLat, minLong, maxLong);
 		ScoreDoc[] geoFilter = query(query, getQeryType(), true);
 
-		addnewQueryResult(geoFilter, query);
+//		addnewQueryResult(geoFilter, query);
 
 		return geoFilter;
 	}
@@ -927,7 +936,9 @@ public enum Lucene {
 
 			String name = "mention" + last_query + ".graphml";
 			name = name.replace(":", "_");
-			GraphML_Helper.createGraphML_Mention(fusedMention, searcher, true, "/Users/michaelhundt/Desktop/"+name);
+			
+//			GraphML_Helper.createGraphML_Mention(fusedMention, searcher, true, "/Users/michaelhundt/Desktop/"+name);
+//			GraphML_Helper.createGraphML_Mention(fusedMention, searcher, true, "./graphs/"+name);
 
 		} catch (ParseException e) {
 			e.printStackTrace();
@@ -953,11 +964,15 @@ public enum Lucene {
 			String name = "retweet" + last_query + ".graphml";
 			name = name.replace(":", "_");
 
-			GraphML_Helper.createGraphML_Mention(fusedMention, searcher, true, "/Users/michaelhundt/Desktop/"+name);
+//			System.out.println(System.getProperty("user.dir"));
+//			Files.write(Paths.get("platform:/plugin/BostonCase/graphs/test.txt"), "TEST".getBytes(), StandardOpenOption.CREATE);
+			
+//			GraphML_Helper.createGraphML_Mention(fusedMention, searcher, true, "/Users/michaelhundt/Desktop/"+name);
+//			GraphML_Helper.createGraphML_Mention(fusedMention, searcher, true, "./graphs/"+name);
 
 		} catch (ParseException e) {
 			e.printStackTrace();
-		}
+		} 
 	}
 
 	/**
@@ -1094,21 +1109,32 @@ public enum Lucene {
 		return c;
 	}
 
+	
 	public void showLastResult() {
 
-		// currentPointer--;
-		// showInMap(queryResults.get(currentPointer).result, true);
-		// changeHistogramm(queryResults.get(currentPointer).result);
-		// System.out.println(currentPointer);
-		// last_result = queryResults.get(currentPointer).result;
+		currentPointer = Math.max(currentPointer-1, 0);
+		System.out.println("Last Query: "+queryResults.get(currentPointer).toString());
+
+		ScoreDoc[] lastResult = queryResults.get(currentPointer).result;
+		showInMap(lastResult, true);
+		changeHistogramm(lastResult);
+		last_result = lastResult;
+		last_query = queryResults.get(currentPointer).query.toString();
+		printToConsole("<< back: "+ last_query + "#:"+ lastResult.length);
 
 	}
 
 	public void addnewQueryResult(ScoreDoc[] result, Query query) {
-
-		// queryResults.add(new QueryResult(query, result, 0));
-		// currentPointer = queryResults.size()-1;
-		// System.out.println(currentPointer);
+//		System.out.println("CurrentPointer: "+currentPointer + " results:size(): "+queryResults.size());
+		
+		// remove from current to last
+		for (int i = currentPointer+1 ; i < queryResults.size(); i++) {
+			queryResults.remove(i);
+		}
+		
+		queryResults.add(new QueryResult(query, result, currentPointer));
+		currentPointer = queryResults.size()-1;
+		 
 	}
 
 }

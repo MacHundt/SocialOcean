@@ -269,8 +269,6 @@ public class LuceneSearch {
 				
 				// TODO Graph
 				// Clear all Results, Map, Graph
-				System.out.println("Back");
-				l.printToConsole("Back");
 				l.showLastResult();
 			}
 		});

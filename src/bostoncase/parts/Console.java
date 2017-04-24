@@ -65,6 +65,13 @@ public class Console {
 	}
 	
 	
+	
+	public void clear() {
+		console.setText("");
+		console.update();
+	}
+	
+	
 	public static Console getInstance() {
          return INSTANCE;
 	}

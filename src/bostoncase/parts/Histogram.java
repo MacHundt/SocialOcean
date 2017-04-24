@@ -59,7 +59,8 @@ public class Histogram {
 		chart.getAxisSet().getYAxis(0).getTick().setForeground(black);
 		chart.getLegend().setForeground(black);
         
-        chart.getLegend().setVisible(true);
+//        chart.getLegend().setVisible(true);
+        chart.getLegend().setVisible(false);
 		
         // adjust the axis range
 		chart.setRedraw(true);
@@ -85,40 +86,40 @@ public class Histogram {
 			@Override
 			public void run() {
 				// for every category a barSeries
-				int i = 0;
-				for (String s : categories) {
-					String[] cat = {s};
-					double[] val = {dataSeries[i]};
-					chart.getAxisSet().getXAxis(0).setCategorySeries(cat);
-					// set Color for Cat
-					barSeries = (IBarSeries) chart.getSeriesSet().createSeries(
-							SeriesType.BAR, s );
-					barSeries.setYSeries(val);
-					barSeries.getLabel().setFormat("##.0");
-					
-					barSeries.setBarColor(getColor(s));
-					barSeries.setBarPadding(5);
-					
-					i++;
-					
-				}
-				chart.getAxisSet().adjustRange();
-				chart.redraw();
-				
-//				chart.getAxisSet().getXAxis(0).setCategorySeries(categories);
-//				
-//				barSeries = (IBarSeries) chart.getSeriesSet().createSeries(
-//						SeriesType.BAR, "categories ");
-//				
-//				barSeries.setYSeries(dataSeries);
-//				barSeries.getLabel().setFormat("##.0");
-////				barSeries.setBarColor(bar_color);
-//				barSeries.setBarColor(pink);
-//				
-//				barSeries.setBarPadding(35);
-//				
+//				int i = 0;
+//				for (String cat : categories) {
+//					String[] none = {" "};
+//					double[] val = {dataSeries[i]};
+//					chart.getAxisSet().getXAxis(0).setCategorySeries(none);
+//					// set Color for Cat
+//					barSeries = (IBarSeries) chart.getSeriesSet().createSeries(
+//							SeriesType.BAR, cat );
+//					barSeries.setYSeries(val);
+//					barSeries.getLabel().setFormat("##.0");
+//					
+//					barSeries.setBarColor(getColor(cat));
+//					barSeries.setBarPadding(5);
+//					
+//					i++;
+//					
+//				}
 //				chart.getAxisSet().adjustRange();
 //				chart.redraw();
+				
+				chart.getAxisSet().getXAxis(0).setCategorySeries(categories);
+				
+				barSeries = (IBarSeries) chart.getSeriesSet().createSeries(
+						SeriesType.BAR, "categories ");
+				
+				barSeries.setYSeries(dataSeries);
+				barSeries.getLabel().setFormat("##.0");
+//				barSeries.setBarColor(bar_color);
+				barSeries.setBarColor(pink);
+				
+				barSeries.setBarPadding(35);
+				
+				chart.getAxisSet().adjustRange();
+				chart.redraw();
 			}
 		});
 		
