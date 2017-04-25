@@ -46,6 +46,7 @@ import org.jxmapviewer.viewer.WaypointPainter;
 
 import utils.Lucene;
 import utils.Swing_SWT;
+import utils.Lucene.TimeBin;
 
 public class MapPanelCreator {
 
@@ -192,6 +193,14 @@ public class MapPanelCreator {
 						System.out.println(">>> BBOX for Lucene("+minLat+" "+ maxLat +" , "+minLong +" "+ maxLong+")");
 						
 						result = l.ADDGeoQuery(minLat, maxLat, minLong, maxLong);
+						TimeLineCreatorThread lilt = new TimeLineCreatorThread(l) {
+							@Override
+							public void execute() {
+								l.changeTimeLine(TimeBin.HOURS);
+							}
+						};
+						lilt.start();
+						
 						l.showInMap(result, true);
 						l.changeHistogramm(result);
 						

@@ -34,9 +34,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.widgets.Composite;
 
+import impl.LuceneIndexLoaderThread;
+import impl.TimeLineCreatorThread;
 import utils.Lucene;
 import utils.Swing_SWT;
 import utils.TermStats;
+import utils.Lucene.TimeBin;
 
 public class TopSelectionPart {
 	
@@ -195,14 +198,22 @@ public class TopSelectionPart {
 				Query q = null;
 				try {
 					q = l.getParser().parse(query);
-					result = l.query(q, l.getQeryType(), true);
+					result = l.query(q, l.getQeryType(), true, true);
 				} catch (ParseException e1) {
 					e1.printStackTrace();
 				}
+				TimeLineCreatorThread lilt = new TimeLineCreatorThread(l) {
+					@Override
+					public void execute() {
+						l.changeTimeLine(TimeBin.HOURS);
+					}
+				};
+				lilt.start();
+				
 				// Show in MAP  --> Clear LIST = remove all Markers
 				l.showInMap(result, true);
 				l.changeHistogramm(result);
-//				l.addnewQueryResult(result, q);
+				
 				
 				l.createGraphML_Mention(result, true);
 				l.createGraphML_Retweet(result, true);

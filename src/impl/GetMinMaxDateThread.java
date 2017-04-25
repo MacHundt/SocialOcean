@@ -17,7 +17,7 @@ public abstract class GetMinMaxDateThread extends Thread {
 
 		try {
 			execute();
-			System.out.println(" Done");
+			System.out.println("Done");
 			l.printToConsole("Get MinMax-Date ... DONE");
 			
 //			while (!l.isInitialized)

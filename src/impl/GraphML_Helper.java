@@ -7,8 +7,6 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.format.DateTimeFormatterBuilder;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -17,7 +15,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -25,14 +22,12 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.dom4j.Namespace;
 import org.dom4j.QName;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
 
 import utils.DBManager;
+import utils.FilesUtil;
 
 public class GraphML_Helper {
 
@@ -40,7 +35,6 @@ public class GraphML_Helper {
 	private static int topK = 5;
 	static boolean ASC = true;
 	static boolean DESC = false;
-	
 	
 	
 	/**
@@ -183,7 +177,6 @@ public class GraphML_Helper {
 					
 				}
 				String sourceID = nodeID;
-				
 				
 				
 				
@@ -336,10 +329,13 @@ public class GraphML_Helper {
 	
 	
 	private static void writeGraphML(org.dom4j.Document graphMLDoc, String name) throws IOException {
+		
+		String path = FilesUtil.getPathOfRefFile();
+		path = path.replaceAll(FilesUtil.getReferenceFile(), "graphs/"+name);
 
 		OutputFormat format = OutputFormat.createPrettyPrint();
 		// lets write to a file
-		XMLWriter writer = new XMLWriter(new FileWriter(name), format);
+		XMLWriter writer = new XMLWriter(new FileWriter(path), format);
 		writer.write(graphMLDoc);
 		writer.close();
 

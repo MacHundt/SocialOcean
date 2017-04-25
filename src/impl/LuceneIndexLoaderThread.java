@@ -17,7 +17,7 @@ public abstract class LuceneIndexLoaderThread extends Thread {
 
 		try {
 			execute();
-			System.out.println(" Done");
+			System.out.println("Done");
 			l.printToConsole("Loading Lucene Index ... DONE");
 			
 			l.printStatistics();

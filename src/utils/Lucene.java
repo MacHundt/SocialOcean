@@ -1,15 +1,20 @@
 package utils;
 
 import java.awt.Color;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -36,6 +41,7 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.spatial.geopoint.document.GeoPointField;
 import org.apache.lucene.spatial.geopoint.search.GeoPointInBBoxQuery;
 import org.apache.lucene.store.FSDirectory;
+import org.eclipse.core.runtime.FileLocator;
 
 import bostoncase.parts.CategoriesPart;
 import bostoncase.parts.Console;
@@ -375,7 +381,7 @@ public enum Lucene {
 	 * @param print
 	 * @return result ScoreDoc[]
 	 */
-	public ScoreDoc[] query(Query query, String type, boolean print) {
+	public ScoreDoc[] query(Query query, String type, boolean print, boolean addToQueryHistory) {
 		serialCounter++;
 		ScoreDoc[] result = null;
 
@@ -482,18 +488,17 @@ public enum Lucene {
 			printToConsole("(" + serialCounter + ") " + query.toString() + " #:" + result.length);
 		}
 
-		if (QueryHistory.isInitialized) {
+		if (QueryHistory.isInitialized && addToQueryHistory) {
 			QueryHistory history = QueryHistory.getInstance();
 			if (type.length() > 2) {
 				history.addQuery(type + "\t" + query.toString());
 			} else {
 				history.addQuery(query.toString());
 			}
+			queryHistory.add(query);
+			addnewQueryResult(result, query);
 		}
 
-		queryHistory.add(query);
-		
-		addnewQueryResult(result, query);
 		last_result = result;
 		return result;
 	}
@@ -579,7 +584,7 @@ public enum Lucene {
 	public ScoreDoc[] ADDGeoQuery(double minLat, double maxLat, double minLong, double maxLong) {
 		@SuppressWarnings("deprecation")
 		Query query = new GeoPointInBBoxQuery(geoField, minLat, maxLat, minLong, maxLong);
-		ScoreDoc[] geoFilter = query(query, getQeryType(), true);
+		ScoreDoc[] geoFilter = query(query, getQeryType(), true, true);
 
 //		addnewQueryResult(geoFilter, query);
 
@@ -587,11 +592,11 @@ public enum Lucene {
 	}
 
 	// Time Filter
-	public ScoreDoc[] searchTimeRange(long from, long to, boolean print) {
+	public ScoreDoc[] searchTimeRange(long from, long to, boolean print, boolean queryhistory) {
 		ScoreDoc[] result;
 		try {
 			Query query = parser.parse("date:[" + from + " TO " + to + "]");
-			result = query(query, "", print);
+			result = query(query, "", print, queryhistory);
 			return result;
 		} catch (ParseException e) {
 			System.out.println("Could not Parse Date Search to Query");
@@ -838,7 +843,7 @@ public enum Lucene {
 				break;
 			}
 			long utc_plus = dt_plus.toEpochSecond(ZoneOffset.UTC);
-			ScoreDoc[] rs = searchTimeRange(temp_utc, utc_plus, false);
+			ScoreDoc[] rs = searchTimeRange(temp_utc, utc_plus, false, false);
 			tl_data.add(new TimeLineHelper(dt_temp, rs.length));
 
 			dt_temp = dt_plus;
@@ -846,11 +851,11 @@ public enum Lucene {
 		}
 
 		Time time = Time.getInstance();
-		time.chnageDataSet(tl_data);
+		time.changeDataSet(tl_data);
 
 	}
 
-	public void changeTimeLine(TimeBin binsize, ScoreDoc[] result) {
+	public void changeTimeLine(TimeBin binsize) {
 
 		// From Start Date to StopDate .. make bins and plot
 		LocalDateTime dt_temp = dt_min;
@@ -863,15 +868,14 @@ public enum Lucene {
 		long minDate = Long.MAX_VALUE;
 		long maxDate = Long.MIN_VALUE;
 
-		for (ScoreDoc doc : result) {
+		for (ScoreDoc doc : last_result) {
 
 			int docID = doc.doc;
 			Document document;
 			try {
 				document = searcher.doc(docID);
 				// System.out.println(document.getField("id").stringValue());
-				System.out.println("ID: " + docID);
-				long time = (document.getField("date")).numericValue().longValue();
+				long time = Long.parseLong((document.getField("date")).stringValue());
 				if (time > maxDate) {
 					maxDate = time;
 				}
@@ -879,15 +883,16 @@ public enum Lucene {
 					minDate = time;
 				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
 		}
 
 		long temp_utc = utc_time_min;
+		
+		HashMap<Long, Integer> buckets = new HashMap<>();
+		
 		while (temp_utc <= utc_time_max) {
-
 			LocalDateTime dt_plus = dt_temp;
 			switch (binsize) {
 			case SECONDS:
@@ -904,17 +909,42 @@ public enum Lucene {
 				break;
 			}
 			long utc_plus = dt_plus.toEpochSecond(ZoneOffset.UTC);
-
-			ScoreDoc[] rs = searchTimeRange(temp_utc, utc_plus, false);
-
-			tl_data.add(new TimeLineHelper(dt_temp, rs.length));
-
+			
+			buckets.put(temp_utc, 0);
+			
+//			ScoreDoc[] rs = searchTimeRange(temp_utc, utc_plus, false, false);
 			dt_temp = dt_plus;
 			temp_utc = utc_plus;
 		}
-
-		Time time = Time.getInstance();
-		time.chnageDataSet(tl_data);
+		
+		
+		for (Long key:  buckets.keySet()) {
+			int randomVal = (int)(Math.random()*100000);
+			buckets.put(key, randomVal);
+		}
+		
+		
+//		for (ScoreDoc doc : last_result) {
+//			
+//			int docID = doc.doc;
+//			Document document;
+//			try {
+//				document = searcher.doc(docID);
+//				long time = Long.parseLong((document.getField("date")).stringValue());
+//				
+//				
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
+//
+//
+//			int randomVal = (int)(Math.random()*100000);
+//			tl_data.add(new TimeLineHelper(dt_temp, randomVal));
+//			
+//		}
+//
+//		Time time = Time.getInstance();
+//		time.changeDataSet(tl_data);
 
 	}
 
@@ -937,12 +967,16 @@ public enum Lucene {
 			String name = "mention" + last_query + ".graphml";
 			name = name.replace(":", "_");
 			
-//			GraphML_Helper.createGraphML_Mention(fusedMention, searcher, true, "/Users/michaelhundt/Desktop/"+name);
-//			GraphML_Helper.createGraphML_Mention(fusedMention, searcher, true, "./graphs/"+name);
+//			 GraphML_Helper.createGraphML_Mention(fusedMention, searcher,
+//			 true, "/Users/michaelhundt/Desktop/"+name);
+			 GraphML_Helper.createGraphML_Mention(fusedMention, searcher,
+					 true, name);
+			// GraphML_Helper.createGraphML_Mention(fusedMention, searcher,
+			// true, "./graphs/"+name);
 
 		} catch (ParseException e) {
 			e.printStackTrace();
-		}
+		} 
 	}
 
 	/**
