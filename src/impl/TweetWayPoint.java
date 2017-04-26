@@ -1,5 +1,6 @@
 package impl;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -33,6 +34,7 @@ public class TweetWayPoint  extends SwingWaypoint {
 	    button.setIcon(icon);
         
         button.setSize(26, 26);
+        button.setBackground(new Color(255, 255, 255, 255));
         button.setPreferredSize(new Dimension(26, 26));
         button.addMouseListener(new SwingWaypointMouseListener());
         button.setVisible(true);

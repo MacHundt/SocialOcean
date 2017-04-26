@@ -71,17 +71,20 @@ public class MapPanelCreator {
 	
 	public static void loadTweetIcons() {
 		// ## LOAD Icons
-		ImageDescriptor st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/tweet.png");
+//		ImageDescriptor st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/tweet.png");
+		ImageDescriptor st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/neutral.png");
 		org.eclipse.swt.graphics.Image img = st.createImage();
 		BufferedImage image = Swing_SWT.convertToAWT(img.getImageData());
 		tweetIcon_ = new ImageIcon(image);
 
-		st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/tweetn.png");
+//		st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/tweetn.png");
+		st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/neg.png");
 		img = st.createImage();
 		image = Swing_SWT.convertToAWT(img.getImageData());
 		tweetIcon_n = new ImageIcon(image);
 
-		st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/tweetp.png");
+//		st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/tweetp.png");
+		st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/pos.png");
 		img = st.createImage();
 		image = Swing_SWT.convertToAWT(img.getImageData());
 		tweetIcon_p = new ImageIcon(image);
@@ -98,6 +101,8 @@ public class MapPanelCreator {
 			final List<TileFactory> factories = new ArrayList<TileFactory>();
 
 			TileFactoryInfo osmInfo = new OSMTileFactoryInfo();
+			
+			
 			TileFactoryInfo veInfo = new VirtualEarthTileFactoryInfo(VirtualEarthTileFactoryInfo.MAP);
 			TileFactoryInfo googlemaps = new TileFactoryInfo("" 
 					+ "GoogleMaps", 2, // min
@@ -112,7 +117,23 @@ public class MapPanelCreator {
 					return this.baseURL + "&x=" + x + "&y=" + y + "&z=" + zoom;
 				}
 			};
-
+			
+//			TileFactoryInfo osm_grey = new TileFactoryInfo("" 
+//					+ "OSM Grey", 2, // min
+//					18, // max allowed zoom level
+//					max, // max zoom level
+//					256, // tile size (must be square!!)
+//					true, true, // x/y orientation is normal
+//					"https://tiles.wmflabs.org/bw-mapnik/", // baseURL
+//					"x", "y", "z") {
+//				public String getTileUrl(int x, int y, int zoom) {
+//					zoom = max - zoom;
+//					return this.baseURL + "&x=" + x + "&y=" + y + "&z=" + zoom;
+//				}
+//			};
+//			factories.add(new DefaultTileFactory(osm_grey));
+			
+			
 			factories.add(new DefaultTileFactory(osmInfo));
 			factories.add(new DefaultTileFactory(veInfo));
 			factories.add(new DefaultTileFactory(googlemaps));

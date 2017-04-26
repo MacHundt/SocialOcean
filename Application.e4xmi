@@ -3,44 +3,46 @@
   <children xsi:type="basic:TrimmedWindow" xmi:id="_6wlLccgZEeSyMNYR5xypkQ" elementId="BostonCase.window.main" label="BostonCase" width="800" height="600">
     <children xsi:type="advanced:PerspectiveStack" xmi:id="_6wlLkMgZEeSyMNYR5xypkQ" elementId="org.eclipse.ui.ide.perspectivestack">
       <children xsi:type="advanced:Perspective" xmi:id="_6wlLkcgZEeSyMNYR5xypkQ" elementId="BostonCase.perspective.sample">
-        <children xsi:type="basic:PartStack" xmi:id="_iCa-YMLSEeaZZbPopcVK-g" elementId="bostoncase.partstack.views" accessibilityPhrase="views" selectedElement="_pJJJcMLSEeaZZbPopcVK-g">
-          <children xsi:type="basic:CompositePart" xmi:id="_pJJJcMLSEeaZZbPopcVK-g" elementId="bostoncase.compositepart.analysis" accessibilityPhrase="analysis" label="Analysis">
-            <children xsi:type="basic:PartSashContainer" xmi:id="_6wlLksgZEeSyMNYR5xypkQ" elementId="BostonCase.partsashcontainer.main">
-              <children xsi:type="basic:PartStack" xmi:id="_6wlLk8gZEeSyMNYR5xypkQ" elementId="BostonCase.partstack.selectionpart" containerData="900">
-                <children xsi:type="basic:Part" xmi:id="_XETc0Jw3EeaqBeVOr5nmKw" elementId="bostoncase.part.lucene" contributionURI="bundleclass://BostonCase/bostoncase.parts.LuceneSearch" label="" iconURI="platform:/plugin/BostonCase/icons/Lucene.png"/>
-              </children>
-              <children xsi:type="basic:PartSashContainer" xmi:id="_jkLewIosEeauXYmQDjn7lw" elementId="bostoncase.partsashcontainer.mappart" containerData="6000" horizontal="true">
-                <children xsi:type="basic:PartStack" xmi:id="_nKjIgIosEeauXYmQDjn7lw" elementId="bostoncase.partstack.datalayers" containerData="2000" selectedElement="_cCvw0KApEearzvHMhN-SAg">
-                  <children xsi:type="basic:CompositePart" xmi:id="_cCvw0KApEearzvHMhN-SAg" elementId="bostoncase.compositepart.overviewcontainer" containerData="" accessibilityPhrase="" label="Overview" selectedElement="_WLEnwLAMEeaGfPETKLtUAQ">
-                    <children xsi:type="basic:PartSashContainer" xmi:id="_WLEnwLAMEeaGfPETKLtUAQ" elementId="bostoncase.partsashcontainer.0">
-                      <children xsi:type="basic:Part" xmi:id="_gLDqAKApEearzvHMhN-SAg" elementId="bostoncase.part.statistics" visible="false" containerData="1400" contributionURI="bundleclass://BostonCase/bostoncase.parts.LuceneStatistics" label="Statistics"/>
-                      <children xsi:type="basic:Part" xmi:id="_7_AY8LAKEeaGfPETKLtUAQ" elementId="bostoncase.part.topselection" containerData="5000" contributionURI="bundleclass://BostonCase/bostoncase.parts.TopSelectionPart" label="topSelection"/>
-                    </children>
-                  </children>
-                  <children xsi:type="basic:Part" xmi:id="_utZO4IosEeauXYmQDjn7lw" elementId="bostoncase.part.queryhistory" contributionURI="bundleclass://BostonCase/bostoncase.parts.QueryHistory" label="Query History" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ"/>
-                </children>
-                <children xsi:type="basic:PartStack" xmi:id="_ngQSwIosEeauXYmQDjn7lw" elementId="bostoncase.partstack.map" containerData="5000" selectedElement="_LGak0IorEeauXYmQDjn7lw">
-                  <children xsi:type="basic:Part" xmi:id="_LGak0IorEeauXYmQDjn7lw" elementId="bostoncase.part.map" containerData="" contributionURI="bundleclass://BostonCase/bostoncase.parts.MapPart" label="Map" iconURI="platform:/plugin/BostonCase/icons/Map32.png"/>
-                </children>
-                <children xsi:type="basic:PartStack" xmi:id="_n1WZAIosEeauXYmQDjn7lw" elementId="bostoncase.partstack.settings" containerData="1200" accessibilityPhrase="settingsPartStack" selectedElement="_M9Y_oBMGEeenmLxjomef8A">
-                  <children xsi:type="basic:Part" xmi:id="_4NByEIosEeauXYmQDjn7lw" elementId="bostoncase.part.settings" visible="false" contributionURI="bundleclass://BostonCase/bostoncase.parts.SamplePart" label="settings" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ" closeable="true"/>
-                  <children xsi:type="basic:Part" xmi:id="_M9Y_oBMGEeenmLxjomef8A" elementId="bostoncase.part.graph" contributionURI="bundleclass://BostonCase/bostoncase.parts.GraphPart" label="Graph" tooltip="Social Graph"/>
+        <children xsi:type="basic:PartSashContainer" xmi:id="_6wlLksgZEeSyMNYR5xypkQ" elementId="BostonCase.partsashcontainer.main">
+          <children xsi:type="basic:PartStack" xmi:id="_6wlLk8gZEeSyMNYR5xypkQ" elementId="BostonCase.partstack.selectionpart" containerData="900" accessibilityPhrase="" selectedElement="_XETc0Jw3EeaqBeVOr5nmKw">
+            <children xsi:type="basic:Part" xmi:id="_XETc0Jw3EeaqBeVOr5nmKw" elementId="bostoncase.part.lucene" contributionURI="bundleclass://BostonCase/bostoncase.parts.LuceneSearch" label="" iconURI="platform:/plugin/BostonCase/icons/search_icon.png" tooltip="Search Panel"/>
+            <children xsi:type="basic:Part" xmi:id="_OQvIcCpgEeevD-C7DPB0Og" elementId="bostoncase.part.settings" contributionURI="bundleclass://BostonCase/bostoncase.parts.SamplePart" label="" iconURI="platform:/plugin/BostonCase/icons/settings_bars.png" tooltip="Settings"/>
+          </children>
+          <children xsi:type="basic:PartSashContainer" xmi:id="_jkLewIosEeauXYmQDjn7lw" elementId="bostoncase.partsashcontainer.mappart" containerData="6000" horizontal="true">
+            <children xsi:type="basic:PartStack" xmi:id="_nKjIgIosEeauXYmQDjn7lw" elementId="bostoncase.partstack.datalayers" containerData="2000" selectedElement="_cCvw0KApEearzvHMhN-SAg">
+              <children xsi:type="basic:CompositePart" xmi:id="_cCvw0KApEearzvHMhN-SAg" elementId="bostoncase.compositepart.overviewcontainer" containerData="" accessibilityPhrase="" label="" iconURI="platform:/plugin/BostonCase/icons/overview.png" tooltip="Overview" selectedElement="_WLEnwLAMEeaGfPETKLtUAQ">
+                <children xsi:type="basic:PartSashContainer" xmi:id="_WLEnwLAMEeaGfPETKLtUAQ" elementId="bostoncase.partsashcontainer.0">
+                  <children xsi:type="basic:Part" xmi:id="_gLDqAKApEearzvHMhN-SAg" elementId="bostoncase.part.statistics" visible="false" containerData="1400" contributionURI="bundleclass://BostonCase/bostoncase.parts.LuceneStatistics" label="Statistics"/>
+                  <children xsi:type="basic:Part" xmi:id="_7_AY8LAKEeaGfPETKLtUAQ" elementId="bostoncase.part.topselection" containerData="5000" contributionURI="bundleclass://BostonCase/bostoncase.parts.TopSelectionPart" label="topSelection"/>
                 </children>
               </children>
-              <children xsi:type="basic:PartStack" xmi:id="_I_X_0IorEeauXYmQDjn7lw" elementId="bostoncase.partstack.vis" containerData="1000" selectedElement="_UdkhcIorEeauXYmQDjn7lw">
-                <children xsi:type="basic:Part" xmi:id="_UdkhcIorEeauXYmQDjn7lw" elementId="bostoncase.part.console" contributionURI="bundleclass://BostonCase/bostoncase.parts.Console" label="Console" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ"/>
-                <children xsi:type="basic:Part" xmi:id="_4zh_kLM4EeaFV8chLnp6Gg" elementId="bostoncase.part.histogram" contributionURI="bundleclass://BostonCase/bostoncase.parts.Histogram" label="Histogram"/>
-                <children xsi:type="basic:Part" xmi:id="_t_I9YLOPEeaD75P0e42SYA" elementId="bostoncase.part.timeline" contributionURI="bundleclass://BostonCase/bostoncase.parts.Time" label="Timeline"/>
-                <children xsi:type="basic:Part" xmi:id="_brSc8CeKEeeipJjBZrtd_A" elementId="bostoncase.part.categories" toBeRendered="false" visible="false" contributionURI="bundleclass://BostonCase/bostoncase.parts.CategoriesPart" label="Categories"/>
-              </children>
+              <children xsi:type="basic:Part" xmi:id="_utZO4IosEeauXYmQDjn7lw" elementId="bostoncase.part.queryhistory" contributionURI="bundleclass://BostonCase/bostoncase.parts.QueryHistory" label="" iconURI="platform:/plugin/BostonCase/icons/queryhistory.png" tooltip="Query History" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ"/>
+            </children>
+            <children xsi:type="basic:PartStack" xmi:id="_ngQSwIosEeauXYmQDjn7lw" elementId="bostoncase.partstack.map" containerData="5000" selectedElement="_LGak0IorEeauXYmQDjn7lw">
+              <children xsi:type="basic:Part" xmi:id="_LGak0IorEeauXYmQDjn7lw" elementId="bostoncase.part.map" containerData="" contributionURI="bundleclass://BostonCase/bostoncase.parts.MapPart" label="" iconURI="platform:/plugin/BostonCase/icons/map_icon.png" tooltip="Map"/>
+            </children>
+            <children xsi:type="basic:PartStack" xmi:id="_n1WZAIosEeauXYmQDjn7lw" elementId="bostoncase.partstack.settings" containerData="1200" accessibilityPhrase="settingsPartStack" selectedElement="_M9Y_oBMGEeenmLxjomef8A">
+              <children xsi:type="basic:Part" xmi:id="_4NByEIosEeauXYmQDjn7lw" elementId="bostoncase.part.settings" visible="false" contributionURI="bundleclass://BostonCase/bostoncase.parts.SamplePart" label="settings" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ" closeable="true"/>
+              <children xsi:type="basic:Part" xmi:id="_M9Y_oBMGEeenmLxjomef8A" elementId="bostoncase.part.graph" contributionURI="bundleclass://BostonCase/bostoncase.parts.GraphPart" label="" iconURI="platform:/plugin/BostonCase/icons/socialgraph_icon.png" tooltip="Mention Graph"/>
             </children>
           </children>
+          <children xsi:type="basic:PartStack" xmi:id="_65wQMCpgEeevD-C7DPB0Og" elementId="bostoncase.partstack.0" containerData="1200">
+            <children xsi:type="basic:Part" xmi:id="_4zh_kLM4EeaFV8chLnp6Gg" elementId="bostoncase.part.histogram" containerData="" contributionURI="bundleclass://BostonCase/bostoncase.parts.Histogram" label="" iconURI="platform:/plugin/BostonCase/icons/histogram_icon.png" tooltip="Histogram"/>
+          </children>
+          <children xsi:type="basic:PartStack" xmi:id="_I_X_0IorEeauXYmQDjn7lw" elementId="bostoncase.partstack.vis" containerData="1000" selectedElement="_UdkhcIorEeauXYmQDjn7lw">
+            <children xsi:type="basic:Part" xmi:id="_UdkhcIorEeauXYmQDjn7lw" elementId="bostoncase.part.console" contributionURI="bundleclass://BostonCase/bostoncase.parts.Console" label="" iconURI="platform:/plugin/BostonCase/icons/console_icon.png" tooltip="Console" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ"/>
+            <children xsi:type="basic:Part" xmi:id="_t_I9YLOPEeaD75P0e42SYA" elementId="bostoncase.part.timeline" contributionURI="bundleclass://BostonCase/bostoncase.parts.Time" label="" iconURI="platform:/plugin/BostonCase/icons/timeline_icon.png" tooltip="Timeline"/>
+            <children xsi:type="basic:Part" xmi:id="_brSc8CeKEeeipJjBZrtd_A" elementId="bostoncase.part.categories" toBeRendered="false" visible="false" contributionURI="bundleclass://BostonCase/bostoncase.parts.CategoriesPart" label="Categories"/>
+          </children>
+        </children>
+        <children xsi:type="basic:PartStack" xmi:id="_iCa-YMLSEeaZZbPopcVK-g" elementId="bostoncase.partstack.views" visible="false" accessibilityPhrase="views" selectedElement="_pJJJcMLSEeaZZbPopcVK-g">
           <children xsi:type="basic:CompositePart" xmi:id="_wm4GUMLSEeaZZbPopcVK-g" elementId="bostoncase.compositepart.timestory" visible="false" accessibilityPhrase="timestory" label="Timestory">
             <children xsi:type="basic:Part" xmi:id="_0FCPQMLSEeaZZbPopcVK-g" elementId="bostoncase.part.timelinecurator" contributionURI="bundleclass://BostonCase/bostoncase.parts.TimeLineStoryPart" label="TimeLineCurator"/>
           </children>
           <children xsi:type="basic:CompositePart" xmi:id="_4exA4MLYEeaZZbPopcVK-g" elementId="bostoncase.compositepart.0" visible="false" label="MapStory">
             <children xsi:type="basic:Part" xmi:id="_8BWW0MLYEeaZZbPopcVK-g" elementId="bostoncase.part.mapstorypart" visible="false" contributionURI="bundleclass://BostonCase/bostoncase.parts.StoryMapPart" label="MapStoryPart"/>
           </children>
+          <children xsi:type="basic:CompositePart" xmi:id="_pJJJcMLSEeaZZbPopcVK-g" elementId="bostoncase.compositepart.analysis" visible="false" accessibilityPhrase="analysis" label="Analysis"/>
         </children>
       </children>
     </children>
@@ -55,7 +57,7 @@
         <children xsi:type="menu:HandledMenuItem" xmi:id="_6wlLj8gZEeSyMNYR5xypkQ" elementId="BostonCase.handleditem.about" label="About" command="_6wlLhsgZEeSyMNYR5xypkQ"/>
       </children>
     </mainMenu>
-    <trimBars xmi:id="_6wlLlcgZEeSyMNYR5xypkQ" elementId="BostonCase.trimbar.top">
+    <trimBars xmi:id="_6wlLlcgZEeSyMNYR5xypkQ" elementId="BostonCase.trimbar.top" toBeRendered="false" visible="false">
       <children xsi:type="menu:ToolBar" xmi:id="_6wlLlsgZEeSyMNYR5xypkQ" elementId="org.eclipse.ui.main.toolbar">
         <children xsi:type="menu:HandledToolItem" xmi:id="_6wlLl8gZEeSyMNYR5xypkQ" elementId="BostonCase.handleditem.trimbar.top.open" iconURI="platform:/plugin/BostonCase/icons/sample.png" command="_6wlLgMgZEeSyMNYR5xypkQ"/>
         <children xsi:type="menu:HandledToolItem" xmi:id="_6wlLmMgZEeSyMNYR5xypkQ" elementId="BostonCase.handleditem.trimbar.top.save" iconURI="platform:/plugin/BostonCase/icons/save_edit.png" command="_6wlLg8gZEeSyMNYR5xypkQ"/>

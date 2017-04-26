@@ -85,7 +85,7 @@ public class Histogram {
 			
 			@Override
 			public void run() {
-				// for every category a barSeries
+//				// for every category a barSeries
 //				int i = 0;
 //				for (String cat : categories) {
 //					String[] none = {" "};
