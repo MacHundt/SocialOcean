@@ -47,7 +47,7 @@ public class GraphPanelCreator1 {
 //			ScrollPane pane = new ScrollPane(ScrollPane.)
 			
 //			ImageDescriptor st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/echochamber1.png");
-			ImageDescriptor st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/mentiontags_bostonmarathon.png");
+			ImageDescriptor st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/graphView.png");
 			org.eclipse.swt.graphics.Image img = st.createImage();
 			BufferedImage image = Swing_SWT.convertToAWT(img.getImageData());
 			

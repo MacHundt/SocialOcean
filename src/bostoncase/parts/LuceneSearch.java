@@ -290,6 +290,7 @@ public class LuceneSearch {
 				l.clearQueryHistroy();
 				l.clearMap();
 				l.showCatHisto();
+				l.resetTimeLine();
 			}
 		});
 		

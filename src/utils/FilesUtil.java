@@ -1,5 +1,6 @@
 package utils;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,6 +12,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.imageio.ImageIO;
 
 import org.eclipse.core.runtime.FileLocator;
 
@@ -25,6 +28,33 @@ public class FilesUtil {
 	public void setReferenceFile(String referenceFile) {
 		this.referenceFile = referenceFile;
 	}
+	
+	
+	public static BufferedImage readIconFile(String fileName) {
+		URL url = null;
+		BufferedImage image = null;
+		try {
+			url = new URL("platform:/plugin/"
+		    + "BostonCase/"
+		    + fileName);
+
+		    } catch (MalformedURLException e1) {
+		      e1.printStackTrace();
+		    }
+		
+		try {
+			url = FileLocator.toFileURL(url);
+			InputStream input = new FileInputStream(new File(url.getPath()));
+			image = ImageIO.read(input);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return image;
+	}
+	
+	
 
 	public static String readTextFile(String fileName) throws IOException {
 		URL url = null;

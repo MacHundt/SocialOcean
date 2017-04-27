@@ -50,14 +50,14 @@ public class LuceneSearchHandler {
 		
 		Query q = null;
 		
-		// Get Time Range TEST
-		if (query.equals("time")) {
-			result = l.searchTimeRange(1366012800, 1366120800, true, true);
-		}
+//		// Get Time Range TEST
+//		if (query.equals("time")) {
+//			result = l.searchTimeRange(1366012800, 1366120800, true, true);
+//		}
+//		else {
 		
 		
 		// GET QUERY
-		else {
 			try {
 				q = l.getParser().parse(query);
 				result = l.query(q, type, true, true);
@@ -66,7 +66,7 @@ public class LuceneSearchHandler {
 				e.printStackTrace();
 				return;
 			}
-		}
+//		}
 		
 		TimeLineCreatorThread lilt = new TimeLineCreatorThread(l) {
 			@Override

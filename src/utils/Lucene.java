@@ -1,15 +1,7 @@
 package utils;
 
 import java.awt.Color;
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -41,7 +33,6 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.spatial.geopoint.document.GeoPointField;
 import org.apache.lucene.spatial.geopoint.search.GeoPointInBBoxQuery;
 import org.apache.lucene.store.FSDirectory;
-import org.eclipse.core.runtime.FileLocator;
 
 import bostoncase.parts.CategoriesPart;
 import bostoncase.parts.Console;
@@ -94,6 +85,7 @@ public enum Lucene {
 	private LocalDateTime dt_max = null;
 	private long utc_time_max;
 	public boolean hasStopTime = false;
+	private ArrayList<TimeLineHelper> completeDataTime = new ArrayList<>();
 
 	private ScoreDoc[] last_result = null;
 	private String last_query = "";
@@ -852,13 +844,12 @@ public enum Lucene {
 
 		Time time = Time.getInstance();
 		time.changeDataSet(tl_data);
+		completeDataTime = tl_data;
 
 	}
 
 	public void changeTimeLine(TimeBin binsize) {
 
-		// From Start Date to StopDate .. make bins and plot
-		LocalDateTime dt_temp = dt_min;
 		ArrayList<TimeLineHelper> tl_data = new ArrayList<>();
 
 		// TODO Get New MIN - MAX
@@ -889,9 +880,13 @@ public enum Lucene {
 		}
 
 		long temp_utc = utc_time_min;
+		long stepSize = 0;
 		
 		HashMap<Long, Integer> buckets = new HashMap<>();
+		// From Start Date to StopDate .. make bins and plot
+		LocalDateTime dt_temp = longTOLocalDateTime(minDate);
 		
+		// CREATE TIME Bins
 		while (temp_utc <= utc_time_max) {
 			LocalDateTime dt_plus = dt_temp;
 			switch (binsize) {
@@ -909,6 +904,9 @@ public enum Lucene {
 				break;
 			}
 			long utc_plus = dt_plus.toEpochSecond(ZoneOffset.UTC);
+			if (stepSize == 0) {
+				stepSize = utc_plus - temp_utc;
+			}
 			
 			buckets.put(temp_utc, 0);
 			
@@ -918,34 +916,53 @@ public enum Lucene {
 		}
 		
 		
-		for (Long key:  buckets.keySet()) {
-			int randomVal = (int)(Math.random()*100000);
-			buckets.put(key, randomVal);
+		// ADD To Bins
+		for (ScoreDoc doc : last_result) {
+			
+			int docID = doc.doc;
+			Document document;
+			try {
+				document = searcher.doc(docID);
+				long time = Long.parseLong((document.getField("date")).stringValue());
+				
+				long key = getBucket(buckets, stepSize,  time);
+				buckets.put(key, ( buckets.get(key) + 1 ));
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		
-		
-//		for (ScoreDoc doc : last_result) {
-//			
-//			int docID = doc.doc;
-//			Document document;
-//			try {
-//				document = searcher.doc(docID);
-//				long time = Long.parseLong((document.getField("date")).stringValue());
-//				
-//				
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			}
-//
-//
-//			int randomVal = (int)(Math.random()*100000);
-//			tl_data.add(new TimeLineHelper(dt_temp, randomVal));
-//			
-//		}
-//
-//		Time time = Time.getInstance();
-//		time.changeDataSet(tl_data);
+		for (Long key:  buckets.keySet()) {
+//			buckets.put(key, randomVal);
+			tl_data.add(new TimeLineHelper(longTOLocalDateTime(key), buckets.get(key)));
+		}
 
+		Time time = Time.getInstance();
+		time.changeDataSet(tl_data);
+
+	}
+
+	
+	
+	private long getBucket(HashMap<Long, Integer> buckets, long stepSize, long time) {
+		// TODO Go through all buckets:
+		// is within key + stepSize --> return bucket key
+		for (Long key : buckets.keySet()) {
+			if (time >= key && time < (key+stepSize))
+				return key;
+		}
+		return -1;
+	}
+
+	private LocalDateTime longTOLocalDateTime(long minDate) {
+		
+//		LocalDateTime dt = LocalDateTime.of(date, time);
+////		System.out.println(dt.toEpochSecond(ZoneOffset.UTC));
+//		long utc_time = dt.toEpochSecond(ZoneOffset.UTC);
+		LocalDateTime time = LocalDateTime.ofEpochSecond(minDate, 0, ZoneOffset.UTC);
+		
+		return time;
 	}
 
 	/**
@@ -1169,6 +1186,12 @@ public enum Lucene {
 		queryResults.add(new QueryResult(query, result, currentPointer));
 		currentPointer = queryResults.size()-1;
 		 
+	}
+
+	
+	public void resetTimeLine() {
+		Time time = Time.getInstance();
+		time.changeDataSet(completeDataTime);
 	}
 
 }

@@ -1,14 +1,10 @@
 package bostoncase.parts;
 
-import java.awt.BorderLayout;
 import java.awt.Frame;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.swing.JApplet;
-import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;

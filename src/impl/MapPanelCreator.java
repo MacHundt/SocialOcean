@@ -43,7 +43,7 @@ import org.jxmapviewer.viewer.TileFactory;
 import org.jxmapviewer.viewer.TileFactoryInfo;
 import org.jxmapviewer.viewer.WaypointPainter;
 
-
+import utils.FilesUtil;
 import utils.Lucene;
 import utils.Swing_SWT;
 import utils.Lucene.TimeBin;
@@ -72,21 +72,25 @@ public class MapPanelCreator {
 	public static void loadTweetIcons() {
 		// ## LOAD Icons
 //		ImageDescriptor st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/tweet.png");
-		ImageDescriptor st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/neutral.png");
-		org.eclipse.swt.graphics.Image img = st.createImage();
-		BufferedImage image = Swing_SWT.convertToAWT(img.getImageData());
+//		ImageDescriptor st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/neutral.png");
+//		org.eclipse.swt.graphics.Image img = st.createImage();
+//		BufferedImage image = Swing_SWT.convertToAWT(img.getImageData());
+		
+		BufferedImage image = FilesUtil.readIconFile("icons/neutral24_icon.png");
 		tweetIcon_ = new ImageIcon(image);
 
 //		st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/tweetn.png");
-		st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/neg.png");
-		img = st.createImage();
-		image = Swing_SWT.convertToAWT(img.getImageData());
+//		st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/neg.png");
+//		img = st.createImage();
+//		image = Swing_SWT.convertToAWT(img.getImageData());
+		image = FilesUtil.readIconFile("icons/neg24_icon.png");
 		tweetIcon_n = new ImageIcon(image);
 
 //		st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/tweetp.png");
-		st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/pos.png");
-		img = st.createImage();
-		image = Swing_SWT.convertToAWT(img.getImageData());
+//		st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/pos.png");
+//		img = st.createImage();
+//		image = Swing_SWT.convertToAWT(img.getImageData());
+		image = FilesUtil.readIconFile("icons/pos24_icon.png");
 		tweetIcon_p = new ImageIcon(image);
 
 	}
@@ -102,8 +106,8 @@ public class MapPanelCreator {
 
 			TileFactoryInfo osmInfo = new OSMTileFactoryInfo();
 			
-			
 			TileFactoryInfo veInfo = new VirtualEarthTileFactoryInfo(VirtualEarthTileFactoryInfo.MAP);
+			
 			TileFactoryInfo googlemaps = new TileFactoryInfo("" 
 					+ "GoogleMaps", 2, // min
 					18, // max allowed zoom level
@@ -118,22 +122,42 @@ public class MapPanelCreator {
 				}
 			};
 			
+			TileFactoryInfo stamen = new TileFactoryInfo("" 
+					+ "Stamen B/W", 2, // min
+					18, // max allowed zoom level
+					max, // max zoom level
+					256, // tile size (must be square!!)
+					true, true, // x/y orientation is normal
+					"http://tile.stamen.com/toner", // baseURL
+					"x", "y", "z") {
+				public String getTileUrl(int x, int y, int zoom) {
+					zoom = max - zoom;
+					String url = this.baseURL + "/"+ zoom+ "/"  + x + "/" + y +".png";
+//					http://tile.stamen.com/toner/{z}/{x}/{y}.png
+					return url;
+				}
+			};
+			
+			
 //			TileFactoryInfo osm_grey = new TileFactoryInfo("" 
-//					+ "OSM Grey", 2, // min
+//					+ "Osm Grey", 2, // min
 //					18, // max allowed zoom level
 //					max, // max zoom level
 //					256, // tile size (must be square!!)
 //					true, true, // x/y orientation is normal
-//					"https://tiles.wmflabs.org/bw-mapnik/", // baseURL
+//					"https://a.tiles.wmflabs.org/bw-mapnik", // baseURL
 //					"x", "y", "z") {
 //				public String getTileUrl(int x, int y, int zoom) {
 //					zoom = max - zoom;
-//					return this.baseURL + "&x=" + x + "&y=" + y + "&z=" + zoom;
+//					String url = this.baseURL + "/"+ zoom+ "/"  + x + "/" + y +".png?ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory";
+////					https://a.tiles.wmflabs.org/bw-mapnik/$%7Bz%7D/$%7Bx%7D/$%7By%7D.png					
+//					return url;
 //				}
 //			};
+		
 //			factories.add(new DefaultTileFactory(osm_grey));
 			
-			
+			factories.add(new DefaultTileFactory(stamen));
 			factories.add(new DefaultTileFactory(osmInfo));
 			factories.add(new DefaultTileFactory(veInfo));
 			factories.add(new DefaultTileFactory(googlemaps));

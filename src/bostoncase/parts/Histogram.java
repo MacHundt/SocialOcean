@@ -116,7 +116,7 @@ public class Histogram {
 //				barSeries.setBarColor(bar_color);
 				barSeries.setBarColor(pink);
 				
-				barSeries.setBarPadding(35);
+				barSeries.getLabel().setVisible(false);
 				
 				chart.getAxisSet().adjustRange();
 				chart.redraw();

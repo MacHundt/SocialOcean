@@ -1,11 +1,10 @@
 package impl;
 
-import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -32,10 +31,15 @@ public class TweetWayPoint  extends SwingWaypoint {
 //        button = new JButton(text.substring(0, 1));
         button = new JButton("Tweet");
 	    button.setIcon(icon);
-        
-        button.setSize(26, 26);
-        button.setBackground(new Color(255, 255, 255, 255));
-        button.setPreferredSize(new Dimension(26, 26));
+	    // to remote the spacing between the image and button's borders
+	    button.setMargin(new Insets(0, 0, 0, 0));
+	    // to add a different background
+	    button.setBackground(null);
+	    // to remove the border
+	    button.setBorder(null);
+        button.setSize(24,24);
+//        button.setBackground(new Color(255, 255, 255, 255));
+	    button.setPreferredSize(new Dimension(24, 24));
         button.addMouseListener(new SwingWaypointMouseListener());
         button.setVisible(true);
     }
