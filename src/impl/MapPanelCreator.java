@@ -90,7 +90,7 @@ public class MapPanelCreator {
 //		st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/pos.png");
 //		img = st.createImage();
 //		image = Swing_SWT.convertToAWT(img.getImageData());
-		image = FilesUtil.readIconFile("icons/pos24_icon.png");
+		image = FilesUtil.readIconFile("icons/pos_24.png");
 		tweetIcon_p = new ImageIcon(image);
 
 	}

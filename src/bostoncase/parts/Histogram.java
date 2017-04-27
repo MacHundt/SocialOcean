@@ -1,6 +1,10 @@
  
 package bostoncase.parts;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
@@ -12,6 +16,9 @@ import org.eclipse.swt.widgets.Display;
 import org.swtchart.Chart;
 import org.swtchart.IBarSeries;
 import org.swtchart.ISeries.SeriesType;
+import org.swtchart.LineStyle;
+
+import utils.HistogramEntry;
 
 
 public class Histogram {
@@ -19,6 +26,8 @@ public class Histogram {
 
 	private static Histogram INSTANCE;
 	public static boolean isInitialized = false;
+	
+	private Object[][] initialData = null;
 	
 	@Inject
 	public Histogram() {
@@ -35,57 +44,113 @@ public class Histogram {
 	
 	Color pink = new Color(Display.getDefault(), 250, 22, 129);
 	Color black = new Color(Display.getDefault(), 0, 0, 0);
-	
-	
+	Color gray = new Color(Display.getDefault(), 204, 204, 204);		// grey
+	Composite parent;
 	
 	
 	@PostConstruct
 	public void postConstruct(Composite parent) {
-		
-		chart = new Chart(parent, SWT.COLOR_BLACK);
-		
-		 // set titles
-        chart.getTitle().setText("");
-        chart.getAxisSet().getYAxis(0).getTitle().setText("Count");
-        chart.getAxisSet().getXAxis(0).getTitle().setText("Categories");
-		chart.getAxisSet().getXAxis(0).enableCategory(true);
-		chart.setForeground(black);
-		chart.getTitle().setForeground(black);
-		chart.getAxisSet().getXAxis(0).getTitle().setForeground(black);
-		chart.getAxisSet().getYAxis(0).getTitle().setForeground(black);
-		chart.getAxisSet().getXAxis(0).getGrid().setForeground(black);
-		chart.getAxisSet().getYAxis(0).getGrid().setForeground(black);
-		chart.getAxisSet().getXAxis(0).getTick().setForeground(black);
-		chart.getAxisSet().getYAxis(0).getTick().setForeground(black);
-		chart.getLegend().setForeground(black);
-        
-//        chart.getLegend().setVisible(true);
-        chart.getLegend().setVisible(false);
-		
-        // adjust the axis range
-		chart.setRedraw(true);
-		chart.setEnabled(true);
-
+		this.parent = parent;
 		INSTANCE = this;
 		isInitialized = true;
 	}
 	
 	
-	public void chnageDataSet(Object[][] resulTable) {
+	// TODO  -- Comparative View .. getChildren() ... dispose(), setVisible()
+	// TODO	 -- Switch to log-Scale
+	
+	
+	private void prepareChart() {
+
+		parent.getDisplay().asyncExec(new Runnable() {
+
+			@Override
+			public void run() {
+				org.eclipse.swt.widgets.Control[] children = parent.getChildren();
+
+//				children[0].setVisible(false);
+//				children[0].setEnabled(false);
+				
+				for (int i = 0; i < children.length; i++) {
+					children[i].dispose();
+				}
+
+				chart = new Chart(parent, SWT.COLOR_BLACK);
+
+				// set titles
+				chart.getTitle().setText("");
+				chart.getAxisSet().getYAxis(0).getTitle().setText("Count");
+				chart.getAxisSet().getXAxis(0).getTitle().setText("Categories");
+				chart.getAxisSet().getXAxis(0).getTitle().setVisible(false);
+				chart.getAxisSet().getXAxis(0).enableCategory(true);
+				chart.setForeground(black);
+				chart.getTitle().setForeground(black);
+				chart.getAxisSet().getXAxis(0).getTitle().setForeground(black);
+				chart.getAxisSet().getYAxis(0).getTitle().setForeground(black);
+				chart.getAxisSet().getYAxis(0).getTitle().setVisible(true); 
+				chart.getAxisSet().getXAxis(0).getGrid().setForeground(gray);
+				chart.getAxisSet().getYAxis(0).getGrid().setForeground(gray);
+				
+				chart.getAxisSet().getXAxis(0).getGrid().setStyle(LineStyle.NONE);
+				chart.getAxisSet().getYAxis(0).getGrid().setStyle(LineStyle.DOT);
+				
+				chart.getAxisSet().getXAxis(0).getTick().setForeground(black);
+				chart.getAxisSet().getYAxis(0).getTick().setForeground(black);
+				chart.getLegend().setForeground(black);
+
+				// chart.getLegend().setVisible(true);
+				chart.getLegend().setVisible(false);
+				chart.getAxisSet().getYAxis(0).enableLogScale(true);
+
+				// adjust the axis range
+				chart.setRedraw(true);
+				chart.setEnabled(true);
+			}
+
+		});
+
+	}
+	
+	
+	public void changeDataSet(HashMap<String, HistogramEntry> counter) {
 		
-		double[] dataSeries = new double[resulTable.length];
-		String[] categories = new String[resulTable.length];
+		// SORT
+		ArrayList<HistogramEntry> arrEntry = new ArrayList<>(counter.size()); 
+		for (HistogramEntry e : counter.values())
+			arrEntry.add(e);
+		Collections.sort(arrEntry);
 		
-		for (int i = 0; i < resulTable.length; i++) {
-			dataSeries[i] = (Integer) resulTable[i][1];
-			categories[i] = (String) resulTable[i][0];
-		}
+		prepareChart();
 		
-		chart.getDisplay().asyncExec(new Runnable() {
+		parent.getDisplay().asyncExec(new Runnable() {
 			
 			@Override
 			public void run() {
-//				// for every category a barSeries
+				// for every category a barSeries
+				
+				for (HistogramEntry entry : arrEntry) {
+//					HistogramEntry entry = counter.get(categories);
+					String[] none = {" "};
+					double[] val = {entry.getCount()};
+					double avgSen = entry.getAvgSentiment();
+					
+					chart.getAxisSet().getXAxis(0).setCategorySeries(none);
+					barSeries = (IBarSeries) chart.getSeriesSet().createSeries(
+							SeriesType.BAR, entry.getName() );
+					System.out.println(entry.getName());
+					barSeries.setYSeries(val);
+					barSeries.getLabel().setFormat("##.0");
+//					barSeries.setBarColor(entry.getCategoryColor());
+					barSeries.setBarColor(entry.getAvgSentimentColor());
+				}
+				
+				barSeries.getLabel().setVisible(false);
+				
+				chart.getAxisSet().adjustRange();
+				chart.redraw();
+				
+				
+				
 //				int i = 0;
 //				for (String cat : categories) {
 //					String[] none = {" "};
@@ -106,20 +171,20 @@ public class Histogram {
 //				chart.getAxisSet().adjustRange();
 //				chart.redraw();
 				
-				chart.getAxisSet().getXAxis(0).setCategorySeries(categories);
-				
-				barSeries = (IBarSeries) chart.getSeriesSet().createSeries(
-						SeriesType.BAR, "categories ");
-				
-				barSeries.setYSeries(dataSeries);
-				barSeries.getLabel().setFormat("##.0");
-//				barSeries.setBarColor(bar_color);
-				barSeries.setBarColor(pink);
-				
-				barSeries.getLabel().setVisible(false);
-				
-				chart.getAxisSet().adjustRange();
-				chart.redraw();
+//				chart.getAxisSet().getXAxis(0).setCategorySeries(categories);
+//				
+//				barSeries = (IBarSeries) chart.getSeriesSet().createSeries(
+//						SeriesType.BAR, "categories ");
+//				
+//				barSeries.setYSeries(dataSeries);
+//				barSeries.getLabel().setFormat("##.0");
+////				barSeries.setBarColor(bar_color);
+//				barSeries.setBarColor(pink);
+//				
+//				barSeries.getLabel().setVisible(false);
+//				
+//				chart.getAxisSet().adjustRange();
+//				chart.redraw();
 			}
 		});
 		
@@ -138,68 +203,80 @@ public class Histogram {
 	}
 	
 	
-	private Color getColor(String catName) {
-		Color color = new Color(Display.getDefault(), 0, 0, 0);
-		
-		switch (catName.toLowerCase()) {
-		case "computers_technology":
-			color = new Color(Display.getDefault(), 228, 26, 28);
-			break;
-		case "education":
-			color = new Color(Display.getDefault(), 102, 99, 14);
-			break;
-		case "family":
-			color = new Color(Display.getDefault(), 65, 148, 134);
-			break;
-		case "food":
-			color = new Color(Display.getDefault(), 91, 157, 90);
-			break;
-		case "health":
-			color = new Color(Display.getDefault(), 145, 87, 155);
-			break;
-		case "marketing":
-			color = new Color(Display.getDefault(), 218, 109, 59);
-			break;
-		case "music":
-			color = new Color(Display.getDefault(), 255, 174, 19);
-			break;
-		case "news_media":
-			color = new Color(Display.getDefault(), 247, 240, 50);
-			break;
-		case "other":
-			color = new Color(Display.getDefault(), 182, 117, 42);
-			break;
-		case "pets":
-			color = new Color(Display.getDefault(), 210, 109, 122);
-			break;
-		case "politics":
-			color = new Color(Display.getDefault(), 221, 136, 181);
-			break;
-		case "recreation_sports":
-			color = new Color(Display.getDefault(), 153, 153, 153);
-			break;
-
-		default:
-			color = pink;
-			break;
-		}
-		
-		return color;
-	}
-	
-	
 	
 	public static Histogram getInstance() {
         return INSTANCE;
 	}
 	
 	
-	
-	
 	@Focus
 	public void onFocus() {
 		chart.setFocus();
 //		comp.setFocus();
+	}
+
+
+	
+	public void setInitialData(Object[][] resulTable) {
+		initialData = resulTable;
+	}
+	
+	
+	
+	public void viewInitialDataSet() {
+		
+		prepareChart();
+		
+		double[] dataSeries = new double[initialData.length];
+		String[] categories = new String[initialData.length];
+		
+		for (int j = 0; j < initialData.length; j++) {
+			dataSeries[j] = (Integer) initialData[j][1];
+			categories[j] = (String) initialData[j][0];
+		}
+		
+		parent.getDisplay().asyncExec(new Runnable() {
+			
+			@Override
+			public void run() {
+				
+				chart = (Chart) parent.getChildren()[0];
+				
+//				int i = 0;
+//				for (String cat : categories) {
+//					String[] none = {" "};
+//					double[] val = {dataSeries[i]};
+//					chart.getAxisSet().getXAxis(0).setCategorySeries(none);
+//					// set Color for Cat
+//					barSeries = (IBarSeries) chart.getSeriesSet().createSeries(
+//							SeriesType.BAR, cat );
+//					barSeries.setYSeries(val);
+//					barSeries.getLabel().setFormat("##.0");
+//					
+//					barSeries.setBarColor(getColor(cat));
+//					barSeries.setBarPadding(5);
+//					
+//					i++;
+//					
+//				}
+//				chart.getAxisSet().adjustRange();
+//				chart.redraw();
+				
+				
+				chart.getAxisSet().getXAxis(0).setCategorySeries(categories);
+				barSeries = (IBarSeries) chart.getSeriesSet().createSeries(
+						SeriesType.BAR, "categories ");
+				
+				barSeries.setYSeries(dataSeries);
+				barSeries.getLabel().setFormat("##.0");
+				barSeries.setBarColor(gray);
+				
+				barSeries.getLabel().setVisible(false);
+				
+				chart.getAxisSet().adjustRange();
+				chart.redraw();
+			}
+		});
 	}
 	
 	

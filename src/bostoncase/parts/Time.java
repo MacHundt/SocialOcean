@@ -3,7 +3,6 @@ package bostoncase.parts;
 
 import java.awt.Color;
 import java.awt.Frame;
-import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
@@ -23,21 +22,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.annotations.XYAnnotation;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.event.AnnotationChangeListener;
-import org.jfree.chart.plot.IntervalMarker;
 import org.jfree.chart.plot.Marker;
 import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.PlotRenderingInfo;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.time.Day;
 import org.jfree.data.time.Hour;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
-import org.jfree.ui.Layer;
 
 import utils.TimeLineHelper;
 
@@ -72,7 +64,7 @@ public class Time {
 		String xaxis = "Time";
 		String yaxis = "Docs";
 		PlotOrientation orientation = PlotOrientation.VERTICAL;
-		boolean show = true;
+		boolean show = false;
 		boolean toolTips = true;
 		boolean urls = false;
 		
@@ -81,8 +73,12 @@ public class Time {
 		// get a reference to the plot for further customisation...
 		final XYPlot plot = chart.getXYPlot();
 		plot.setBackgroundPaint(Color.white);
-		plot.setDomainGridlinePaint(Color.black);
-		plot.setRangeGridlinePaint(Color.black);
+		plot.setDomainGridlinePaint(Color.gray);
+		plot.setRangeGridlinePaint(Color.gray);
+		plot.setOutlinePaint(Color.white);
+		plot.getRangeAxis().setLabel("");
+		plot.getDomainAxis().setLabel("");
+		plot.getDomainAxis().setAxisLineVisible(false);
 
 		final XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
 		// renderer.setSeriesLinesVisible(0, false);

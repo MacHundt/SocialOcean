@@ -669,7 +669,8 @@ public enum Lucene {
 		Histogram histogram = Histogram.getInstance();
 //		CategoriesPart categories = CategoriesPart.getInstance();
 
-		histogram.chnageDataSet(resulTable);
+		histogram.setInitialData(resulTable);
+		histogram.viewInitialDataSet();
 //		categories.chnageDataSet(resulTable);
 		
 	}
@@ -681,7 +682,9 @@ public enum Lucene {
 
 		Histogram histogram = Histogram.getInstance();
 //		CategoriesPart categories = CategoriesPart.getInstance();
-		HashMap<String, Integer> counter = new HashMap<>();
+//		HashMap<String, Integer> counter = new HashMap<>();
+		HashMap<String, HistogramEntry> counter = new HashMap<>();
+
 
 		for (ScoreDoc doc : data) {
 			Document document = null;
@@ -691,32 +694,47 @@ public enum Lucene {
 				continue;
 			}
 			String field = "";
+			double sentiment = 0.0;
 
 			if ((document.getField("category")) == null)
 				continue;
 
 			field = (document.getField("category")).stringValue();
+			String sentiment_str = (document.getField("sentiment")).stringValue();
+			if (sentiment_str.equals("positive"))
+				sentiment = 1.0;
+			else if (sentiment_str.equals("negative")) 
+				sentiment = -1.0;
+			else 
+				sentiment = 0;
 
 			if (counter.containsKey(field)) {
-				counter.put(field, (counter.get(field) + 1));
+				HistogramEntry category = counter.get(field);
+				category.count();
+				category.addSentiment(sentiment);
 			} else {
-				counter.put(field, 1);
+				HistogramEntry category = new HistogramEntry(field);
+				category.count();
+				category.addSentiment(sentiment);
+				counter.put(field, category);
 			}
 		}
 
-		int size = counter.keySet().size();
-
-		Object[][] resulTable = new Object[size][2];
-		int i = 0;
-		for (String key : counter.keySet()) {
-			resulTable[i][0] = key;
-			resulTable[i][1] = counter.get(key);
-			i++;
-		}
+//		int size = counter.keySet().size();
+//		Object[][] resulTable = new Object[size][2];
+//		int i = 0;
+//		for (String key : counter.keySet()) {
+//			resulTable[i][0] = key;
+//			resulTable[i][1] = counter.get(key);
+//			i++;
+//		}
 		
-		histogram.chnageDataSet(resulTable);
+		histogram.changeDataSet(counter);
+		
+//		histogram.chnageDataSet(resulTable);
 //		categories.chnageDataSet(resulTable);
 	}
+	
 
 	public void initMaxDate() {
 		try {
@@ -981,8 +999,9 @@ public enum Lucene {
 			Query nquery = parser.parse(newQuery);
 			ScoreDoc[] fusedMention = querySearcher.searchAll(nquery);
 
-			String name = "mention" + last_query + ".graphml";
-			name = name.replace(":", "_");
+//			String name = "mention" + last_query + ".graphml";
+//			name = name.replace(":", "_");
+			String name = "mention_graph";
 			
 //			 GraphML_Helper.createGraphML_Mention(fusedMention, searcher,
 //			 true, "/Users/michaelhundt/Desktop/"+name);
