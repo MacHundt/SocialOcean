@@ -76,7 +76,7 @@ public class MapPanelCreator {
 //		org.eclipse.swt.graphics.Image img = st.createImage();
 //		BufferedImage image = Swing_SWT.convertToAWT(img.getImageData());
 		
-		BufferedImage image = FilesUtil.readIconFile("icons/neutral24_icon.png");
+		BufferedImage image = FilesUtil.readIconFile("icons/neutral24y.png");
 		tweetIcon_ = new ImageIcon(image);
 
 //		st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/tweetn.png");
@@ -249,8 +249,8 @@ public class MapPanelCreator {
 						l.showInMap(result, true);
 						l.changeHistogramm(result);
 						
-						l.createGraphML_Mention(result, true);
-						l.createGraphML_Retweet(result, true);
+//						l.createGraphML_Mention(result, true);
+//						l.createGraphML_Retweet(result, true);
 					}
 					
 				}

@@ -2,6 +2,7 @@
 package bostoncase.parts;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -22,7 +23,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.Marker;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
@@ -78,6 +81,13 @@ public class Time {
 		plot.setOutlinePaint(Color.white);
 		plot.getRangeAxis().setLabel("");
 		plot.getDomainAxis().setLabel("");
+		ValueAxis y_axis = plot.getRangeAxis();		// Y
+		ValueAxis x_axis = plot.getDomainAxis(); 	// X
+		Font font = new Font("Veranda", Font.PLAIN, 12);
+		y_axis.setTickLabelFont(font);
+		x_axis.setTickLabelFont(font);
+		x_axis.setTickLabelPaint(Color.black);
+		y_axis.setTickLabelPaint(Color.black);
 		plot.getDomainAxis().setAxisLineVisible(false);
 
 		final XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();

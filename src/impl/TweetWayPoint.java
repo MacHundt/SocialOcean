@@ -86,7 +86,7 @@ public class TweetWayPoint  extends SwingWaypoint {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-            JOptionPane.showMessageDialog(button, details, "Details", JOptionPane.INFORMATION_MESSAGE ,button.getIcon());
+            JOptionPane.showMessageDialog(button, details, "Details", JOptionPane.PLAIN_MESSAGE ,button.getIcon());
         }
 
         @Override

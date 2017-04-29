@@ -1001,7 +1001,7 @@ public enum Lucene {
 
 //			String name = "mention" + last_query + ".graphml";
 //			name = name.replace(":", "_");
-			String name = "mention_graph";
+			String name = "mention_graph.graphml";
 			
 //			 GraphML_Helper.createGraphML_Mention(fusedMention, searcher,
 //			 true, "/Users/michaelhundt/Desktop/"+name);

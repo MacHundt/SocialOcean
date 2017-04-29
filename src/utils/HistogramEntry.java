@@ -40,7 +40,8 @@ public class HistogramEntry implements Comparable<HistogramEntry>{
 	
 	public Color getAvgSentimentColor() {
 		
-		Color color = new Color(Display.getDefault(), 204, 204, 204);		// grey
+//		Color color = new Color(Display.getDefault(), 204, 204, 204);		// grey
+		Color color = new Color(Display.getDefault(), 255,255,191);
 		
 		// Positive tendency
 		if ((sumSentiment / count) > 0 ) {

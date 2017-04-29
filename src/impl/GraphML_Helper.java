@@ -65,8 +65,11 @@ public class GraphML_Helper {
         // TODO Optimize Parser
         
         HashMap<String, String> nodeNames = new HashMap<>();   // screenName -> id
+        HashMap<String, String> sources = new HashMap<>(); 
+        
         HashMap<String, Integer> edgesMap = new HashMap<>();
         int nodesCounter = 0;
+        int emptyCounter = 0;
 		
 		try {
 			Connection c = DBManager.getConnection();
@@ -78,6 +81,8 @@ public class GraphML_Helper {
 			double maxMessage = Math.log10(625638);
 			long maxDate = Date.UTC(2013, 04, 24, 19, 0, 0);
 			long minDate = Date.UTC(2006, 03, 21, 0, 0, 0);
+			
+			
 			
 			for (ScoreDoc doc : result) {
 				int docID = doc.doc;
@@ -106,6 +111,7 @@ public class GraphML_Helper {
 				long time = 0;
 				
 				switch (type) {
+				// get the tweet
 				case "twitter":
 					query = "Select "
 							+ "t.\"tweetScreenName\", t.\"tweetContent\", t.sentiment, t.category, t.\"containsUrl\", t.replytousername, "
@@ -120,6 +126,7 @@ public class GraphML_Helper {
 					query = "Select t.sentiment from tweetdata as t where t.tweetid = " + Long.parseLong(id);
 				}
 				ResultSet rs = stmt.executeQuery(query);
+				
 				
 				boolean isEmpty = true;
 				while (rs.next()) {
@@ -146,8 +153,10 @@ public class GraphML_Helper {
 				
 				double credible  = 1 - ((sc_follow + sc_friend +sc_tweets + sc_time) / 4.0) ;
 				
-				if (isEmpty) 
+				if (isEmpty) {
+					emptyCounter++;
 					continue;
+				}
 				
 				String mentionString = getMentionsFromTweets(content);
 				if (mentionString.length() < 2) {
@@ -160,6 +169,7 @@ public class GraphML_Helper {
 				if (!nodeNames.containsKey(screenName)) {
 					nodeID = "n" + nodesCounter++;
 					nodeNames.put(screenName, nodeID);
+					sources.put(screenName, nodeID);
 					Element nodes = graph.addElement("node", getXMLNamesspace()); 				
 					nodes.addAttribute(QName.get("id", "", getXMLNamesspace()), nodeID); 			
 					Element data = nodes.addElement("data", getXMLNamesspace()); 		
@@ -215,6 +225,10 @@ public class GraphML_Helper {
 					}
 					
 					double edgeCredebility = createZipfScore(content) + ((hasUrl)? 0.4 : 0);
+					
+					if ( sources.containsKey(nodeID) ) {
+						System.out.println(edgesNames);
+					}
 					
 					Element edges = graph.addElement("edge", getXMLNamesspace()); 				
 					edges.addAttribute(QName.get("source", "", getXMLNamesspace()), ""+sourceID); 

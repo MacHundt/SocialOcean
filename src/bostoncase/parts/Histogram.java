@@ -11,6 +11,7 @@ import javax.inject.Inject;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.swtchart.Chart;
@@ -88,11 +89,14 @@ public class Histogram {
 				chart.getAxisSet().getXAxis(0).getTitle().setForeground(black);
 				chart.getAxisSet().getYAxis(0).getTitle().setForeground(black);
 				chart.getAxisSet().getYAxis(0).getTitle().setVisible(true); 
+//				Font font = chart.getAxisSet().getYAxis(0).getTitle().getFont();
+//				System.out.println(font.getFontData().toString());
 				chart.getAxisSet().getXAxis(0).getGrid().setForeground(gray);
 				chart.getAxisSet().getYAxis(0).getGrid().setForeground(gray);
 				
 				chart.getAxisSet().getXAxis(0).getGrid().setStyle(LineStyle.NONE);
-				chart.getAxisSet().getYAxis(0).getGrid().setStyle(LineStyle.DOT);
+//				chart.getAxisSet().getYAxis(0).getGrid().setStyle(LineStyle.DASHDOTDOT);
+				chart.getAxisSet().getYAxis(0).getGrid().setStyle(LineStyle.NONE);
 				
 				chart.getAxisSet().getXAxis(0).getTick().setForeground(black);
 				chart.getAxisSet().getYAxis(0).getTick().setForeground(black);
@@ -137,7 +141,9 @@ public class Histogram {
 					chart.getAxisSet().getXAxis(0).setCategorySeries(none);
 					barSeries = (IBarSeries) chart.getSeriesSet().createSeries(
 							SeriesType.BAR, entry.getName() );
-					System.out.println(entry.getName());
+					
+//					System.out.println(entry.getName());
+					
 					barSeries.setYSeries(val);
 					barSeries.getLabel().setFormat("##.0");
 //					barSeries.setBarColor(entry.getCategoryColor());
