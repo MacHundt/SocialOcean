@@ -33,6 +33,7 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.spatial.geopoint.document.GeoPointField;
 import org.apache.lucene.spatial.geopoint.search.GeoPointInBBoxQuery;
 import org.apache.lucene.store.FSDirectory;
+import org.jfree.data.general.DatasetUtilities;
 
 import bostoncase.parts.CategoriesPart;
 import bostoncase.parts.Console;
@@ -43,7 +44,9 @@ import bostoncase.parts.Time;
 import bostoncase.parts.TopSelectionPart;
 import impl.GraphML_Helper;
 import impl.MapPanelCreator;
+import impl.TimeLineCreatorThread;
 import interfaces.ILuceneQuerySearcher;
+import utils.Lucene.TimeBin;
 
 // as singleton
 public enum Lucene {
@@ -119,6 +122,7 @@ public enum Lucene {
 
 	public int serialCounter = 0;
 	public boolean isInitialized = false;
+	private boolean changedTimeSeries;
 	
 
 	public void initLucene(String index, ILuceneQuerySearcher querySearcher) {
@@ -393,9 +397,9 @@ public enum Lucene {
 					result = querySearcher.searchAll(query);
 					result = mergeScoreDocs(result);
 				}
-				// TODO The same with TIME
-				else if (query.toString().startsWith("Time") || last_query.startsWith("Time")) {
-
+				// Time Selection
+				else if (query.toString().startsWith("date")) {
+					timeRangeFilter(query);
 				}
 
 				else {
@@ -439,9 +443,9 @@ public enum Lucene {
 					// result = querySearcher.searchAll(bq.build());
 
 				}
-				// TODO The same with TIME
-				else if (query.toString().startsWith("Time") || last_query.startsWith("Time")) {
-
+				// Time Selection from last_result
+				else if (query.toString().startsWith("date")) {
+					timeRangeFilter(query);
 				}
 
 				// TODO FUSE -- when sources types are different
@@ -468,7 +472,11 @@ public enum Lucene {
 			// NORMAL
 			else {
 				last_query = query.toString();
-				result = querySearcher.searchAll(query);
+				if (query.toString().startsWith("date")) {
+					result = timeRangeFilter(query);
+				} else {
+					result = querySearcher.searchAll(query);
+				}
 			}
 
 		} catch (ParseException e) {
@@ -490,10 +498,85 @@ public enum Lucene {
 			queryHistory.add(query);
 			addnewQueryResult(result, query);
 		}
-
-		last_result = result;
+		
+		if (addToQueryHistory)
+			last_result = result;
 		return result;
 	}
+
+	
+	private ScoreDoc[] timeRangeFilter(Query query) {
+		
+		if (last_result == null) {
+			return querySearcher.searchAll(query);
+		}
+		
+		long from = normalizeDate(Long.parseLong(getRangeFromQuery(query)[0].trim()), 10);
+		long to = normalizeDate(Long.parseLong(getRangeFromQuery(query)[1].trim()), 10);
+		
+		// TODO go through last result and filter those in time range
+		
+		ArrayList<ScoreDoc> result = new ArrayList<>();
+		
+		for (ScoreDoc doc : last_result	) {
+			try {
+				Document d = reader.document(doc.doc);
+				long date = Long.parseLong(d.getField("date").stringValue());
+				
+				if (date > from && date < to ) {
+					result.add(doc);
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		ScoreDoc[] out = new ScoreDoc[result.size()];
+		return result.toArray(out);
+	}
+
+	
+	
+//	public ScoreDoc[] timeRangeFilter(ScoreDoc[] last_result, long from, long to) {
+//		
+//		// TODO go through last result and filter those in time range
+//		
+//		ArrayList<ScoreDoc> result = new ArrayList<>();
+//		
+//		for (ScoreDoc doc : last_result	 ) {
+//			System.out.println();
+//			try {
+//				Document d = reader.document(doc.doc);
+//				long date = Long.parseLong(d.getField("date").stringValue());
+//				
+//				if (date > from && date < to ) {
+//					result.add(doc);
+//				}
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		ScoreDoc[] out = new ScoreDoc[result.size()];
+//		return result.toArray(out);
+//	}
+
+	
+	private String[] getRangeFromQuery(Query query) {
+		String queryStr = query.toString().toLowerCase();
+		queryStr = queryStr.substring("date:[".length());
+		queryStr = queryStr.substring(0, queryStr.length()-1);
+		
+		return queryStr.split(" to ");
+	}
+	
+	
+	private long normalizeDate(long date, int precision) {
+		String dateStr = ""+date;
+		dateStr = dateStr.substring(0, precision);
+		long out = Long.parseLong(dateStr);
+
+		return out;
+	}
+	
 
 	private ScoreDoc[] cutScoreDocs(ScoreDoc[] result) {
 		if (last_result == null)
@@ -861,10 +944,15 @@ public enum Lucene {
 		}
 
 		Time time = Time.getInstance();
-		time.changeDataSet(tl_data);
 		completeDataTime = tl_data;
+		if (!changedTimeSeries)
+			time.changeDataSet(tl_data);
 
 	}
+	
+	
+	
+	
 
 	public void changeTimeLine(TimeBin binsize) {
 
@@ -958,6 +1046,7 @@ public enum Lucene {
 
 		Time time = Time.getInstance();
 		time.changeDataSet(tl_data);
+		changedTimeSeries = true;
 
 	}
 
@@ -1002,6 +1091,8 @@ public enum Lucene {
 //			String name = "mention" + last_query + ".graphml";
 //			name = name.replace(":", "_");
 			String name = "mention_graph.graphml";
+			
+			ArrayList<ScoreDoc> a = new ArrayList<>();
 			
 //			 GraphML_Helper.createGraphML_Mention(fusedMention, searcher,
 //			 true, "/Users/michaelhundt/Desktop/"+name);
@@ -1188,8 +1279,16 @@ public enum Lucene {
 		ScoreDoc[] lastResult = queryResults.get(currentPointer).result;
 		showInMap(lastResult, true);
 		changeHistogramm(lastResult);
+		Time time = Time.getInstance();
 		last_result = lastResult;
 		last_query = queryResults.get(currentPointer).query.toString();
+		TimeLineCreatorThread lilt = new TimeLineCreatorThread(this) {
+			@Override
+			public void execute() {
+				changeTimeLine(TimeBin.HOURS);
+			}
+		};
+		lilt.start();
 		printToConsole("<< back: "+ last_query + "#:"+ lastResult.length);
 
 	}

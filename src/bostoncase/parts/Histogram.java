@@ -1,21 +1,30 @@
  
 package bostoncase.parts;
 
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.swtchart.Chart;
 import org.swtchart.IBarSeries;
+import org.swtchart.ISeries;
 import org.swtchart.ISeries.SeriesType;
 import org.swtchart.LineStyle;
 
@@ -34,9 +43,6 @@ public class Histogram {
 	public Histogram() {
 		
 	}
-	
-//	Composite comp;
-//	DefaultCategoryDataset dataset ;
 	
 	Chart chart;
 	IBarSeries barSeries;
@@ -59,8 +65,9 @@ public class Histogram {
 	
 	// TODO  -- Comparative View .. getChildren() ... dispose(), setVisible()
 	// TODO	 -- Switch to log-Scale
-	
-	
+	/**
+	 * Set up the initial Chart Settings
+	 */
 	private void prepareChart() {
 
 		parent.getDisplay().asyncExec(new Runnable() {
@@ -116,12 +123,20 @@ public class Histogram {
 	}
 	
 	
+	/**
+	 * Update histogram, sort bars according to the average sentiment
+	 * @param counter
+	 */
 	public void changeDataSet(HashMap<String, HistogramEntry> counter) {
 		
 		// SORT
+		// java8
+//		counter.values().stream().sorted();
+		
 		ArrayList<HistogramEntry> arrEntry = new ArrayList<>(counter.size()); 
 		for (HistogramEntry e : counter.values())
 			arrEntry.add(e);
+		
 		Collections.sort(arrEntry);
 		
 		prepareChart();
@@ -142,15 +157,18 @@ public class Histogram {
 					barSeries = (IBarSeries) chart.getSeriesSet().createSeries(
 							SeriesType.BAR, entry.getName() );
 					
+					barSeries.setDescription(entry.getName());
 //					System.out.println(entry.getName());
-					
 					barSeries.setYSeries(val);
 					barSeries.getLabel().setFormat("##.0");
 //					barSeries.setBarColor(entry.getCategoryColor());
 					barSeries.setBarColor(entry.getAvgSentimentColor());
 				}
+				chart.setToolTipText(barSeries.getDescription());
 				
 				barSeries.getLabel().setVisible(false);
+				
+				chart.addListener(SWT.Paint, event -> addLabelsToBars(arrEntry, event));
 				
 				chart.getAxisSet().adjustRange();
 				chart.redraw();
@@ -192,6 +210,7 @@ public class Histogram {
 //				chart.getAxisSet().adjustRange();
 //				chart.redraw();
 			}
+			
 		});
 		
 //		comp.getDisplay().asyncExec(new Runnable() {
@@ -208,8 +227,56 @@ public class Histogram {
 		
 	}
 	
+	private void addLabelsToBars(ArrayList<HistogramEntry> arrEntry, Event event) {
+		int height = chart.getBounds().height;
+		int width = chart.getBounds().width;
+		int x = chart.getBounds().x;
+		int y = chart.getBounds().y;
+		
+		int areaWidth = chart.getPlotArea().getBounds().width;
+		Point plotAreaStartPoint = chart.getPlotArea().getLocation();
+		
+		GC gc = event.gc;
+		Color color = new Color(Display.getDefault(), 200, 200, 200);
+		int padding = barSeries.getBarPadding()-10;
+		int barwidth = barSeries.getBounds()[0].width-1;
+		
+		int i = 0;
+		
+//		for (ISeries series : chart.getSeriesSet().getSeries()) {
+//			IBarSeries bars = (IBarSeries) series;
+//			Rectangle[] barRec = bars.getBounds();
+//			
+//			Color c1 = new Color(event.display, 50, 50, 200);
+//	        gc.setBackground(c1);
+//	        gc.fillRectangle(barRec[0].x, height-5 , 5, bars.);
+//			
+//		}
+		
+		for (HistogramEntry e : arrEntry) {
+			i++;
+//			gc.setForeground(e.getCategoryColor());
+//			gc.setBackground(color);
+			gc.drawText(fitToBarWith(e.getName(), 13), (int) (barwidth*1.2)+padding+(i*(barwidth)), height - 20, SWT.CENTER);
+//			System.out.println(e.getName() +" At position: ("+( (barwidth*1.2)+padding+(i*(barwidth)))+", "+(height-20)+")");
+			
+		}
+		
+	}
 	
 	
+	
+	private String fitToBarWith(String name, int maxLetters) {
+		String out = "";
+		if (name.length() < maxLetters) {
+			return name;
+		} else {
+			out = name.substring(0, maxLetters-3)+"..";
+			return out;
+		}
+	}
+
+
 	public static Histogram getInstance() {
         return INSTANCE;
 	}
@@ -229,10 +296,11 @@ public class Histogram {
 	
 	
 	
+	/**
+	 * Reset histogram view, set back to initial dataSet.
+	 */
 	public void viewInitialDataSet() {
-		
 		prepareChart();
-		
 		double[] dataSeries = new double[initialData.length];
 		String[] categories = new String[initialData.length];
 		
@@ -247,28 +315,6 @@ public class Histogram {
 			public void run() {
 				
 				chart = (Chart) parent.getChildren()[0];
-				
-//				int i = 0;
-//				for (String cat : categories) {
-//					String[] none = {" "};
-//					double[] val = {dataSeries[i]};
-//					chart.getAxisSet().getXAxis(0).setCategorySeries(none);
-//					// set Color for Cat
-//					barSeries = (IBarSeries) chart.getSeriesSet().createSeries(
-//							SeriesType.BAR, cat );
-//					barSeries.setYSeries(val);
-//					barSeries.getLabel().setFormat("##.0");
-//					
-//					barSeries.setBarColor(getColor(cat));
-//					barSeries.setBarPadding(5);
-//					
-//					i++;
-//					
-//				}
-//				chart.getAxisSet().adjustRange();
-//				chart.redraw();
-				
-				
 				chart.getAxisSet().getXAxis(0).setCategorySeries(categories);
 				barSeries = (IBarSeries) chart.getSeriesSet().createSeries(
 						SeriesType.BAR, "categories ");

@@ -218,7 +218,7 @@ public class MapPanelCreator {
 						Graphics g = mapViewer.getGraphics();
 				        g.clearRect(topX,topY,width,height);
 						mapViewer.paint(g);
-						mapViewer.validate();
+//						mapViewer.validate();
 						
 						
 						// GEO Test
@@ -324,7 +324,7 @@ public class MapPanelCreator {
 				            }
 				        });
 						mapViewer.paint(g);
-						mapViewer.validate();
+//						mapViewer.validate();
 					}
 				}
 			});
