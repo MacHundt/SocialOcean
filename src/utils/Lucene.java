@@ -73,6 +73,8 @@ public enum Lucene {
 	private String[] idxFields = null; // ALL Fields which are indexed
 	
 	private TermStats[] catHisto = null;
+	
+	private ColorScheme colorScheme = ColorScheme.SENTIMENT;
 
 	private Connection con = null;
 
@@ -96,6 +98,10 @@ public enum Lucene {
 
 	public static enum TimeBin {
 		SECONDS, MINUTES, HOURS, DAYS
+	}
+	
+	public static enum ColorScheme {
+		SENTIMENT, CATEGORY
 	}
 
 	public enum QueryTypes {
@@ -1308,6 +1314,29 @@ public enum Lucene {
 	public void resetTimeLine() {
 		Time time = Time.getInstance();
 		time.changeDataSet(completeDataTime);
+	}
+
+	
+	public void setColorScheme(String text) {
+		
+		if (ColorScheme.SENTIMENT.name().toLowerCase().equals(text.toLowerCase())) {
+			setColorScheme(ColorScheme.SENTIMENT);
+		}
+		else if (ColorScheme.CATEGORY.name().toLowerCase().equals(text.toLowerCase())) {
+			setColorScheme(ColorScheme.CATEGORY);
+		}
+		else {
+			setColorScheme(ColorScheme.SENTIMENT);	// default
+		}
+		
+	}
+
+	public ColorScheme getColorScheme() {
+		return colorScheme;
+	}
+
+	public void setColorScheme(ColorScheme colorScheme) {
+		this.colorScheme = colorScheme;
 	}
 
 }

@@ -197,7 +197,12 @@ public class Histogram {
 				chart.getAxisSet().adjustRange();
 				chart.redraw();
 				
-				chart.getPlotArea().addListener(SWT.Paint, event -> changeBarColors(arrEntry, event, false));
+				Lucene l = Lucene.INSTANCE;
+				if (l.getColorScheme().equals(Lucene.ColorScheme.CATEGORY))
+					chart.getPlotArea().addListener(SWT.Paint, event -> changeBarColors(arrEntry, event, true));
+				else {
+					chart.getPlotArea().addListener(SWT.Paint, event -> changeBarColors(arrEntry, event, false));
+				}
 				chart.getPlotArea().addListener(SWT.MouseDoubleClick, event -> mouseDoubleClicked(categories, event));
 				
 			}

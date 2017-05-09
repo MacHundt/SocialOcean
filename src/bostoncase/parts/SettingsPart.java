@@ -15,6 +15,8 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
+import utils.Lucene;
+
 public class SettingsPart {
 	@Inject
 	public SettingsPart() {
@@ -86,11 +88,17 @@ public class SettingsPart {
 			
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				System.out.println(combo.getText());
+//				System.out.println(combo.getText());
 				// TODO change colorShema
 				// --> Color Tweets
 				// --> Color Nodes
-				// --> Color Histogram
+				// --> Color Histogram	-- DONE
+				
+				Lucene l = Lucene.INSTANCE;
+				l.setColorScheme(combo.getText());
+				l.showInMap(l.getLastResult(), true);
+				l.changeHistogramm(l.getLastResult());
+				
 			}
 			
 			@Override
