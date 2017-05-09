@@ -33,7 +33,6 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.spatial.geopoint.document.GeoPointField;
 import org.apache.lucene.spatial.geopoint.search.GeoPointInBBoxQuery;
 import org.apache.lucene.store.FSDirectory;
-import org.jfree.data.general.DatasetUtilities;
 
 import bostoncase.parts.CategoriesPart;
 import bostoncase.parts.Console;
@@ -46,7 +45,6 @@ import impl.GraphML_Helper;
 import impl.MapPanelCreator;
 import impl.TimeLineCreatorThread;
 import interfaces.ILuceneQuerySearcher;
-import utils.Lucene.TimeBin;
 
 // as singleton
 public enum Lucene {

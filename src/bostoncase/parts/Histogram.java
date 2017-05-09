@@ -8,10 +8,17 @@ import java.util.HashMap;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.MouseTrackListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -20,9 +27,14 @@ import org.swtchart.Chart;
 import org.swtchart.IBarSeries;
 import org.swtchart.ISeries;
 import org.swtchart.ISeries.SeriesType;
+
+import impl.TimeLineCreatorThread;
+
 import org.swtchart.LineStyle;
 
 import utils.HistogramEntry;
+import utils.Lucene;
+import utils.Lucene.TimeBin;
 
 
 public class Histogram {
@@ -186,12 +198,82 @@ public class Histogram {
 				chart.redraw();
 				
 				chart.getPlotArea().addListener(SWT.Paint, event -> changeBarColors(arrEntry, event, false));
+				chart.getPlotArea().addListener(SWT.MouseDoubleClick, event -> mouseDoubleClicked(categories, event));
+				
 			}
 			
 		});
 		
 	}
 	
+	protected void mouseDoubleClicked(String[] categories, Event event) {
+		GC gc = event.gc;
+		
+		Rectangle rec = event.getBounds();
+		Point p = new Point(rec.x, rec.y);
+		System.out.print("Mouse double clicked on .. ");
+		ISeries series = chart.getSeriesSet().getSeries()[0];
+		IBarSeries bars = (IBarSeries) series;
+		Rectangle[] barRecs = bars.getBounds();
+		int i = 0;
+		for (Rectangle barRec : barRecs) {
+			
+			String cat = categories[i++];
+			if (isPointinRec(p, barRec)) {
+				System.out.println(cat);
+				
+				String type = "FUSE";
+				Lucene l = Lucene.INSTANCE;
+				while (!l.isInitialized) {
+					return;
+				}
+				String query = "category:"+cat;
+				ScoreDoc[] result = null;
+				try {
+					Query q = l.getParser().parse(query);
+					result = l.query(q, type, true, true);
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				if (result == null)
+					return;
+				
+//				Color c1 = new Color(event.display, 50, 50, 200);		// selection color
+//				gc.setBackground(c1);
+//				gc.drawRectangle(barRec.x,barRec.y , barRec.width, barRec.height);
+				
+				TimeLineCreatorThread lilt = new TimeLineCreatorThread(l) {
+					@Override
+					public void execute() {
+						l.changeTimeLine(TimeBin.HOURS);
+					}
+				};
+				lilt.start();
+				
+				// Show in MAP  --> Clear LIST = remove all Markers
+				l.showInMap(result, true);
+				l.changeHistogramm(result);
+			}
+			
+		}
+		
+	}
+
+
+	private boolean isPointinRec(Point p, Rectangle barRec) {
+		boolean out = false;
+		if (p.x > barRec.x && p.x < (barRec.x + barRec.width) &&
+				p.y > barRec.y  && p.y < (barRec.y + barRec.height ) ) {
+			
+			out = true;
+		}
+		
+		return out;
+	}
+
+
 	protected void changeBarColors(ArrayList<HistogramEntry> arrEntry, Event event, boolean catColor) {
 		GC gc = event.gc;
 		ISeries series = chart.getSeriesSet().getSeries()[0];
@@ -316,6 +398,7 @@ public class Histogram {
 				chart.redraw();
 				
 				chart.getPlotArea().addListener(SWT.Paint, event -> changeBarToCatColors(categories, event));
+				chart.getPlotArea().addListener(SWT.MouseDoubleClick, event -> mouseDoubleClicked(categories, event));
 			}
 		});
 	}
