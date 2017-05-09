@@ -81,56 +81,56 @@ public class HistogramEntry implements Comparable<HistogramEntry>{
 	
 	
 	
-	public Color getCategoryColor() {
-		Color color = new Color(Display.getDefault(), 0, 0, 0);
-		
-		Color pink = new Color(Display.getDefault(), 250, 22, 129);		// Default
-		
-		switch (categoryName.toLowerCase()) {
-		case "computers_technology":
-			color = new Color(Display.getDefault(), 228, 26, 28);
-			break;
-		case "education":
-			color = new Color(Display.getDefault(), 102, 99, 14);
-			break;
-		case "family":
-			color = new Color(Display.getDefault(), 65, 148, 134);
-			break;
-		case "food":
-			color = new Color(Display.getDefault(), 91, 157, 90);
-			break;
-		case "health":
-			color = new Color(Display.getDefault(), 145, 87, 155);
-			break;
-		case "marketing":
-			color = new Color(Display.getDefault(), 218, 109, 59);
-			break;
-		case "music":
-			color = new Color(Display.getDefault(), 255, 174, 19);
-			break;
-		case "news_media":
-			color = new Color(Display.getDefault(), 247, 240, 50);
-			break;
-		case "other":
-			color = new Color(Display.getDefault(), 182, 117, 42);
-			break;
-		case "pets":
-			color = new Color(Display.getDefault(), 210, 109, 122);
-			break;
-		case "politics":
-			color = new Color(Display.getDefault(), 221, 136, 181);
-			break;
-		case "recreation_sports":
-			color = new Color(Display.getDefault(), 153, 153, 153);
-			break;
-
-		default:
-			color = pink;
-			break;
-		}
-		
-		return color;
-	}
+//	public Color getCategoryColor() {
+//		Color color = new Color(Display.getDefault(), 0, 0, 0);
+//		
+//		Color pink = new Color(Display.getDefault(), 250, 22, 129);		// Default
+//		
+//		switch (categoryName.toLowerCase()) {
+//		case "computers_technology":
+//			color = new Color(Display.getDefault(), 228, 26, 28);
+//			break;
+//		case "education":
+//			color = new Color(Display.getDefault(), 102, 99, 14);
+//			break;
+//		case "family":
+//			color = new Color(Display.getDefault(), 65, 148, 134);
+//			break;
+//		case "food":
+//			color = new Color(Display.getDefault(), 91, 157, 90);
+//			break;
+//		case "health":
+//			color = new Color(Display.getDefault(), 145, 87, 155);
+//			break;
+//		case "marketing":
+//			color = new Color(Display.getDefault(), 218, 109, 59);
+//			break;
+//		case "music":
+//			color = new Color(Display.getDefault(), 255, 174, 19);
+//			break;
+//		case "news_media":
+//			color = new Color(Display.getDefault(), 247, 240, 50);
+//			break;
+//		case "other":
+//			color = new Color(Display.getDefault(), 182, 117, 42);
+//			break;
+//		case "pets":
+//			color = new Color(Display.getDefault(), 210, 109, 122);
+//			break;
+//		case "politics":
+//			color = new Color(Display.getDefault(), 221, 136, 181);
+//			break;
+//		case "recreation_sports":
+//			color = new Color(Display.getDefault(), 153, 153, 153);
+//			break;
+//
+//		default:
+//			color = pink;
+//			break;
+//		}
+//		
+//		return color;
+//	}
 
 
 	@Override
