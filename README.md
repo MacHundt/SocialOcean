@@ -21,6 +21,8 @@ or from eclipse itself, see [**here**](http://wiki.eclipse.org/Eclipse4/RCP).
 ## Used Libraries
 - Lucene
 - OSM
+- JUNG
+- GUAVA
 
 
 ## Further Reading
