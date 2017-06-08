@@ -32,7 +32,7 @@ public class SamplePart {
 		parent.setLayout(new GridLayout(1, false));
 
 		txtInput = new Text(parent, SWT.BORDER);
-		txtInput.setMessage("Enter text to mark part as dirty");
+		txtInput.setText("Enter text to mark part as dirty");
 		txtInput.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {

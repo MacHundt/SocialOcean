@@ -260,6 +260,8 @@ public class Histogram {
 				// Show in MAP  --> Clear LIST = remove all Markers
 				l.showInMap(result, true);
 				l.changeHistogramm(result);
+				
+				l.createGraphML_Mention(result, true);
 			}
 			
 		}

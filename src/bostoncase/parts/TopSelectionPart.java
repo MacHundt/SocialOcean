@@ -3,6 +3,7 @@ package bostoncase.parts;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
@@ -117,6 +118,7 @@ public class TopSelectionPart {
 		TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<DefaultTableModel>(detailsDataModel);
 		detail = new JTable(detailsDataModel);
 		detail.setRowSorter(sorter);
+		detail.setAutoCreateColumnsFromModel(true);
 		
 		JScrollPane detailsPane = new JScrollPane(detail);
 		split.setLeftComponent(detailsPane);
@@ -215,12 +217,15 @@ public class TopSelectionPart {
 				l.changeHistogramm(result);
 				
 				
-//				l.createGraphML_Mention(result, true);
+				l.createGraphML_Mention(result, true);
 //				l.createGraphML_Retweet(result, true);
 			}
 		});
 		
+		// TODO
 		split.setDividerLocation(0.5);
+		
+		
 		rootContainer.add(panel);
  		
 		frame.add(rootContainer);

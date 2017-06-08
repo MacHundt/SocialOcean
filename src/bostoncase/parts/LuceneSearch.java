@@ -216,7 +216,7 @@ public class LuceneSearch {
 		text = new Text(parent, SWT.BORDER);
 		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
 //		text.setFont(newFont);
-		text.setMessage("Enter query");
+		text.setText("Enter query");
 		
 		Button btnSearch = new Button(parent, SWT.NONE);
 //		btnSearch.setFont(newFont);

@@ -7,14 +7,22 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.swing.text.DateFormatter;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -153,6 +161,7 @@ public class GraphML_Helper {
 				
 				double credible  = 1 - ((sc_follow + sc_friend +sc_tweets + sc_time) / 4.0) ;
 				
+				// ID did not exist
 				if (isEmpty) {
 					emptyCounter++;
 					continue;
@@ -189,14 +198,77 @@ public class GraphML_Helper {
 				String sourceID = nodeID;
 				
 				
-				
 				// ADD target nodes
 				for (String target : mentions) {
 					
 					if (target.isEmpty())
 						continue;
 					
-					double targetCred = 0.5;
+					
+					switch (type) {
+					// get the tweet
+					case "twitter":
+						query = "Select "
+								+ "t.user_screenname, t.cscore, t.user_location, t.user_timezone, t.user_language, t.user_utcoffset, "
+								+ "t.user_listedcount, t.user_creationdate, t.user_friendscount , "
+								+ "t.user_followerscount, t.user_statusescount  from users as t where t.user_screenname = '"
+								+ target+"'";
+						break;
+					case "flickr":
+//						query = "Select t.sentiment from flickrdata as t where t.\"photoID\" = " + Long.parseLong(id);
+						break;
+					default:
+//						query = "Select t.sentiment from tweetdata as t where t.tweetid = " + Long.parseLong(id);
+					}
+					
+					String language = "";
+					double descriptionScore = 0.5;
+					String location = "";
+					String timezone = "";
+					int utcoffset = 0;
+					rs = stmt.executeQuery(query);
+					
+					boolean userFound = false;
+					while (rs.next()) {
+						userFound = true;
+						screenName = rs.getString(1);
+						descriptionScore = rs.getDouble(2);
+						location = rs.getString(3);
+						timezone = rs.getString(4);
+						language = rs.getString(5);
+						utcoffset = rs.getInt(6);
+						listedCount = rs.getInt(7);
+						// Creation DATE 
+						String cd = rs.getString(8);
+//						DateTimeFormatter format = DateTimeFormatter.ofPattern("E LL dd HH:mm:ss zzz yyyy");
+						String TWITTER = "EEE MMM dd HH:mm:ss ZZZZZ yyyy";
+//						DateTimeFormatter TWITTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S");
+						SimpleDateFormat sf = new SimpleDateFormat(TWITTER,Locale.ENGLISH);
+						sf.setLenient(true);
+					    java.util.Date date =sf.parse(cd);
+//						Date dt = new Date
+//						String cd = rs.getString(8).split(" ")[0];
+						Date dt = new Date(date.getYear(), date.getMonth(), date.getDate());
+						time = dt.getTime(); 	// the bigger the 'older' the user
+						friends = rs.getInt(9);
+						followers = rs.getInt(10);
+						tweetCount = rs.getInt(11);
+						
+					}
+					
+					// ID did not exist
+					double targetCred = -1.0;
+					if (userFound) {
+						sc_follow =  Math.log10(followers) / maxFollow;
+						sc_friend =  Math.log10(friends) / maxFriends;
+						sc_tweets =  Math.log10(tweetCount) / maxMessage;
+						sc_time = ((Math.log(time) / Math.log(1000)) - (Math.log(minDate) / Math.log(1000))) / ((Math.log(maxDate) / Math.log(1000)) - (Math.log(minDate) / Math.log(1000)));
+						
+						if (sc_time < 0)
+							sc_time = 0;
+						
+						targetCred  = 1.0 - ((sc_follow + sc_friend + sc_tweets + sc_time + descriptionScore) / 5.0) ;
+					}
 					
 					if (!nodeNames.containsKey(target)) {
 						nodeID = "n"+nodesCounter++;
@@ -245,7 +317,7 @@ public class GraphML_Helper {
 				}
 
 			}
-		} catch (IOException | SQLException e) {
+		} catch (IOException | SQLException | java.text.ParseException e) {
 			e.printStackTrace();
 		}
 		

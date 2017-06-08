@@ -23,7 +23,7 @@
             </children>
             <children xsi:type="basic:PartStack" xmi:id="_n1WZAIosEeauXYmQDjn7lw" elementId="bostoncase.partstack.settings" containerData="1200" accessibilityPhrase="settingsPartStack" selectedElement="_M9Y_oBMGEeenmLxjomef8A">
               <children xsi:type="basic:Part" xmi:id="_4NByEIosEeauXYmQDjn7lw" elementId="bostoncase.part.settings" visible="false" contributionURI="bundleclass://BostonCase/bostoncase.parts.SamplePart" label="settings" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ" closeable="true"/>
-              <children xsi:type="basic:Part" xmi:id="_M9Y_oBMGEeenmLxjomef8A" elementId="bostoncase.part.graph" contributionURI="bundleclass://BostonCase/bostoncase.parts.GraphPart" label="" iconURI="platform:/plugin/BostonCase/icons/socialgraph_icon.png" tooltip="Mention Graph"/>
+              <children xsi:type="basic:Part" xmi:id="_M9Y_oBMGEeenmLxjomef8A" elementId="bostoncase.part.graph" contributionURI="bundleclass://BostonCase/bostoncase.parts.JungGraph" label="" iconURI="platform:/plugin/BostonCase/icons/socialgraph_icon.png" tooltip="Mention Graph"/>
             </children>
           </children>
           <children xsi:type="basic:PartStack" xmi:id="_65wQMCpgEeevD-C7DPB0Og" elementId="bostoncase.partstack.0" containerData="1200">

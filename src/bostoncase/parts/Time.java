@@ -184,6 +184,7 @@ public class Time {
 					result = l.searchTimeRange(low.longValue(),  up.longValue(), true,  true);
 					l.showInMap(result, true);
 					l.changeHistogramm(result);
+					l.createGraphML_Mention(result, true);
 				} else {
 					// back --> == zoom out
 					l.showLastResult();

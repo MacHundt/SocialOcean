@@ -1283,6 +1283,8 @@ public enum Lucene {
 		ScoreDoc[] lastResult = queryResults.get(currentPointer).result;
 		showInMap(lastResult, true);
 		changeHistogramm(lastResult);
+		createGraphML_Mention(lastResult, true);
+		
 		Time time = Time.getInstance();
 		last_result = lastResult;
 		last_query = queryResults.get(currentPointer).query.toString();
