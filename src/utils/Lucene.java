@@ -41,7 +41,9 @@ import bostoncase.parts.LuceneStatistics;
 import bostoncase.parts.QueryHistory;
 import bostoncase.parts.Time;
 import bostoncase.parts.TopSelectionPart;
+import impl.GraphCreatorThread;
 import impl.GraphML_Helper;
+import impl.GraphPanelCreator3;
 import impl.MapPanelCreator;
 import impl.TimeLineCreatorThread;
 import interfaces.ILuceneQuerySearcher;
@@ -968,6 +970,11 @@ public enum Lucene {
 		// buckets ... print
 		long minDate = Long.MAX_VALUE;
 		long maxDate = Long.MIN_VALUE;
+		
+		if (last_result.length == 0) {
+			System.out.println(">>>> Result is empty");
+			return;
+		}
 
 		for (ScoreDoc doc : last_result) {
 
@@ -1075,6 +1082,20 @@ public enum Lucene {
 		
 		return time;
 	}
+	
+	
+	/**
+	 * This methods creates a graph based on the resultset 
+	 * @param result
+	 */
+	public void createGraphView() {
+		ScoreDoc[] result = last_result;
+		
+		GraphPanelCreator3.createGraph(result, searcher);
+		
+	}
+	
+	
 
 	/**
 	 * This method creates an external mention.graphml file, to open it with
@@ -1283,7 +1304,16 @@ public enum Lucene {
 		ScoreDoc[] lastResult = queryResults.get(currentPointer).result;
 		showInMap(lastResult, true);
 		changeHistogramm(lastResult);
-		createGraphML_Mention(lastResult, true);
+		
+		GraphCreatorThread graphThread = new GraphCreatorThread(this) {
+			
+			@Override
+			public void execute() {
+				createGraphView();
+			}
+		};
+		graphThread.start();
+//		createGraphML_Mention(lastResult, true);
 		
 		Time time = Time.getInstance();
 		last_result = lastResult;
@@ -1340,5 +1370,6 @@ public enum Lucene {
 	public void setColorScheme(ColorScheme colorScheme) {
 		this.colorScheme = colorScheme;
 	}
+
 
 }

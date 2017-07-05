@@ -81,6 +81,8 @@ public class GraphML_Helper {
 		
 		try {
 			Connection c = DBManager.getConnection();
+			String table = DBManager.getTweetdataTable();
+			String userTable = DBManager.getUserTable();
 			Statement stmt = c.createStatement();
 			
 			long now = Date.UTC(2017, 03, 3, 0, 0, 0);
@@ -124,7 +126,7 @@ public class GraphML_Helper {
 					query = "Select "
 							+ "t.\"tweetScreenName\", t.\"tweetContent\", t.sentiment, t.category, t.\"containsUrl\", t.replytousername, "
 							+ "t.userlistedcount, t.\"userCreationdate\", t.\"userFriendscount\" , "
-							+ "t.\"userFollowers\", t.\"userStatusCount\"  from tweetdata as t where t.tweetid = "
+							+ "t.\"userFollowers\", t.\"userStatusCount\"  from "+table+" as t where t.tweetid = "
 							+ Long.parseLong(id);
 					break;
 				case "flickr":
@@ -211,7 +213,7 @@ public class GraphML_Helper {
 						query = "Select "
 								+ "t.user_screenname, t.cscore, t.user_location, t.user_timezone, t.user_language, t.user_utcoffset, "
 								+ "t.user_listedcount, t.user_creationdate, t.user_friendscount , "
-								+ "t.user_followerscount, t.user_statusescount  from users as t where t.user_screenname = '"
+								+ "t.user_followerscount, t.user_statusescount  from "+userTable+" as t where t.user_screenname = '"
 								+ target+"'";
 						break;
 					case "flickr":

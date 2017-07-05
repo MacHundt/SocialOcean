@@ -38,6 +38,7 @@ import org.jfree.data.time.Hour;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 
+import impl.GraphCreatorThread;
 import javafx.util.converter.NumberStringConverter;
 import utils.Lucene;
 import utils.TimeLineHelper;
@@ -184,7 +185,17 @@ public class Time {
 					result = l.searchTimeRange(low.longValue(),  up.longValue(), true,  true);
 					l.showInMap(result, true);
 					l.changeHistogramm(result);
-					l.createGraphML_Mention(result, true);
+					
+					GraphCreatorThread graphThread = new GraphCreatorThread(l) {
+						
+						@Override
+						public void execute() {
+							l.createGraphView();
+						}
+					};
+					graphThread.start();
+					
+//					l.createGraphML_Mention(result, true);
 				} else {
 					// back --> == zoom out
 					l.showLastResult();
@@ -321,13 +332,17 @@ public class Time {
 					String[] date = timeString.split("T")[0].split("-");
 					String[] time = timeString.split("T")[1].split(":");
 					
+//					if (date.length != 3 || time.length != 3) {
+//						System.out.println(">>> no full timestamp: "+timeString);
+//					}
+						
 					int year = Integer.parseInt(date[0]);
 					int month = Integer.parseInt(date[1]);
 					int day = Integer.parseInt(date[2]);
 					
 					int hour = Integer.parseInt(time[0]);
 					int min = Integer.parseInt(time[1]);
-					int sec = Integer.parseInt(time[2]);
+//					int sec = Integer.parseInt(time[2]);
 					
 					series.add(new Hour(hour, day, month, year), (double) freq);
 				}

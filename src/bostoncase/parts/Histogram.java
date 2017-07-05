@@ -28,6 +28,7 @@ import org.swtchart.IBarSeries;
 import org.swtchart.ISeries;
 import org.swtchart.ISeries.SeriesType;
 
+import impl.GraphCreatorThread;
 import impl.TimeLineCreatorThread;
 
 import org.swtchart.LineStyle;
@@ -144,7 +145,11 @@ public class Histogram {
 			arrEntry.add(e);
 		Collections.sort(arrEntry);
 		
+		
 		prepareChart();
+		
+		if (counter.size() < 1)
+			return;
 		
 		double[] dataSeries = new double[arrEntry.size()];
 		String[] categories = new String[arrEntry.size()];
@@ -256,6 +261,15 @@ public class Histogram {
 					}
 				};
 				lilt.start();
+				
+				GraphCreatorThread graphThread = new GraphCreatorThread(l) {
+					
+					@Override
+					public void execute() {
+						l.createGraphView();
+					}
+				};
+				graphThread.start();
 				
 				// Show in MAP  --> Clear LIST = remove all Markers
 				l.showInMap(result, true);

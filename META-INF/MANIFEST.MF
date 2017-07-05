@@ -40,7 +40,11 @@ Bundle-ClassPath: libs/java-sdk-3.5.1-jar-with-dependencies.jar,
  libs/jung-samples-2.1.1.jar,
  libs/commons-logging-1.2.jar,
  libs/guava-22.0.jar,
- libs/jung-api-2.1.1.jar
+ libs/jung-api-2.1.1.jar,
+ libs/piccolo2d-core-3.0.jar,
+ libs/piccolo2d-extras-3.0.jar,
+ libs/piccolo2d-swt-3.0.jar,
+ libs/jgraphx.jar
 Require-Bundle: org.eclipse.e4.core.di;bundle-version="1.6.1",
  org.eclipse.jface;bundle-version="3.12.0",
  org.eclipse.e4.ui.workbench;bundle-version="1.4.0",

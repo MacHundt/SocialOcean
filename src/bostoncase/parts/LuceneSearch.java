@@ -291,6 +291,7 @@ public class LuceneSearch {
 				l.clearMap();
 				l.showCatHisto();
 				l.resetTimeLine();
+//				l.clearGraph();							//TODO
 			}
 		});
 		
@@ -306,6 +307,7 @@ public class LuceneSearch {
 	@Focus
 	public void onFocus() {
 		text.setFocus();
+		text.setText("");
 	}
 	
 	

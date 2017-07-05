@@ -35,6 +35,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.widgets.Composite;
 
+import impl.GraphCreatorThread;
 import impl.LuceneIndexLoaderThread;
 import impl.TimeLineCreatorThread;
 import utils.Lucene;
@@ -212,12 +213,21 @@ public class TopSelectionPart {
 				};
 				lilt.start();
 				
+				GraphCreatorThread graphThread = new GraphCreatorThread(l) {
+					
+					@Override
+					public void execute() {
+						l.createGraphView();
+					}
+				};
+				graphThread.start();
+				
 				// Show in MAP  --> Clear LIST = remove all Markers
 				l.showInMap(result, true);
 				l.changeHistogramm(result);
 				
 				
-				l.createGraphML_Mention(result, true);
+//				l.createGraphML_Mention(result, true);
 //				l.createGraphML_Retweet(result, true);
 			}
 		});

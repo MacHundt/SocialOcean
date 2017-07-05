@@ -246,10 +246,19 @@ public class MapPanelCreator {
 						};
 						lilt.start();
 						
+						GraphCreatorThread graphThread = new GraphCreatorThread(l) {
+							
+							@Override
+							public void execute() {
+								l.createGraphView();
+							}
+						};
+						graphThread.start();
+						
 						l.showInMap(result, true);
 						l.changeHistogramm(result);
 						
-						l.createGraphML_Mention(result, true);
+//						l.createGraphML_Mention(result, true);
 //						l.createGraphML_Retweet(result, true);
 					}
 					

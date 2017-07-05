@@ -10,6 +10,7 @@ import org.eclipse.e4.core.di.annotations.CanExecute;
 import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.core.di.annotations.Optional;
 
+import impl.GraphCreatorThread;
 import impl.TimeLineCreatorThread;
 import utils.Lucene;
 import utils.Lucene.TimeBin;
@@ -76,10 +77,19 @@ public class LuceneSearchHandler {
 		};
 		lilt.start();
 		
+		GraphCreatorThread graphThread = new GraphCreatorThread(l) {
+			
+			@Override
+			public void execute() {
+				l.createGraphView();
+			}
+		};
+		graphThread.start();
+		
 		l.showInMap(result, true);
 		l.changeHistogramm(result);
 		
-		l.createGraphML_Mention(result, true);
+//		l.createGraphML_Mention(result, true);
 //		l.createGraphML_Retweet(result, true);
 		
 	}

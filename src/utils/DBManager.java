@@ -16,6 +16,8 @@ import org.eclipse.core.runtime.FileLocator;
 public class DBManager {
 	
 	private static boolean local = true;
+	private static String TWEETDATA = "tweetdata";
+	private static String USERS = "users";
 	
 	private static Connection newConnection() {
 		String DATA = "boston";
@@ -24,6 +26,7 @@ public class DBManager {
 		String PASS = "postgres";
 		String HOST = "localhost";
 		String PORT = 5432+"";
+		
 		Connection c = null;
 		
 		if (!local) {
@@ -48,6 +51,8 @@ public class DBManager {
 				DBNAME = prop.getProperty("dbname");
 				USER =  prop.getProperty("username");
 				PASS = prop.getProperty("pw");
+				TWEETDATA = prop.getProperty("tweetdata");
+				USERS = prop.getProperty("users");
 //				PASS = "\'"+PASS+"\'";
 				// ADD SSL=true & ssl Factory
 				// @see https://bowerstudios.com/node/739
@@ -68,6 +73,16 @@ public class DBManager {
 			e.printStackTrace();
 		}
 		return c;
+	}
+	
+	
+	public static String getTweetdataTable() {
+		return TWEETDATA;
+	}
+	
+	
+	public static String getUserTable( ) {
+		return USERS;
 	}
 	
 	

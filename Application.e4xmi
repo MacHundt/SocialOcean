@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <application:Application xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:advanced="http://www.eclipse.org/ui/2010/UIModel/application/ui/advanced" xmlns:application="http://www.eclipse.org/ui/2010/UIModel/application" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:menu="http://www.eclipse.org/ui/2010/UIModel/application/ui/menu" xmi:id="_6wlLcMgZEeSyMNYR5xypkQ" elementId="BostonCase.application" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ">
-  <children xsi:type="basic:TrimmedWindow" xmi:id="_6wlLccgZEeSyMNYR5xypkQ" elementId="BostonCase.window.main" label="BostonCase" width="1400" height="750">
+  <children xsi:type="basic:TrimmedWindow" xmi:id="_6wlLccgZEeSyMNYR5xypkQ" elementId="BostonCase.window.main" label="BostonCase" width="1570" height="800">
     <children xsi:type="advanced:PerspectiveStack" xmi:id="_6wlLkMgZEeSyMNYR5xypkQ" elementId="org.eclipse.ui.ide.perspectivestack">
       <children xsi:type="advanced:Perspective" xmi:id="_6wlLkcgZEeSyMNYR5xypkQ" elementId="BostonCase.perspective.sample">
         <children xsi:type="basic:PartSashContainer" xmi:id="_6wlLksgZEeSyMNYR5xypkQ" elementId="BostonCase.partsashcontainer.main">
-          <children xsi:type="basic:PartStack" xmi:id="_6wlLk8gZEeSyMNYR5xypkQ" elementId="BostonCase.partstack.selectionpart" containerData="900" accessibilityPhrase="" selectedElement="_XETc0Jw3EeaqBeVOr5nmKw">
+          <children xsi:type="basic:PartStack" xmi:id="_6wlLk8gZEeSyMNYR5xypkQ" elementId="BostonCase.partstack.selectionpart" containerData="800" accessibilityPhrase="" selectedElement="_XETc0Jw3EeaqBeVOr5nmKw">
             <children xsi:type="basic:Part" xmi:id="_XETc0Jw3EeaqBeVOr5nmKw" elementId="bostoncase.part.lucene" contributionURI="bundleclass://BostonCase/bostoncase.parts.LuceneSearch" label="" iconURI="platform:/plugin/BostonCase/icons/search_icon.png" tooltip="Search Panel"/>
             <children xsi:type="basic:Part" xmi:id="_OQvIcCpgEeevD-C7DPB0Og" elementId="bostoncase.part.settings" contributionURI="bundleclass://BostonCase/bostoncase.parts.SettingsPart" label="" iconURI="platform:/plugin/BostonCase/icons/settings_bars.png" tooltip="Settings"/>
           </children>
@@ -21,9 +21,9 @@
             <children xsi:type="basic:PartStack" xmi:id="_ngQSwIosEeauXYmQDjn7lw" elementId="bostoncase.partstack.map" containerData="5000" selectedElement="_LGak0IorEeauXYmQDjn7lw">
               <children xsi:type="basic:Part" xmi:id="_LGak0IorEeauXYmQDjn7lw" elementId="bostoncase.part.map" containerData="" contributionURI="bundleclass://BostonCase/bostoncase.parts.MapPart" label="" iconURI="platform:/plugin/BostonCase/icons/map_icon.png" tooltip="Map"/>
             </children>
-            <children xsi:type="basic:PartStack" xmi:id="_n1WZAIosEeauXYmQDjn7lw" elementId="bostoncase.partstack.settings" containerData="1200" accessibilityPhrase="settingsPartStack" selectedElement="_M9Y_oBMGEeenmLxjomef8A">
+            <children xsi:type="basic:PartStack" xmi:id="_n1WZAIosEeauXYmQDjn7lw" elementId="bostoncase.partstack.settings" containerData="3000" accessibilityPhrase="settingsPartStack" selectedElement="_M9Y_oBMGEeenmLxjomef8A">
               <children xsi:type="basic:Part" xmi:id="_4NByEIosEeauXYmQDjn7lw" elementId="bostoncase.part.settings" visible="false" contributionURI="bundleclass://BostonCase/bostoncase.parts.SamplePart" label="settings" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ" closeable="true"/>
-              <children xsi:type="basic:Part" xmi:id="_M9Y_oBMGEeenmLxjomef8A" elementId="bostoncase.part.graph" contributionURI="bundleclass://BostonCase/bostoncase.parts.JungGraph" label="" iconURI="platform:/plugin/BostonCase/icons/socialgraph_icon.png" tooltip="Mention Graph"/>
+              <children xsi:type="basic:Part" xmi:id="_M9Y_oBMGEeenmLxjomef8A" elementId="bostoncase.part.graph" contributionURI="bundleclass://BostonCase/bostoncase.parts.GraphPart" label="" iconURI="platform:/plugin/BostonCase/icons/socialgraph_icon.png" tooltip="Mention Graph"/>
             </children>
           </children>
           <children xsi:type="basic:PartStack" xmi:id="_65wQMCpgEeevD-C7DPB0Og" elementId="bostoncase.partstack.0" containerData="1200">
