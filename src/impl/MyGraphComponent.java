@@ -4,6 +4,11 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.Map;
 
+import javax.swing.BorderFactory;
+import javax.swing.CellRendererPane;
+import javax.swing.JLabel;
+import javax.swing.border.BevelBorder;
+
 import com.mxgraph.model.mxCell;
 import com.mxgraph.shape.mxIShape;
 import com.mxgraph.swing.mxGraphComponent;
@@ -34,9 +39,37 @@ public class MyGraphComponent extends mxGraphComponent {
     
     
     public class MyInteractiveCanvas extends mxInteractiveCanvas {
+    	
+    	protected CellRendererPane rendererPane = new CellRendererPane();
+
+		protected JLabel vertexRenderer = new JLabel();
+
+		protected mxGraphComponent graphComponent;
+    	
 	    public MyInteractiveCanvas(MyGraphComponent myGraphComponent) {
 	        super(myGraphComponent);
+	        
+	        this.graphComponent = myGraphComponent;
+	        
+	        vertexRenderer.setBorder(
+					BorderFactory.createBevelBorder(BevelBorder.RAISED));
+			vertexRenderer.setHorizontalAlignment(JLabel.CENTER);
+			vertexRenderer
+					.setBackground(graphComponent.getBackground().darker());
+			vertexRenderer.setOpaque(true);
 	    }
+	    
+	    
+	    public void drawVertex(mxCellState state, String label)
+		{
+			vertexRenderer.setText(label);
+			// TODO: Configure other properties...
+
+			rendererPane.paintComponent(g, vertexRenderer, graphComponent,
+					(int) (state.getX() + translate.getX()),
+					(int) (state.getY() + translate.getY()),
+					(int) state.getWidth(), (int) state.getHeight(), true);
+		}
 
 	    /*
 	     * (non-Javadoc)

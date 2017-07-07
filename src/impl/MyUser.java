@@ -11,6 +11,7 @@ public class MyUser {
 	private String id;
 	private String name;
 	private String language = "";
+	private double cred_score = 0.5;
 	
 	
 	public MyUser(String id, String screenName) {
@@ -22,6 +23,9 @@ public class MyUser {
 		this.language = language;
 	}
 	
+	public void addCredibility(double cred_score) {
+		this.cred_score = cred_score;
+	}
 	
 	
 

@@ -6,7 +6,6 @@ import java.awt.Frame;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.swing.JApplet;
-import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -15,14 +14,9 @@ import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.widgets.Composite;
-import org.piccolo2d.extras.pswing.PSwing;
 import org.piccolo2d.extras.pswing.PSwingCanvas;
-import org.piccolo2d.extras.swt.PSWTCanvas;
-
-import com.sun.javafx.scene.input.PickResultChooser;
 
 import impl.GraphPanelCreator3;
-import impl.PMouseWheelEventHandler;
 import swingintegration.example.EmbeddedSwingComposite;
 import utils.Swing_SWT;
 

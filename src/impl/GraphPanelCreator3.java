@@ -1,11 +1,12 @@
 package impl;
 
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Date;
@@ -25,22 +26,27 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
+import org.eclipse.swt.events.SelectionEvent;
 
 import com.mxgraph.analysis.mxAnalysisGraph;
 import com.mxgraph.analysis.mxGraphStructure;
 import com.mxgraph.layout.mxFastOrganicLayout;
 import com.mxgraph.layout.mxIGraphLayout;
+import com.mxgraph.model.mxCell;
 import com.mxgraph.swing.mxGraphComponent;
+import com.mxgraph.swing.handler.mxRubberband;
+import com.mxgraph.swing.handler.mxSelectionCellsHandler;
 import com.mxgraph.swing.util.mxMorphing;
 import com.mxgraph.util.mxEvent;
 import com.mxgraph.util.mxEventObject;
 import com.mxgraph.util.mxEventSource.mxIEventListener;
-import com.mxgraph.util.mxPoint;
 import com.mxgraph.view.mxGraph;
+import com.mxgraph.view.mxGraphSelectionModel.mxSelectionChange;
 
 import utils.DBManager;
 
@@ -53,9 +59,6 @@ public class GraphPanelCreator3 {
 	private static Object parent = null;
 //	private static mxGraphComponent graphComponent = null;
 	private static MyGraphComponent graphComponent = null;
-	
-	private static mxPoint lastRootView = new mxPoint(0, 0);
-	private static mxPoint pressedPoint = null;
 	
 	private static int topK = 5;
 	static boolean ASC = true;
@@ -75,14 +78,59 @@ public class GraphPanelCreator3 {
 			parent = graph.getDefaultParent();
 			
 //			graphComponent = new mxGraphComponent(graph);
+			
 			graphComponent = new MyGraphComponent(graph);
 //			graphComponent.setVisible(false);
 //			mxICellEditor editor = graphComponent.getCellEditor();
 			
 			graphPanel.add(graphComponent);
 			
-//			mxPanningHandler pan = new mxPanningHandler(graphComponent);
-//			pan.setEnabled(true);
+//			new mxPanningHandler(graphComponent);
+			
+			// Selection Handler
+			new mxRubberband(graphComponent);
+//			new mxSelectionCellsHandler(graphComponent);
+			
+			graph.getSelectionModel().addListener(mxEvent.CHANGE, new mxIEventListener() {
+
+				@Override
+				public void invoke(Object sender, mxEventObject evt) {
+					if (graph.getSelectionCells().length > 0) {
+						System.out.println("Cahnged !! >> "+graph.getSelectionCells().length);
+						
+						//TODO
+					}
+					
+				}
+				
+			});
+			
+			
+			
+//			graphComponent.addPropertyChangeListener(new PropertyChangeListener() {
+//				
+//				@Override
+//				public void propertyChange(PropertyChangeEvent evt) {
+//					
+//					System.out.println("2>>"+graph.getSelectionCells().length);
+//					if (graph.getSelectionCells().length > 0) {
+//						System.out.println(graph.getSelectionCells().length);
+//						// TODO
+//					}
+//					
+//				}	
+//			});
+			
+//			graphComponent.getGraphControl().addPropertyChangeListener(new PropertyChangeListener() {
+//				
+//				@Override
+//				public void propertyChange(PropertyChangeEvent evt) {
+//					
+//					System.out.println("2>>"+graph.getSelectionCells().length);
+//					
+//				}
+//			});
+			
 			
 			graphComponent.getGraphControl().addMouseListener(new MouseAdapter()
 			{
@@ -96,6 +144,12 @@ public class GraphPanelCreator3 {
 					Object cell = graphComponent.getCellAt(e.getX(), e.getY());
 					if (cell != null)
 					{
+						if(cell instanceof mxCell) {
+							if (((mxCell)cell).getValue() instanceof MyUser) {
+								System.out.println("YES -- I can access all fields");
+							}
+						}
+							
 						System.out.println("cell="+graph.getLabel(cell));
 					}
 				}
@@ -162,16 +216,20 @@ public class GraphPanelCreator3 {
 //					
 //				}
 //			});
-			
+
 			graphComponent.addMouseWheelListener(new MouseWheelListener() {
 				
 				@Override
 				public void mouseWheelMoved(MouseWheelEvent e) {
 					double scale = graph.getView().getScale();
 					if (e.getWheelRotation() < 0) {
-						graph.getView().setScale(scale + (scale*0.1)); 
+						scale = scale + (scale*0.1);
+						graphComponent.zoomTo(scale, true);
+//						graph.getView().setScale(scale); 
 					} else {
-						graph.getView().setScale(scale - (scale*0.1));
+						scale = scale - (scale*0.1);
+						graphComponent.zoomTo(scale, true);
+//						graph.getView().setScale(scale);
 					}
 				}
 			});
@@ -239,7 +297,7 @@ public class GraphPanelCreator3 {
 					query = "Select "
 							+ "t.\"tweetScreenName\", t.\"tweetContent\", t.sentiment, t.category, t.\"containsUrl\", t.replytousername, "
 							+ "t.userlistedcount, t.\"userCreationdate\", t.\"userFriendscount\" , "
-							+ "t.\"userFollowers\", t.\"userStatusCount\"  from "+table+" as t where t.tweetid = "
+							+ "t.\"userFollowers\", t.\"userStatusCount\", t.language  from "+table+" as t where t.tweetid = "
 							+ Long.parseLong(id);
 					break;
 				case "flickr":
@@ -250,7 +308,7 @@ public class GraphPanelCreator3 {
 				}
 				ResultSet rs = stmt.executeQuery(query);
 				
-				
+				String language = "";
 				boolean isEmpty = true;
 				while (rs.next()) {
 					isEmpty = false;
@@ -268,6 +326,7 @@ public class GraphPanelCreator3 {
 					friends = rs.getInt(9);
 					followers = rs.getInt(10);
 					tweetCount = rs.getInt(11);
+					language = rs.getString(12);
 				}
 				double sc_follow =  Math.log10(followers) / maxFollow;
 				double sc_friend =  Math.log10(friends) / maxFriends;
@@ -275,7 +334,6 @@ public class GraphPanelCreator3 {
 				double sc_time = ((Math.log(time) / Math.log(1000)) - (Math.log(minDate) / Math.log(1000))) / ((Math.log(maxDate) / Math.log(1000)) - (Math.log(minDate) / Math.log(1000)));
 				
 				double credible  = 1 - ((sc_follow + sc_friend +sc_tweets + sc_time) / 4.0) ;
-				
 				
 				String mentionString = getMentionsFromTweets(content);
 				if (mentionString.length() < 2) {
@@ -287,6 +345,8 @@ public class GraphPanelCreator3 {
 				Object nodeID = null;
 				if (!nodeNames.containsKey(screenName)) {
 					nodeID = new MyUser("n" + nodesCounter++, screenName);
+					((MyUser)nodeID).addLanguage(language);
+					((MyUser)nodeID).addCredibility(credible);
 					nodeID = graph.insertVertex(parent, null, nodeID, 0, 0, 40, 40, "ROUNDED;strokeColor=white;fillColor=white");
 					nodeNames.put(screenName, nodeID);
 					sources.put(screenName, nodeID);
@@ -325,7 +385,7 @@ public class GraphPanelCreator3 {
 //						query = "Select t.sentiment from tweetdata as t where t.tweetid = " + Long.parseLong(id);
 					}
 					
-					String language = "";
+					language = "";
 					double descriptionScore = 0.5;
 					String location = "";
 					String timezone = "";
@@ -376,6 +436,8 @@ public class GraphPanelCreator3 {
 					
 					if (!nodeNames.containsKey(target)) {
 						nodeID = new MyUser("n"+nodesCounter++, screenName);
+						((MyUser)nodeID).addLanguage(language);
+						((MyUser)nodeID).addCredibility(targetCred);
 						nodeID = graph.insertVertex(parent, null, nodeID, 0, 0, 40, 40, "ROUNDED;strokeColor=white;fillColor=white");
 						nodeNames.put(target, nodeID);
 //		TODO			// create properties Object
@@ -425,7 +487,7 @@ public class GraphPanelCreator3 {
 		
 		ArrayList<Object[]> filtered = new ArrayList<>();
 		for (Object[] o : cc) {
-			if (o.length >= 4) {
+			if (o != null && o.length >= 4) {
 				filtered.add(o);
 			}
 //			else {
@@ -505,17 +567,27 @@ public class GraphPanelCreator3 {
 	
 	private static void filterOutComponents(Object[][] cc, int minNodes) {
 		
-		System.out.println(graph.getChildVertices(parent).length);
-		graph.getModel().beginUpdate();
-		for (Object[] o : cc) {
-			if (o.length < minNodes) {
-//				graph.removeCells(o, true);
-				graph.removeCells(o, false);
+		SwingUtilities.invokeLater(new Runnable() {
+			
+			@Override
+			public void run() {
+				try { 
+					graph.getModel().beginUpdate();
+					System.out.println(graph.getChildVertices(parent).length);
+					for (Object[] o : cc) {
+						if (o != null && o.length < minNodes) {
+	//				graph.removeCells(o, true);
+							graph.removeCells(o, false);
+						}
+				}
+				graph.orderCells(true);
+				} finally {
+					graph.getModel().endUpdate();
+				}
+				System.out.println("Filtered to >> "+graph.getChildVertices(parent).length);
+				
 			}
-		}
-		graph.orderCells(true);
-		graph.getModel().endUpdate();
-		System.out.println("Filtered to >> "+graph.getChildVertices(parent).length);
+		});
 	}
 
 
@@ -528,8 +600,8 @@ public class GraphPanelCreator3 {
 		try {
 			layout.execute(graph.getDefaultParent());
 		} finally {
-			mxMorphing morph = new mxMorphing(graphComponent, 20, 1.5, 20);
-
+			
+			mxMorphing morph = new mxMorphing(graphComponent, 20, 1.5, 10);
 			morph.addListener(mxEvent.DONE, new mxIEventListener() {
 
 				@Override
