@@ -49,6 +49,7 @@ import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxGraphSelectionModel.mxSelectionChange;
 
 import utils.DBManager;
+import utils.Lucene;
 
 
 public class GraphPanelCreator3 {
@@ -95,42 +96,44 @@ public class GraphPanelCreator3 {
 
 				@Override
 				public void invoke(Object sender, mxEventObject evt) {
-					if (graph.getSelectionCells().length > 0) {
-						System.out.println("Cahnged !! >> "+graph.getSelectionCells().length);
-						
-						//TODO
-					}
+					int selected = graph.getSelectionCount();
 					
+					Lucene l = Lucene.INSTANCE;
+					if (selected > 0) {
+						//TODO show selected in map. 
+						// graph .. distinguish between source and only target nodes
+						
+//						MyUser[] users = new MyUser[selected];
+//						for (int i = 0; i<selected; i++	) {
+//							Object cell = graph.getSelectionCells()[i];
+//							if(cell instanceof mxCell) {
+//								if (((mxCell)cell).getValue() instanceof MyUser) {
+//									users[i] = (MyUser)((mxCell)cell).getValue();
+//								}
+//							}
+//						}
+						ArrayList<MyEdge> edges = new ArrayList<>();
+						for (int i = 0; i<selected; i++	) {
+							Object cell = graph.getSelectionCells()[i];
+							if(cell instanceof mxCell) {
+								if (((mxCell)cell).getValue() instanceof MyEdge) {
+									edges.add((MyEdge)((mxCell)cell).getValue());
+								}
+							}
+						}
+						
+						System.out.println("Cahnged !! >> "+selected);
+						l.showSelectionInMap(edges, true);
+					}
+					// show all again
+					else if (selected == 0){
+						ScoreDoc[] lastResult = l.getLastResult();
+						l.showInMap(lastResult, true);
+						
+					}
 				}
 				
 			});
-			
-			
-			
-//			graphComponent.addPropertyChangeListener(new PropertyChangeListener() {
-//				
-//				@Override
-//				public void propertyChange(PropertyChangeEvent evt) {
-//					
-//					System.out.println("2>>"+graph.getSelectionCells().length);
-//					if (graph.getSelectionCells().length > 0) {
-//						System.out.println(graph.getSelectionCells().length);
-//						// TODO
-//					}
-//					
-//				}	
-//			});
-			
-//			graphComponent.getGraphControl().addPropertyChangeListener(new PropertyChangeListener() {
-//				
-//				@Override
-//				public void propertyChange(PropertyChangeEvent evt) {
-//					
-//					System.out.println("2>>"+graph.getSelectionCells().length);
-//					
-//				}
-//			});
-			
 			
 			graphComponent.getGraphControl().addMouseListener(new MouseAdapter()
 			{
@@ -445,7 +448,8 @@ public class GraphPanelCreator3 {
 					} else {
 						nodeID = nodeNames.get(target);
 					}
-					
+				
+					Object edge = null;
 			// ADD Edge:  source to Target
 					
 					// edgesNames   sourceID_targetID --> count
@@ -463,8 +467,13 @@ public class GraphPanelCreator3 {
 						System.out.println(edgesNames);
 					}
 					
+					edge = new MyEdge(id);
+					((MyEdge)edge).addCredibility(edgeCredebility);
+					
+					// ...
+					
 		//TODO		// create an Edge Object for Properties
-					graph.insertEdge(parent, null, "", sourceID, nodeID, "edgeStyle=elbowEdgeStyle;elbow=horizontal;"
+					graph.insertEdge(parent, null, edge, sourceID, nodeID, "edgeStyle=elbowEdgeStyle;elbow=horizontal;"
 							+ "STYLE_PERIMETER_SPACING;"
 //							+ "exitX=0.5;exitY=1;exitPerimeter=1;entryX=0;entryY=0;entryPerimeter=1;"
 							);

@@ -45,6 +45,7 @@ import impl.GraphCreatorThread;
 import impl.GraphML_Helper;
 import impl.GraphPanelCreator3;
 import impl.MapPanelCreator;
+import impl.MyEdge;
 import impl.TimeLineCreatorThread;
 import interfaces.ILuceneQuerySearcher;
 
@@ -1269,6 +1270,44 @@ public enum Lucene {
 		}
 
 	}
+	
+	
+	public void showSelectionInMap(ArrayList<MyEdge> edges, boolean clearMap) {
+		if (!edges.isEmpty()) {
+			if (clearMap)
+				MapPanelCreator.clearWayPoints(clearMap);
+			
+			for (MyEdge edge : edges) {
+				String id = edge.getId();
+				
+//				int docID = entry.doc;
+//				try {
+//					double lat = GeoPointField.decodeLatitude(hashgeo);
+//					double lon = GeoPointField.decodeLongitude(hashgeo);
+//					String id = (document.getField("id")).stringValue();
+//					// String type = (document.getField("type")).stringValue();
+//					String query = "";
+//					// double sentiment =
+//					// Double.parseDouble((document.getField("sentiment")).stringValue());
+				
+//					// MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(docID
+//					// + "", sentiment, lat, lon));
+				
+				
+//					String sentiment = (document.getField("sentiment")).stringValue();
+//					MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, sentiment, lat, lon));
+//
+//				} catch (IOException e1) {
+//					// TODO Auto-generated catch block
+//					e1.printStackTrace();
+//				}
+			}
+//
+//			MapPanelCreator.showWayPointsOnMap();
+		}
+		
+	}
+	
 
 	public void setQeryType(String text) {
 		query_type = text;
@@ -1370,6 +1409,8 @@ public enum Lucene {
 	public void setColorScheme(ColorScheme colorScheme) {
 		this.colorScheme = colorScheme;
 	}
+
+
 
 
 }
