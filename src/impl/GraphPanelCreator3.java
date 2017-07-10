@@ -300,7 +300,7 @@ public class GraphPanelCreator3 {
 					query = "Select "
 							+ "t.\"tweetScreenName\", t.\"tweetContent\", t.sentiment, t.category, t.\"containsUrl\", t.replytousername, "
 							+ "t.userlistedcount, t.\"userCreationdate\", t.\"userFriendscount\" , "
-							+ "t.\"userFollowers\", t.\"userStatusCount\", t.language  from "+table+" as t where t.tweetid = "
+							+ "t.\"userFollowers\", t.\"userStatusCount\", t.language, st_astext(t.polygeo) as geom  from "+table+" as t where t.tweetid = "
 							+ Long.parseLong(id);
 					break;
 				case "flickr":
@@ -312,6 +312,7 @@ public class GraphPanelCreator3 {
 				ResultSet rs = stmt.executeQuery(query);
 				
 				String language = "";
+				String geom = "";
 				boolean isEmpty = true;
 				while (rs.next()) {
 					isEmpty = false;
@@ -330,6 +331,7 @@ public class GraphPanelCreator3 {
 					followers = rs.getInt(10);
 					tweetCount = rs.getInt(11);
 					language = rs.getString(12);
+					geom = rs.getString(13);
 				}
 				double sc_follow =  Math.log10(followers) / maxFollow;
 				double sc_friend =  Math.log10(friends) / maxFriends;
@@ -469,7 +471,14 @@ public class GraphPanelCreator3 {
 					
 					edge = new MyEdge(id);
 					((MyEdge)edge).addCredibility(edgeCredebility);
-					
+					((MyEdge)edge).addSentiment(sentiment);
+//					((MyEdge)edge).addContent(content);
+					if (!geom.isEmpty()) {
+						geom = geom.toLowerCase().replace("point(", "").replace(")","");
+						double lat = Double.parseDouble(geom.split(" ")[1]);
+						double longi = Double.parseDouble(geom.split(" ")[0]);
+						((MyEdge)edge).addPoint(lat, longi);
+					}
 					// ...
 					
 		//TODO		// create an Edge Object for Properties
@@ -724,48 +733,6 @@ public class GraphPanelCreator3 {
 	        return sortedMap;
 	    }
 
-//	protected static void updateGraph(Viewer viewer, Graph graph) throws SQLException {
-//		
-////		graphComponent.clear
-////		graph.getModel().beginUpdate();
-////		try
-////		{
-////			graph.selectAll();
-////			for (Object b: graph.getSelectionCells()) {
-////				graph.getModel().remove(b);
-////			}
-////		}
-////		finally
-////		{
-////			graph.getModel().endUpdate();
-////		}
-//		
-//		Connection c = DBManager.getConnection();
-//		Statement stmt;
-//		stmt = c.createStatement();
-//		ResultSet rs = stmt.executeQuery("Select * from graph_edges");
-//		
-//		int lines = 0;
-//		HashMap<Integer, String> nodes = new HashMap<>();
-//		
-//		while (rs != null && rs.next()) {
-//			
-//			int source = rs.getInt(1);
-//			int target = rs.getInt(2);
-//			String source_name = rs.getString(3);
-//			String target_name = rs.getString(4);
-//			int count = rs.getInt(7);
-//			
-//			if (!nodes.containsKey(source)) {
-//				nodes.put(source, source_name);
-//			}
-//			if (!nodes.containsKey(target)) {
-//				nodes.put(target, target_name);
-//			}
-//			
-//			
-//		}
-//		
 
 }
 

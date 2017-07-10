@@ -1279,31 +1279,18 @@ public enum Lucene {
 			
 			for (MyEdge edge : edges) {
 				String id = edge.getId();
-				
-//				int docID = entry.doc;
-//				try {
-//					double lat = GeoPointField.decodeLatitude(hashgeo);
-//					double lon = GeoPointField.decodeLongitude(hashgeo);
-//					String id = (document.getField("id")).stringValue();
-//					// String type = (document.getField("type")).stringValue();
-//					String query = "";
-//					// double sentiment =
-//					// Double.parseDouble((document.getField("sentiment")).stringValue());
-				
-//					// MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(docID
-//					// + "", sentiment, lat, lon));
-				
-				
-//					String sentiment = (document.getField("sentiment")).stringValue();
-//					MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, sentiment, lat, lon));
-//
-//				} catch (IOException e1) {
-//					// TODO Auto-generated catch block
-//					e1.printStackTrace();
-//				}
+				double sentiment = edge.getSentiment();
+				double lat = edge.getLatitude();
+				double lon = edge.getLongitude();
+				String senti = "neutral";
+				if (sentiment > 0)
+					senti = "positive";
+				else if (sentiment < 0)
+					senti = "negative";
+					
+				MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, senti, lat, lon));
 			}
-//
-//			MapPanelCreator.showWayPointsOnMap();
+			MapPanelCreator.showWayPointsOnMap();
 		}
 		
 	}
