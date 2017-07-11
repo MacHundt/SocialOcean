@@ -44,7 +44,8 @@ Bundle-ClassPath: libs/java-sdk-3.5.1-jar-with-dependencies.jar,
  libs/piccolo2d-core-3.0.jar,
  libs/piccolo2d-extras-3.0.jar,
  libs/piccolo2d-swt-3.0.jar,
- libs/jgraphx.jar
+ libs/jgraphx.jar,
+ libs/lingpipe-4.1.0.jar
 Require-Bundle: org.eclipse.e4.core.di;bundle-version="1.6.1",
  org.eclipse.jface;bundle-version="3.12.0",
  org.eclipse.e4.ui.workbench;bundle-version="1.4.0",

@@ -64,7 +64,7 @@ public class GraphPanelCreator3 {
 	private static int topK = 5;
 	static boolean ASC = true;
 	static boolean DESC = false;
-
+	
 	public static JPanel getGraphPanel() {
 		
 		if (graphPanel != null) {

@@ -15,17 +15,21 @@ import org.eclipse.core.runtime.FileLocator;
 
 public class DBManager {
 	
-	private static boolean local = true;
+//	private static boolean local = true;
 	private static String TWEETDATA = "tweetdata";
 	private static String USERS = "users";
 	
-	private static Connection newConnection() {
+	private static boolean local = true;
+	
+	private static Connection newConnection(boolean m_local) {
 		String DATA = "boston";
 		String DBNAME = "masterproject_"+DATA;
 		String USER = "postgres";
 		String PASS = "postgres";
 		String HOST = "localhost";
 		String PORT = 5432+"";
+		
+		local = m_local;
 		
 		Connection c = null;
 		
@@ -86,8 +90,13 @@ public class DBManager {
 	}
 	
 	
+	public static Connection getConnection(boolean local) {
+		return newConnection(local);
+		
+	}
+	
 	public static Connection getConnection() {
-		return newConnection();
+		return newConnection(local);
 		
 	}
 }
