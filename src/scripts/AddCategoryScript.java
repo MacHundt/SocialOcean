@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 
 public class AddCategoryScript {
@@ -19,7 +18,6 @@ public class AddCategoryScript {
 	private static int batchcounter = 0;
 	static ResultSet rs = null;
 	static ArrayList<Tuple<Long, String>> list = null;
-	private static Semaphore sem = new Semaphore(5);
 
 	public static void main(String[] args) {
 		// http://alias-i.com/lingpipe/demos/tutorial/classify/read-me.html
@@ -92,13 +90,12 @@ public class AddCategoryScript {
 		public void setB(B b) {
 			this.b = b;
 		}
-		
 	}
 	
 	
 	private static void addCategories(ArrayList<Tuple<Long, String>> list) throws SQLException {
 		
-		int batchsize = 2000;
+		int batchsize = 1000;
 //		for (Tuple<Long, String> t : list) {
 //			t.setB(classifier.getCategory(t.getB()));
 //		}
