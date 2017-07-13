@@ -6,87 +6,130 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Semaphore;
+import java.util.stream.Collectors;
 
 public class AddCategoryScript {
 	
 	private static String tweet_table = "bb_tweets";
-	private static int fetchsize = 1000;
+	private static int fetchsize = 10000;
+	private static TopicClassification classifier;
+	private static int batchcounter = 0;
+	static ResultSet rs = null;
+	static ArrayList<Tuple<Long, String>> list = null;
+	private static Semaphore sem = new Semaphore(5);
 
 	public static void main(String[] args) {
 		// http://alias-i.com/lingpipe/demos/tutorial/classify/read-me.html
 		System.out.println("LOAD Model Newsgroup Model ... ");
-		TopicClassification classifier = new TopicClassification();
+		classifier = new TopicClassification();
 		try {
 			classifier.trainclassifier();
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		System.out.println("LOAD LingPipe 20 Newsgroup Model >>> DONE \n");
-		System.out.print("Connect to DB >>> ");
-		Connection c = getConnection();
-		System.out.println("DONE \n");
 		
-		String query = "Select tweet_id, tweet_content from "+tweet_table;
-		ResultSet rs = null;
+//		worker();
+		
+		Connection c = getConnection();
+		String query = "Select tweet_id, tweet_content from "+tweet_table+" where category is null";
 		try {
 			c.setAutoCommit(false);
 			Statement st = c.createStatement();
 			st.setFetchSize(fetchsize);
 			rs = st.executeQuery(query);
-			addCategories(rs, classifier);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			list = new ArrayList<>();
+			int counter = 0;
+			while (rs.next()) {
+				long id = Long.parseLong(rs.getString(1));
+				String text = rs.getString(2);
+				Tuple<Long, String> tup = new Tuple<>(id, text);
+				list.add(tup);
+				counter++;
+				if ( counter == fetchsize) {
+					counter = 0;
+					addCategories(list);
+					list.clear();
+					if (batchcounter++ == 100) {
+						System.out.println("-");
+						batchcounter = 0;
+					} else
+						System.out.print("-");
+				}
+			}
+		}  catch (SQLException e) {
 			e.printStackTrace();
+		}
+	}
+	
+	public static class Tuple<A, B> {
+		
+		private A a;
+		private B b;
+
+		public Tuple(A a, B b) {
+			this.a = a;
+			this.b = b;
+		}
+
+		public A getA() {
+			return a;
+		}
+
+		public void setA(A a) {
+			this.a = a;
+		}
+
+		public B getB() {
+			return b;
+		}
+
+		public void setB(B b) {
+			this.b = b;
 		}
 		
 	}
-
-	private static void addCategories(ResultSet rs, TopicClassification classifier) throws SQLException {
+	
+	
+	private static void addCategories(ArrayList<Tuple<Long, String>> list) throws SQLException {
+		
+		int batchsize = 2000;
+//		for (Tuple<Long, String> t : list) {
+//			t.setB(classifier.getCategory(t.getB()));
+//		}
+		
+		List<Tuple<Long, String>> collect = list.parallelStream().map(s -> new Tuple<Long, String>(s.getA(), 
+				classifier.getCategory(s.getB()))).collect(Collectors.toList());
+		
 		
 		Connection c = getConnection();
 		c.setAutoCommit(false);
 		
 		Statement st = c.createStatement();
-		
-//		PreparedStatement preStmt = con2.prepareStatement("Update "+tweet_table+" set category = ? Where tweet_id = ?");
-		
-		long counter = 0;
-		int batchcounter = 0;
-		while (rs.next()) {
-			long id = Long.parseLong(rs.getString(1));
-			String text = rs.getString(2);
-			// Classify Text
-			String cat = classifier.getCategory(text);
-			String query = "Update "+tweet_table+" set category = '"+cat+"' Where tweet_id = "+id;
+		// Update
+		int counter = 0;
+		for (Tuple<Long, String> t : collect) {
+			String query = "Update " + tweet_table + " set category = '" + t.getB() + "' Where tweet_id = " + t.getA();
 			// batch Update
 			st.addBatch(query);
 			counter++;
-			
-			if (counter % fetchsize == 0) {
+			if (counter == batchsize) {
 				st.executeBatch();
 				c.commit();
-				batchcounter++;
-				System.out.println("Added >>> "+ batchcounter*fetchsize);
+				counter = 0;
 			}
-			
-//			preStmt.setString(1, cat);
-//			preStmt.setLong(2, id);
-//			preStmt.executeUpdate();
-			
 		}
-		
+		st.close();
 		c.close();
-		
-		
-		
 	}
+	
 
 	private static Connection getConnection() {
-		
 		Connection c = null;
 		String host = "db.dbvis.de";
 		String port = "5432";
@@ -102,9 +145,7 @@ public class AddCategoryScript {
 					+ ""+connection_str);
 			e.printStackTrace();
 		}
-		
 		return c;
 	}
 		
 }
-		

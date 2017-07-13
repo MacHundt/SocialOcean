@@ -20,12 +20,12 @@ import com.aliasi.util.Files;
 public class TopicClassification {
 
 	private JointClassifier<CharSequence> compiledClassifier;
-	private JointClassifierEvaluator<CharSequence> evaluator;
-//	private File TRAINING_DIR = new File("C:/Users/Lehle/Cloud Drive/Masterthesis/Applikation/TrainedData/DataSet1");
 
 //	private File TESTING_DIR = new File("../../data/fourNewsGroups/4news-test");
 
 	private DynamicLMClassifier<NGramProcessLM> classifier;
+	private Classification[] classiList;
+	private JointClassification jc;
 
 	// List of categories
 	private String[] CATEGORIES = { "Computers & Technology", "Education", "Family", "Food", "Health", "Marketing",
@@ -49,8 +49,7 @@ public class TopicClassification {
 				File classDir = new File(TRAINING_DIR, CATEGORIES[i]);
 				if (!classDir.isDirectory()) {
 					String msg = "Could not find training directory=" + classDir + "\nHave you unpacked 4 newsgroups?";
-					System.out.println(msg); // in case exception gets lost in
-												// shell
+					System.out.println(msg); // in case exception gets lost in shell
 					throw new IllegalArgumentException(msg);
 				}
 
@@ -69,60 +68,33 @@ public class TopicClassification {
 			// we created object so know it's safe
 			compiledClassifier = (JointClassifier<CharSequence>) AbstractExternalizable.compile(classifier);
 
-			boolean storeCategories = true;
-			evaluator = new JointClassifierEvaluator<CharSequence>(compiledClassifier, CATEGORIES, storeCategories);
+			classiList = new Classification[CATEGORIES.length];
+			for (int i=0 ; i< CATEGORIES.length; i++) {
+				classiList[i] = new Classification(CATEGORIES[i]);
+			}
 		}
 	}
 
-//	/**
-//	 * Classifies a tweet to one of the twelve topics
-//	 * 
-//	 * @param tweetmodel
-//	 *            which shall be classified
-//	 * @return best fitting category
-//	 * 
-//	 */
-//	public String getCategory(TweetModel t) {
-//		String bestcat = "";
-//		for (int i = 0; i < CATEGORIES.length; ++i) {
-//
-//			// for (int j=0; j<testingFiles.length; ++j) {
-//			String text = t.Content;
-//
-//			Classification classification = new Classification(CATEGORIES[i]);
-//			Classified<CharSequence> classified = new Classified<CharSequence>(text, classification);
-//			evaluator.handle(classified);
-//			JointClassification jc = compiledClassifier.classify(text);
-//			String bestCategory = jc.bestCategory();
-//			bestcat = bestCategory;
-//			String details = jc.toString();
-//			// System.out.println("Got best category of: " + bestCategory);
-//			// System.out.println(jc.toString());
-//			// System.out.println("---------------");
-//			// }
-//		}
-//		// ConfusionMatrix confMatrix = evaluator.confusionMatrix();
-//		// System.out.println("Total Accuracy: " + confMatrix.totalAccuracy());
-//
-//		// System.out.println("\nFULL EVAL");
-//		// System.out.println(evaluator);
-//		return bestcat;
-//	}
-
+	/**
+	 * 
+	 * @param content
+	 * @return the best matching category
+	 */
 	public String getCategory(String content) {
 		String bestcat = "";
+		boolean storeCategories = true;
+		JointClassifierEvaluator<CharSequence> evaluator = new JointClassifierEvaluator<CharSequence>(compiledClassifier, CATEGORIES, storeCategories);
 		for (int i = 0; i < CATEGORIES.length; ++i) {
 
 			// for (int j=0; j<testingFiles.length; ++j) {
 			String text = content;
-
-			Classification classification = new Classification(CATEGORIES[i]);
-			Classified<CharSequence> classified = new Classified<CharSequence>(text, classification);
+			Classified<CharSequence> classified = new Classified<CharSequence>(text, classiList[i]);
 			evaluator.handle(classified);
-			JointClassification jc = compiledClassifier.classify(text);
+			jc = compiledClassifier.classify(text);
 			String bestCategory = jc.bestCategory();
+//			String details = jc.toString();
 			bestcat = bestCategory;
-			String details = jc.toString();
+			classified = null;
 			// System.out.println("Got best category of: " + bestCategory);
 			// System.out.println(jc.toString());
 			// System.out.println("---------------");
@@ -135,4 +107,5 @@ public class TopicClassification {
 		// System.out.println(evaluator);
 		return bestcat;
 	}
+	
 }
