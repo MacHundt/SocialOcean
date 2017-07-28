@@ -59,7 +59,7 @@ public class HistogramEntry implements Comparable<HistogramEntry>{
 				return color;
 			} 
 		}
-		// Negative tendendy
+		// Negative tendency
 		else if ((sumSentiment / count) < 0 ) {
 			if ((sumSentiment / count) > -0.25) {
 				color = new Color(Display.getDefault(), 254,224,139);

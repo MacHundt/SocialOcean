@@ -62,6 +62,9 @@ public class AddCategoryScript {
 			}
 		}  catch (SQLException e) {
 			e.printStackTrace();
+			
+			main(args);
+			
 		}
 	}
 	

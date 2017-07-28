@@ -338,7 +338,7 @@ public class GraphPanelCreator3 {
 				double sc_tweets =  Math.log10(tweetCount) / maxMessage;
 				double sc_time = ((Math.log(time) / Math.log(1000)) - (Math.log(minDate) / Math.log(1000))) / ((Math.log(maxDate) / Math.log(1000)) - (Math.log(minDate) / Math.log(1000)));
 				
-				double credible  = 1 - ((sc_follow + sc_friend +sc_tweets + sc_time) / 4.0) ;
+				double credible  = 1 - ((sc_follow + sc_friend +sc_tweets + sc_time) / 4.0);
 				
 				String mentionString = getMentionsFromTweets(content);
 				if (mentionString.length() < 2) {
@@ -502,6 +502,7 @@ public class GraphPanelCreator3 {
 		
 		mxGraphStructure struc = new mxGraphStructure();
 		Object[][] cc = struc.getGraphComponents(anaGraph);
+		
 		
 		ArrayList<Object[]> filtered = new ArrayList<>();
 		for (Object[] o : cc) {
