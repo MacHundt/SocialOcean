@@ -31,6 +31,8 @@ public class DBManager {
 		
 		local = m_local;
 		
+		System.out.println("This is on branch?");
+		
 		Connection c = null;
 		
 		if (!local) {
