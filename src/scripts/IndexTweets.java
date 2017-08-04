@@ -5,7 +5,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -85,12 +84,13 @@ public class IndexTweets {
 					+ "tweet_source, "
 					+ "hasurl, "
 					+ "user_id, "
+					+ "user_screenname, "
 					+ "positive, "
 					+ "negative, "
 					+ "category "
 					+ "from "+TWEETDATA;
 			
-			
+			  
 			ResultSet rs = stmt.executeQuery(query);
 			
 			ArrayList<Tweet> tweets = new ArrayList<>(Fetchsize);
@@ -110,9 +110,10 @@ public class IndexTweets {
 				t.setTweet_source(rs.getString(7));
 				t.setHasurl(rs.getBoolean(8));
 				t.setUser_id(rs.getLong(9));
-				t.setPositive(rs.getInt(10));
-				t.setNegative(rs.getInt(11));
-				t.setCategory((rs.getString(12) != null) ? rs.getString(12) : "Other");
+				t.setUserScreenName(rs.getString(10));
+				t.setPositive(rs.getInt(11));
+				t.setNegative(rs.getInt(12));
+				t.setCategory((rs.getString(13) != null) ? rs.getString(12) : "Other");
 				
 				tweets.add(t);
 				
@@ -175,6 +176,12 @@ public class IndexTweets {
 			category = t.getCategory();
 			category = category.replace(" & ", "_").toLowerCase();
 			doc.add(new StringField("category", category, Field.Store.YES));
+			
+			// User_ScreenName
+			doc.add(new StringField("user_name", t.getUserScreenName(), Field.Store.NO));
+			
+			// User_id
+			doc.add(new StringField("user_id", t.getUser_id()+"", Field.Store.YES));
 			
 			// type
 			Field typeField = new StringField("type", "twitter", Field.Store.YES);
