@@ -12,6 +12,7 @@ public class Tweet {
 	 private String tweet_source = "";
 	 private boolean hasurl;
 	 private long user_id;
+	 private String user_screenname;
 	 private int positive;
 	 private int negative;
 	 private String category = "";
@@ -22,6 +23,13 @@ public class Tweet {
 		 tweet_id = id;
 	 }
 	 
+	 public void setUserScreenName(String name) {
+		 user_screenname = name;
+	 }
+	 
+	 public String getUserScreenName()	{
+		 return user_screenname;
+	 }
 	 
 	 public String getTweet_creationdate() {
 		return tweet_creationdate;
