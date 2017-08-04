@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import utils.DBManager;
+
 public class AddSentimentScript {
 	
 //	private static String tweet_table = "bb_tweets";
@@ -31,7 +33,7 @@ public class AddSentimentScript {
 		System.out.println(" DONE ");
 //		worker();
 		
-		Connection c = getConnection();
+		Connection c = DBManager.getConnection(true, false);
 		String query = "Select tweet_id, tweet_content from "+tweet_table+" where sentiment is null";
 		try {
 			c.setAutoCommit(false);
@@ -111,7 +113,7 @@ public class AddSentimentScript {
 				.map(s -> new Tuple<Long, String>(s.getA(), sentClassifier.classify(s.getB())))
 				.collect(Collectors.toList());
 
-		Connection c = getConnection();
+		Connection c = DBManager.getConnection(true, false);
 		c.setAutoCommit(false);
 
 		Statement st = c.createStatement();
@@ -135,33 +137,4 @@ public class AddSentimentScript {
 		c.close();
 	}
 	
-
-	private static Connection getConnection() {
-		Connection c = null;
-		String host = "db.dbvis.de";
-		String port = "5432";
-		String dbname = "socialoceandb";
-		String username = "socialocean";
-		String pw = "blFDvUic4DL0V3ODkvbK";
-		
-		String connection_str = "jdbc:postgresql://"+host+":"+port+"/"+dbname+"?ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory";
-		
-		if (LOCAL) {
-			host = "localhost";
-			dbname = "masterproject_boston";
-			username = "postgres";
-			pw = "postgres";
-			connection_str = "jdbc:postgresql://"+host+":"+port+"/"+dbname;
-		}
-		
-		try {
-			c = DriverManager.getConnection(connection_str.trim(), username.trim(), pw.trim());
-		} catch (SQLException e) {
-			System.err.println("Could not connect to DB \n"
-					+ ""+connection_str);
-			e.printStackTrace();
-		}
-		return c;
-	}
-		
 }
