@@ -33,8 +33,6 @@ public class DBManager {
 		local = m_local;
 		rcp = rcp_flag;
 		
-		System.out.println("This is on branch?");
-		
 		Connection c = null;
 		
 		if (!local) {

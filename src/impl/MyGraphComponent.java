@@ -45,6 +45,8 @@ public class MyGraphComponent extends mxGraphComponent {
 		protected JLabel vertexRenderer = new JLabel();
 
 		protected mxGraphComponent graphComponent;
+		
+		private BufferedImage img = FilesUtil.readIconFile("icons/user.png");
     	
 	    public MyInteractiveCanvas(MyGraphComponent myGraphComponent) {
 	        super(myGraphComponent);
@@ -98,7 +100,7 @@ public class MyGraphComponent extends mxGraphComponent {
 //		            int y = (int)(state.getCenterY());
 //	                Image img = Toolkit.getDefaultToolkit().getImage("");
 //	                BufferedImage img = FilesUtil.readIconFile("icons/pos_32.png");
-	                BufferedImage img = FilesUtil.readIconFile("icons/user.png");
+//	                BufferedImage img = FilesUtil.readIconFile("icons/user.png");
 	                previousGraphics.drawImage(img, x, y, null);
 	            }
 
