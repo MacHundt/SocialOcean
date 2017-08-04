@@ -20,8 +20,9 @@ public class DBManager {
 	private static String USERS = "users";
 	
 	private static boolean local = true;
+	private static boolean rcp = true;
 	
-	private static Connection newConnection(boolean m_local) {
+	private static Connection newConnection(boolean m_local, boolean rcp_flag) {
 		String DATA = "boston";
 		String DBNAME = "masterproject_"+DATA;
 		String USER = "postgres";
@@ -30,42 +31,53 @@ public class DBManager {
 		String PORT = 5432+"";
 		
 		local = m_local;
+		rcp = rcp_flag;
 		
 		Connection c = null;
 		
 		if (!local) {
 //			## LOAD Settings File
+			
 			Properties prop = new Properties();
-			URL url = null;
-			try {
-			  url = new URL("platform:/plugin/"
-			    + "BostonCase/"
-			    + "settings/db_config.properties");
+			if (rcp) {
+				URL url = null;
+				try {
+					url = new URL("platform:/plugin/" + "BostonCase/" + "settings/db_config.properties");
 
-			    } catch (MalformedURLException e1) {
-			      e1.printStackTrace();
+				} catch (MalformedURLException e1) {
+					e1.printStackTrace();
+				}
+				try {
+					url = FileLocator.toFileURL(url);
+					InputStream input = new FileInputStream(new File(url.getPath()));
+					prop.load(input);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} 
+			else {
+				try {
+				    //load a properties file from class path, inside static method
+					FileInputStream ip = new FileInputStream(new File("./settings/db_config.properties"));
+					prop.load(ip);
+				} 
+				catch (IOException ex) {
+				    ex.printStackTrace();
+				}
 			}
-			try {
-				url = FileLocator.toFileURL(url);
-				InputStream input = new FileInputStream(new File(url.getPath()));
-				prop.load(input);
-				
-				HOST =  prop.getProperty("host");
-				PORT =  prop.getProperty("port");
-				DBNAME = prop.getProperty("dbname");
-				USER =  prop.getProperty("username");
-				PASS = prop.getProperty("pw");
-				TWEETDATA = prop.getProperty("tweetdata");
-				USERS = prop.getProperty("users");
-//				PASS = "\'"+PASS+"\'";
-				// ADD SSL=true & ssl Factory
-				// @see https://bowerstudios.com/node/739
-				DBNAME = DBNAME+"?ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory";
-				
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			
+			HOST = prop.getProperty("host");
+			PORT = prop.getProperty("port");
+			DBNAME = prop.getProperty("dbname");
+			USER = prop.getProperty("username");
+			PASS = prop.getProperty("pw");
+			TWEETDATA = prop.getProperty("tweetdata");
+			USERS = prop.getProperty("users");
+			// PASS = "\'"+PASS+"\'";
+			// ADD SSL=true & ssl Factory
+			// @see https://bowerstudios.com/node/739
+			DBNAME = DBNAME + "?ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory";
 		}
 		
 		String connection_str = "jdbc:postgresql://"+HOST+":"+PORT+"/"+DBNAME;
@@ -90,13 +102,19 @@ public class DBManager {
 	}
 	
 	
-	public static Connection getConnection(boolean local) {
-		return newConnection(local);
+	public static Connection getConnection(boolean local, boolean rcp) {
+		return newConnection(local, rcp);
 		
 	}
 	
+	/**
+	 * Get Connection with default: 
+	 * local = true:  localhost database
+	 * rcp = true: within the rcp environment
+	 * @return
+	 */
 	public static Connection getConnection() {
-		return newConnection(local);
+		return newConnection(local, rcp);
 		
 	}
 }
