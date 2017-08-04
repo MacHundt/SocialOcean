@@ -29,6 +29,8 @@ import org.apache.lucene.spatial.geopoint.document.GeoPointField;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
+import utils.DBManager;
+
 public class IndexTweets {
 	
 	private static int Fetchsize = 10000;
@@ -44,7 +46,7 @@ public class IndexTweets {
 	// index all tweets from DB
 	public static void main(String[] args) {
 		
-		Connection c = getConnection();
+		Connection c = DBManager.getConnection(false, false);
 		boolean create = true;	// create new Index
 		
 		
@@ -303,26 +305,4 @@ public class IndexTweets {
 		return output.trim();
 	}
 
-
-	private static Connection getConnection(){
-		
-		Connection c = null;
-		String DBNAME = "socialoceandb";
-		String USER = "socialocean";
-		String PASS = "blFDvUic4DL0V3ODkvbK";
-		String HOST = "db.dbvis.de";
-		String PORT = 5432+"";
-		DBNAME = DBNAME+"?ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory";
-		String connection_str = "jdbc:postgresql://"+HOST+":"+PORT+"/"+DBNAME;
-			
-		try {
-			c = DriverManager.getConnection(connection_str.trim(), USER.trim(), PASS.trim());
-		} catch (SQLException e) {
-			System.err.println("Could not connect to DB \n"
-					+ ""+connection_str);
-			e.printStackTrace();
-		}	
-		
-		return c;
-	}
 }
