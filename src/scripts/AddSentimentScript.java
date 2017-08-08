@@ -1,7 +1,6 @@
 package scripts;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -14,7 +13,7 @@ import utils.DBManager;
 public class AddSentimentScript {
 	
 //	private static String tweet_table = "bb_tweets";
-	private static String tweet_table = "nodexl_ohsen_tweets";
+	private static String tweet_table = "nodexl_my2k_tweets";
 	
 	private static int fetchsize = 10000;
 	private static SentimentClassifier sentClassifier;
@@ -24,7 +23,6 @@ public class AddSentimentScript {
 	
 	private static boolean LOCAL = true; 
 	
-
 	public static void main(String[] args) {
 		// http://alias-i.com/lingpipe/demos/tutorial/classify/read-me.html
 		System.out.print("Load Sentiment Classifier ... ");
@@ -33,7 +31,7 @@ public class AddSentimentScript {
 		System.out.println(" DONE ");
 //		worker();
 		
-		Connection c = DBManager.getConnection(true, false);
+		Connection c = DBManager.getConnection(LOCAL, false);
 		String query = "Select tweet_id, tweet_content from "+tweet_table+" where sentiment is null";
 		try {
 			c.setAutoCommit(false);
@@ -113,7 +111,7 @@ public class AddSentimentScript {
 				.map(s -> new Tuple<Long, String>(s.getA(), sentClassifier.classify(s.getB())))
 				.collect(Collectors.toList());
 
-		Connection c = DBManager.getConnection(true, false);
+		Connection c = DBManager.getConnection(LOCAL, false);
 		c.setAutoCommit(false);
 
 		Statement st = c.createStatement();

@@ -242,6 +242,7 @@ public class MapPanelCreator {
 							@Override
 							public void execute() {
 								l.changeTimeLine(TimeBin.HOURS);
+//								l.changeTimeLine(TimeBin.MINUTES);
 							}
 						};
 						lilt.start();
@@ -465,9 +466,16 @@ public class MapPanelCreator {
 		
 		ImageIcon icon = null;
 		// Check the sentiment for the right icon
-		if (sentiment.equals("positive"))
+//		if (sentiment.equals("positive"))
+//			icon = tweetIcon_p;
+//		else if (sentiment.equals("negative")) 
+//			icon = tweetIcon_n;
+//		else 
+//			icon = tweetIcon_;
+		
+		if (sentiment.equals("pos"))
 			icon = tweetIcon_p;
-		else if (sentiment.equals("negative")) 
+		else if (sentiment.equals("neg")) 
 			icon = tweetIcon_n;
 		else 
 			icon = tweetIcon_;

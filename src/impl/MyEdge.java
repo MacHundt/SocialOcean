@@ -10,17 +10,27 @@ public class MyEdge {
 	private String id;
 	private String content;
 	
-	private double sentiment;
+//	private double sentiment;
+	private String sentiment;
 	private String language = "";
 	private double cred_score = 0.5;
 	private boolean hasGeo = false;
 	private double latitude;
 	private double longitude;
+	private String relationsip;
 	
 	public MyEdge(String id) {
 		this.id = id;
 	}
 	
+	public String getRelationsip() {
+		return relationsip;
+	}
+
+	public void setRelationsip(String relationsip) {
+		this.relationsip = relationsip;
+	}
+
 	public void addLanguage(String lanuage) {
 		this.language = language;
 	}
@@ -29,7 +39,11 @@ public class MyEdge {
 		this.cred_score = cred_score;
 	}
 	
-	public void addSentiment(double sentiment) {
+//	public void addSentiment(double sentiment) {
+//		this.sentiment = sentiment;
+//	}
+	
+	public void addSentiment(String sentiment) {
 		this.sentiment = sentiment;
 	}
 	
@@ -52,7 +66,11 @@ public class MyEdge {
 		return content;
 	}
 
-	public double getSentiment() {
+//	public double getSentiment() {
+//		return sentiment;
+//	}
+	
+	public String getSentiment() {
 		return sentiment;
 	}
 

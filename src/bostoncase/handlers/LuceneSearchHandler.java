@@ -73,6 +73,7 @@ public class LuceneSearchHandler {
 			@Override
 			public void execute() {
 				l.changeTimeLine(TimeBin.HOURS);
+//				l.changeTimeLine(TimeBin.MINUTES);
 			}
 		};
 		lilt.start();

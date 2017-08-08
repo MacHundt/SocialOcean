@@ -15,7 +15,10 @@ public class Tweet {
 	 private String user_screenname;
 	 private int positive;
 	 private int negative;
+	 private String sentiment;
 	 private String category = "";
+	 
+	 private String relationship = "";
 	 
 	 // ...
 	 
@@ -23,7 +26,23 @@ public class Tweet {
 		 tweet_id = id;
 	 }
 	 
-	 public void setUserScreenName(String name) {
+	 public String getSentiment() {
+		return sentiment;
+	}
+
+	public String getRelationship() {
+		return relationship;
+	}
+
+	public void setRelationship(String relationship) {
+		this.relationship = relationship;
+	}
+
+	public void setSentiment(String sentiment) {
+		this.sentiment = sentiment;
+	}
+
+	public void setUserScreenName(String name) {
 		 user_screenname = name;
 	 }
 	 
