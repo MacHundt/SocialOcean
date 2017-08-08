@@ -27,15 +27,19 @@ public class SettingsPart {
 	public void postConstruct(Composite parent) {
 		parent.setLayout(new GridLayout(6, false));
 		
-		Button btnNegativ = new Button(parent, SWT.CHECK);
-		btnNegativ.setText("negativ");
-		btnNegativ.setSelection(true);
+		Button mentions = new Button(parent, SWT.CHECK);
+		mentions.setText("mentions");
+		mentions.setSelection(true);
 		
-		btnNegativ.addSelectionListener(new SelectionListener() {
+		mentions.addSelectionListener(new SelectionListener() {
 			
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
-				System.out.println(btnNegativ.getText() + " is turned to: "+btnNegativ.getSelection());
+				System.out.println(mentions.getText() + " is turned to: "+mentions.getSelection());
+				
+				Lucene l = Lucene.INSTANCE;
+				l.setWithMentions(mentions.getSelection());
+				l.createGraphView();
 			}
 			
 			@Override
@@ -43,35 +47,40 @@ public class SettingsPart {
 			}
 		});
 		
-		Button btnNeutrag = new Button(parent, SWT.CHECK);
-		btnNeutrag.setText("neutral");
-		btnNeutrag.setSelection(true);
-		btnNeutrag.addSelectionListener(new SelectionListener() {
+		Button follows = new Button(parent, SWT.CHECK);
+		follows.setText("follows");
+		follows.setSelection(true);
+		follows.addSelectionListener(new SelectionListener() {
 			
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
-				System.out.println(btnNeutrag.getText() + " is turned to: "+btnNeutrag.getSelection());
+				System.out.println(follows.getText() + " is turned to: "+follows.getSelection());
+				
+				Lucene l = Lucene.INSTANCE;
+				l.setWithFollows(follows.getSelection());
+				l.createGraphView();
 			}
+			
 			
 			@Override
 			public void widgetDefaultSelected(SelectionEvent arg0) {
 			}
 		});
 		
-		Button btnPositiv = new Button(parent, SWT.CHECK);
-		btnPositiv.setText("positiv");
-		btnPositiv.setSelection(true);
-		btnPositiv.addSelectionListener(new SelectionListener() {
-			
-			@Override
-			public void widgetSelected(SelectionEvent arg0) {
-				System.out.println(btnPositiv.getText() + " is turned to: "+btnPositiv.getSelection());
-			}
-			
-			@Override
-			public void widgetDefaultSelected(SelectionEvent arg0) {
-			}
-		});
+//		Button btnPositiv = new Button(parent, SWT.CHECK);
+//		btnPositiv.setText("positiv");
+//		btnPositiv.setSelection(true);
+//		btnPositiv.addSelectionListener(new SelectionListener() {
+//			
+//			@Override
+//			public void widgetSelected(SelectionEvent arg0) {
+//				System.out.println(btnPositiv.getText() + " is turned to: "+btnPositiv.getSelection());
+//			}
+//			
+//			@Override
+//			public void widgetDefaultSelected(SelectionEvent arg0) {
+//			}
+//		});
 		
 		
 		Label lblColor = new Label(parent, SWT.NONE);

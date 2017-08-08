@@ -130,12 +130,12 @@ public enum Lucene {
 	public int serialCounter = 0;
 	public boolean isInitialized = false;
 	private boolean changedTimeSeries;
+	private boolean withMention = true;
+	private boolean withFollows = true;
 	
 
 	public void initLucene(String index, ILuceneQuerySearcher querySearcher) {
 		try {
-			
-			String pass = "VwKhvTEkzzVdL2tPyFZX";
 			
 			// ### JSch ###
 //			JSch jsch = new JSch();
@@ -168,8 +168,6 @@ public enum Lucene {
 //			String path = urlc.getURL().getPath();
 //			URI path2 = url.toURI();
 //			reader = DirectoryReader.open(FSDirectory.open(Paths.get(path2)));
-			
-			
 			
 			
 //			### commons-net  -- doesn't work
@@ -233,7 +231,6 @@ public enum Lucene {
 		parser.setDateResolution(dateResolution);
 		this.querySearcher = querySearcher;
 		querySearcher.initQuerySearcher(searcher, analyzer);
-
 	}
 
 	public void printToConsole(String msg) {
@@ -326,7 +323,10 @@ public enum Lucene {
 			if (isInDetails(fieldname, tsp.detailsToShow) && detailsToShow_counter >= 0) {
 				int index = detailsToShow_counter--;
 				tableData[index][0] = fieldname; 
-				tableData[index][1] = new Long(termCounts.get(fn.get(i)).termCount);
+				if (termCounts.get(fn.get(i)) != null )
+					tableData[index][1] = new Long(termCounts.get(fn.get(i)).termCount);
+				else 
+					tableData[index][1] = 0;
 //				DecimalFormat format = new DecimalFormat("##.##");
 //				String s = format.format((termCounts.get(fn.get(i)).termCount * 100.0 / numTerms));
 //				tableData[index][2] = s + " %";
@@ -790,10 +790,18 @@ public enum Lucene {
 				continue;
 
 			field = (document.getField("category")).stringValue();
+//			String sentiment_str = (document.getField("sentiment")).stringValue();
+//			if (sentiment_str.equals("positive"))
+//				sentiment = 1.0;
+//			else if (sentiment_str.equals("negative")) 
+//				sentiment = -1.0;
+//			else 
+//				sentiment = 0;
+			
 			String sentiment_str = (document.getField("sentiment")).stringValue();
-			if (sentiment_str.equals("positive"))
+			if (sentiment_str.equals("pos"))
 				sentiment = 1.0;
-			else if (sentiment_str.equals("negative")) 
+			else if (sentiment_str.equals("neg")) 
 				sentiment = -1.0;
 			else 
 				sentiment = 0;
@@ -840,6 +848,8 @@ public enum Lucene {
 			}
 			if (maxDate.isEmpty() || !maxDate.contains(" "))
 				return;
+			
+			maxDate = "2013-01-08 01:15:00";
 
 			String[] datetime_String = maxDate.split(" ");
 			String date_Str = datetime_String[0];
@@ -887,7 +897,10 @@ public enum Lucene {
 			}
 			if (minDate.isEmpty() || !minDate.contains(" "))
 				return;
-
+			
+			
+			minDate = "2013-01-07 12:42:00";		// my2k
+			
 			String[] datetime_String = minDate.split(" ");
 			String date_Str = datetime_String[0];
 			String time_Str = datetime_String[1];
@@ -1044,7 +1057,10 @@ public enum Lucene {
 				long time = Long.parseLong((document.getField("date")).stringValue());
 				
 				long key = getBucket(buckets, stepSize,  time);
-				buckets.put(key, ( buckets.get(key) + 1 ));
+				if (key >= 0)
+					buckets.put(key, ( buckets.get(key) + 1 ));
+				else 
+					continue;
 				
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -1092,7 +1108,7 @@ public enum Lucene {
 	public void createGraphView() {
 		ScoreDoc[] result = last_result;
 		
-		GraphPanelCreator3.createGraph(result, searcher);
+		GraphPanelCreator3.createGraph(result, searcher, withMention, withFollows);
 		
 	}
 	
@@ -1279,14 +1295,15 @@ public enum Lucene {
 			
 			for (MyEdge edge : edges) {
 				String id = edge.getId();
-				double sentiment = edge.getSentiment();
+//				double sentiment = edge.getSentiment();
+				String senti = edge.getSentiment();
 				double lat = edge.getLatitude();
 				double lon = edge.getLongitude();
-				String senti = "neutral";
-				if (sentiment > 0)
-					senti = "positive";
-				else if (sentiment < 0)
-					senti = "negative";
+//				String senti = "neutral";
+//				if (sentiment > 0)
+//					senti = "positive";
+//				else if (sentiment < 0)
+//					senti = "negative";
 					
 				MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, senti, lat, lon));
 			}
@@ -1348,6 +1365,7 @@ public enum Lucene {
 			@Override
 			public void execute() {
 				changeTimeLine(TimeBin.HOURS);
+//				changeTimeLine(TimeBin.MINUTES);
 			}
 		};
 		lilt.start();
@@ -1395,6 +1413,19 @@ public enum Lucene {
 
 	public void setColorScheme(ColorScheme colorScheme) {
 		this.colorScheme = colorScheme;
+	}
+
+	public void setWithMentions(boolean selection) {
+		
+		withMention = selection;
+		
+		
+	}
+
+	public void setWithFollows(boolean selection) {
+		
+		withFollows = selection;
+		
 	}
 
 

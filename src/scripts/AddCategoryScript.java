@@ -40,7 +40,7 @@ public class AddCategoryScript {
 		
 //		worker();
 		
-		Connection c = DBManager.getConnection(true, false);
+		Connection c = DBManager.getConnection(LOCAL, false);
 		String query = "Select tweet_id, tweet_content from "+tweet_table+" where category is null";
 		try {
 			c.setAutoCommit(false);
@@ -121,7 +121,7 @@ public class AddCategoryScript {
 				classifier.getCategory(s.getB()))).collect(Collectors.toList());
 		
 		
-		Connection c = DBManager.getConnection(true, false);
+		Connection c = DBManager.getConnection(LOCAL, false);
 		c.setAutoCommit(false);
 		
 		Statement st = c.createStatement();

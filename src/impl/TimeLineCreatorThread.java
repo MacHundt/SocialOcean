@@ -2,8 +2,6 @@ package impl;
 
 import utils.Lucene;
 
-
-	
 	public abstract class TimeLineCreatorThread extends Thread {
 		
 		private Lucene l;
@@ -13,8 +11,6 @@ import utils.Lucene;
 		}
 		
 		public abstract void execute();
-
-		
 		public final void run() {
 
 			try {

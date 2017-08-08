@@ -35,8 +35,10 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.time.Hour;
+import org.jfree.data.time.Minute;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.data.time.TimeSeriesDataItem;
 
 import impl.GraphCreatorThread;
 import javafx.util.converter.NumberStringConverter;
@@ -344,7 +346,21 @@ public class Time {
 					int min = Integer.parseInt(time[1]);
 //					int sec = Integer.parseInt(time[2]);
 					
-					series.add(new Hour(hour, day, month, year), (double) freq);
+					Hour h = new Hour(hour, day, month, year);
+//					Minute m = new Minute(min, h);
+					
+					TimeSeriesDataItem test = series.getDataItem(h);
+					if (test != null) {
+						System.out.println("same period");
+						if (freq > 0) {
+							series.addOrUpdate(h, (double) freq);
+//							series.addOrUpdate(m, (double) freq);
+						}
+					}
+					else {
+						series.add(h, (double) freq);
+//						series.add(m, (double) freq);
+					}
 				}
 				dataset.addSeries(series);	
 //				dataset.setAutoWidth(true);
