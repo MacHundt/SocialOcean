@@ -1288,6 +1288,11 @@ public enum Lucene {
 	}
 	
 	
+	/**
+	 * 
+	 * @param edges
+	 * @param clearMap clear all WayPoints
+	 */
 	public void showSelectionInMap(ArrayList<MyEdge> edges, boolean clearMap) {
 		if (!edges.isEmpty()) {
 			if (clearMap)
@@ -1309,7 +1314,44 @@ public enum Lucene {
 			}
 			MapPanelCreator.showWayPointsOnMap();
 		}
-		
+	}
+	
+	
+	public void showSelectionInHistogramm(ArrayList<MyEdge> edges) {
+		if (!edges.isEmpty()) {
+			Histogram histogram = Histogram.getInstance();
+			HashMap<String, HistogramEntry> counter = new HashMap<>();
+			
+			for (MyEdge edge : edges) {
+				String id = edge.getId();
+				String sentiment = edge.getSentiment();
+				String category = edge.getCategory();
+				double senti = 0.0;
+				if (category == null || category.isEmpty())
+					continue;
+				
+				if (sentiment.equals("pos"))
+					senti = 1.0;
+				else if (sentiment.equals("neg")) 
+					senti = -1.0;
+				else 
+					senti = 0;
+				
+				if (counter.containsKey(category)) {
+					HistogramEntry entry = counter.get(category);
+					entry.count();
+					entry.addSentiment(senti);
+				} else {
+					HistogramEntry entry = new HistogramEntry(category);
+					entry.count();
+					entry.addSentiment(senti);
+					counter.put(category, entry);
+				}
+				
+			}
+			histogram.changeDataSet(counter);
+		}
+
 	}
 	
 
