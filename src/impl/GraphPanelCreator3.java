@@ -120,12 +120,13 @@ public class GraphPanelCreator3 {
 						
 						System.out.println("Cahnged !! >> "+selected);
 						l.showSelectionInMap(edges, true);
+						l.showSelectionInHistogramm(edges);
 					}
 					// show all again
 					else if (selected == 0){
 						ScoreDoc[] lastResult = l.getLastResult();
 						l.showInMap(lastResult, true);
-						
+						l.changeHistogramm(lastResult);
 					}
 				}
 				
@@ -417,7 +418,7 @@ public class GraphPanelCreator3 {
 						query = "Select "
 								+ "t.user_name, t.pagerank, t.user_location, t.user_timezone, t.user_utcoffset, "
 								+ " t.user_creationdate, t.friends, "
-								+ "t.followers, t.status_count  from "+userTable+" as t where t.user_name = '"
+								+ "t.followers, t.status_count from "+userTable+" as t where t.user_name = '"
 								+ nodexl_target+"'";
 						
 						rs = stmt.executeQuery(query);
@@ -482,6 +483,7 @@ public class GraphPanelCreator3 {
 
 						edge = new MyEdge(id);
 						((MyEdge) edge).addCredibility(edgeCredebility);
+						((MyEdge) edge).addCategory(category);
 						((MyEdge) edge).addSentiment(sentiment);
 						// ((MyEdge)edge).addContent(content);
 						if (!geom.isEmpty()) {
@@ -658,6 +660,7 @@ public class GraphPanelCreator3 {
 
 						edge = new MyEdge(id);
 						((MyEdge) edge).addCredibility(edgeCredebility);
+						((MyEdge) edge).addCategory(category);
 						((MyEdge) edge).addSentiment(sentiment);
 						// ((MyEdge)edge).addContent(content);
 						if (!geom.isEmpty()) {
@@ -699,26 +702,28 @@ public class GraphPanelCreator3 {
 		
 		
 		ArrayList<Object[]> filtered = new ArrayList<>();
-		for (Object[] o : cc) {
-			if (o != null && o.length >= 4) {
-				filtered.add(o);
+		if (cc != null) {
+			for (Object[] o : cc) {
+				if (o != null && o.length >= 4) {
+					filtered.add(o);
+				}
+	//			else {
+	//				graph.removeCells(o, true);
+	//			}
 			}
-//			else {
-//				graph.removeCells(o, true);
-//			}
-		}
-		// DESC
-		filtered.sort(new Comparator<Object[]>() {
+			// DESC
+			filtered.sort(new Comparator<Object[]>() {
+				
+				@Override
+				public int compare(Object[] o1, Object[] o2) {
+					return Integer.compare( o2.length, o1.length);
+				}
+			});
+			Object[] most = filtered.get(0);
 			
-			@Override
-			public int compare(Object[] o1, Object[] o2) {
-				return Integer.compare( o2.length, o1.length);
-			}
-		});
-		Object[] most = filtered.get(0);
-		
-		
-		filterOutComponents(cc, 4);
+			
+			filterOutComponents(cc, 2);
+		}
 		morphGraph(graph, graphComponent);
 		
 		
@@ -804,6 +809,7 @@ public class GraphPanelCreator3 {
 
 					edge = new MyEdge(id);
 					((MyEdge) edge).addCredibility(0);
+					((MyEdge) edge).addCategory("");
 					((MyEdge) edge).addSentiment("neu");
 
 					// TODO // create an Edge Object for Properties

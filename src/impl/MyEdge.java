@@ -18,6 +18,7 @@ public class MyEdge {
 	private double latitude;
 	private double longitude;
 	private String relationsip;
+	private String category;
 	
 	public MyEdge(String id) {
 		this.id = id;
@@ -25,6 +26,14 @@ public class MyEdge {
 	
 	public String getRelationsip() {
 		return relationsip;
+	}
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void addCategory(String category) {
+		this.category = category;
 	}
 
 	public void setRelationsip(String relationsip) {
