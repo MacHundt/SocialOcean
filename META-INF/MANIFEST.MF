@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: BostonCase
+Bundle-Name: SocialOcean
 Bundle-SymbolicName: BostonCase;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-ClassPath: libs/java-sdk-3.5.1-jar-with-dependencies.jar,
