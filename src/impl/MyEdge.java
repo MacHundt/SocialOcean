@@ -1,5 +1,7 @@
 package impl;
 
+import java.util.Date;
+
 public class MyEdge {
 
 	/**
@@ -19,6 +21,7 @@ public class MyEdge {
 	private double longitude;
 	private String relationsip;
 	private String category;
+	private Date date;
 	
 	public MyEdge(String id) {
 		this.id = id;
@@ -26,6 +29,14 @@ public class MyEdge {
 	
 	public String getRelationsip() {
 		return relationsip;
+	}
+
+	public Date getDate() {
+		return date;
+	}
+
+	public void addDate(Date date2) {
+		this.date = date2;
 	}
 
 	public String getCategory() {

@@ -292,6 +292,7 @@ public class GraphPanelCreator3 {
 				int tweetCount = 0;
 				// today - userCreationDate
 				long time = 0;
+				java.util.Date date = null;
 				String nodexl_target = "";
 				
 				switch (type) {
@@ -434,7 +435,7 @@ public class GraphPanelCreator3 {
 							String TWITTER = "yyyy-dd-MM HH:mm:ss";
 							SimpleDateFormat sf = new SimpleDateFormat(TWITTER,Locale.ENGLISH);
 							sf.setLenient(true);
-						    java.util.Date date =sf.parse(cd);
+						    date = sf.parse(cd);
 //							Date dt = new Date
 //							String cd = rs.getString(8).split(" ")[0];
 							Date dt = new Date(date.getYear(), date.getMonth(), date.getDate());
@@ -485,6 +486,7 @@ public class GraphPanelCreator3 {
 						((MyEdge) edge).addCredibility(edgeCredebility);
 						((MyEdge) edge).addCategory(category);
 						((MyEdge) edge).addSentiment(sentiment);
+						((MyEdge) edge).addDate(date);
 						// ((MyEdge)edge).addContent(content);
 						if (!geom.isEmpty()) {
 							geom = geom.toLowerCase().replace("point(", "").replace(")", "");
@@ -601,7 +603,7 @@ public class GraphPanelCreator3 {
 							// HH:mm:ss.S");
 							SimpleDateFormat sf = new SimpleDateFormat(TWITTER, Locale.ENGLISH);
 							sf.setLenient(true);
-							java.util.Date date = sf.parse(cd);
+							date = sf.parse(cd);
 							// Date dt = new Date
 							// String cd = rs.getString(8).split(" ")[0];
 							Date dt = new Date(date.getYear(), date.getMonth(), date.getDate());
@@ -811,6 +813,7 @@ public class GraphPanelCreator3 {
 					((MyEdge) edge).addCredibility(0);
 					((MyEdge) edge).addCategory("");
 					((MyEdge) edge).addSentiment("neu");
+					((MyEdge) edge).addDate(null);
 
 					// TODO // create an Edge Object for Properties
 					graph.insertEdge(parent, null, edge, nodeNames.get(name), nodeNames.get(target),

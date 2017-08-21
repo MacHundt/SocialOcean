@@ -13,6 +13,7 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -1351,8 +1352,74 @@ public enum Lucene {
 			}
 			histogram.changeDataSet(counter);
 		}
+	}
+	
+	
+	
+	public void showSelectionInTimeline(ArrayList<MyEdge> edges, TimeBin binsize) {
+
+		ArrayList<TimeLineHelper> tl_data = new ArrayList<>();
+
+		long minDate = Long.MAX_VALUE;
+		long maxDate = Long.MIN_VALUE;
+		
+		for (MyEdge edge : edges) {
+			String id = edge.getId();
+			
+			Date date = edge.getDate();
+
+		}
+
+		long temp_utc = utc_time_min;
+		long stepSize = 0;
+		
+		HashMap<Long, Integer> buckets = new HashMap<>();
+		// From Start Date to StopDate .. make bins and plot
+		LocalDateTime dt_temp = longTOLocalDateTime(minDate);
+		
+		// CREATE TIME Bins
+		while (temp_utc <= utc_time_max) {
+			LocalDateTime dt_plus = dt_temp;
+			switch (binsize) {
+			case SECONDS:
+				dt_plus = dt_temp.plusSeconds(1);
+				break;
+			case MINUTES:
+				dt_plus = dt_temp.plusMinutes(1);
+				break;
+			case HOURS:
+				dt_plus = dt_temp.plusHours(1);
+				break;
+			case DAYS:
+				dt_plus = dt_temp.plusDays(1);
+				break;
+			}
+			long utc_plus = dt_plus.toEpochSecond(ZoneOffset.UTC);
+			if (stepSize == 0) {
+				stepSize = utc_plus - temp_utc;
+			}
+			
+			buckets.put(temp_utc, 0);
+			
+//			ScoreDoc[] rs = searchTimeRange(temp_utc, utc_plus, false, false);
+			dt_temp = dt_plus;
+			temp_utc = utc_plus;
+		}
+		
+				
+		for (Long key:  buckets.keySet()) {
+//			buckets.put(key, randomVal);
+			tl_data.add(new TimeLineHelper(longTOLocalDateTime(key), buckets.get(key)));
+		}
+
+		Time time = Time.getInstance();
+		time.changeDataSet(tl_data);
+		changedTimeSeries = true;
 
 	}
+	
+	
+	
 	
 
 	public void setQeryType(String text) {
