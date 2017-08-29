@@ -1,7 +1,12 @@
 package utils;
 
 import java.awt.Color;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -17,14 +22,23 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.TreeMap;
+
+import javax.swing.table.DefaultTableModel;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.DateTools.Resolution;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -33,7 +47,10 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.spatial.geopoint.document.GeoPointField;
 import org.apache.lucene.spatial.geopoint.search.GeoPointInBBoxQuery;
+import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.jface.dialogs.InputDialog;
 
 import bostoncase.parts.CategoriesPart;
 import bostoncase.parts.Console;
@@ -45,6 +62,8 @@ import bostoncase.parts.TopSelectionPart;
 import impl.GraphCreatorThread;
 import impl.GraphML_Helper;
 import impl.GraphPanelCreator3;
+import impl.LuceneIndexLoaderThread;
+import impl.LuceneQuerySearcher;
 import impl.MapPanelCreator;
 import impl.MyEdge;
 import impl.TimeLineCreatorThread;
@@ -99,6 +118,8 @@ public enum Lucene {
 	private String query_type = "";
 
 	private MultiFieldQueryParser mq = null;
+	
+	private static int reIndexCount = 0;
 
 	public static enum TimeBin {
 		SECONDS, MINUTES, HOURS, DAYS
@@ -133,9 +154,13 @@ public enum Lucene {
 	private boolean changedTimeSeries;
 	private boolean withMention = true;
 	private boolean withFollows = true;
+	private String luceneIndex;
 	
 
 	public void initLucene(String index, ILuceneQuerySearcher querySearcher) {
+		
+		luceneIndex = index;
+		
 		try {
 			
 			// ### JSch ###
@@ -317,7 +342,7 @@ public enum Lucene {
 		
 		// fields - date, geo, id, path
 		Object[][] tableData = new Object[tsp.detailsToShow.length][tsp.detailsColumns];
-		int detailsToShow_counter = tsp.detailsToShow.length-1;
+		int detailsToShow_counter = tsp.detailsToShow.length-4;
 		for (int i = 0; i < fn.size(); i++) {
 			
 			String fieldname = fn.get(i);	// field name
@@ -334,6 +359,9 @@ public enum Lucene {
 			}
 		}
 		tsp.setDetailTable(tableData);
+		
+		Object[][] result_data = new Object[9][3];
+		tsp.setResultTable(result_data);
 
 	}
 	
@@ -991,6 +1019,7 @@ public enum Lucene {
 			return;
 		}
 
+		// get min-max values
 		for (ScoreDoc doc : last_result) {
 
 			int docID = doc.doc;
@@ -1011,7 +1040,8 @@ public enum Lucene {
 
 		}
 
-		long temp_utc = utc_time_min;
+		long temp_utc = minDate;
+//		long temp_utc = utc_time_min;
 		long stepSize = 0;
 		
 		HashMap<Long, Integer> buckets = new HashMap<>();
@@ -1019,7 +1049,7 @@ public enum Lucene {
 		LocalDateTime dt_temp = longTOLocalDateTime(minDate);
 		
 		// CREATE TIME Bins
-		while (temp_utc <= utc_time_max) {
+		while (temp_utc <= maxDate) {
 			LocalDateTime dt_plus = dt_temp;
 			switch (binsize) {
 			case SECONDS:
@@ -1046,6 +1076,35 @@ public enum Lucene {
 			dt_temp = dt_plus;
 			temp_utc = utc_plus;
 		}
+		
+		
+//		while (temp_utc <= utc_time_max) {
+//			LocalDateTime dt_plus = dt_temp;
+//			switch (binsize) {
+//			case SECONDS:
+//				dt_plus = dt_temp.plusSeconds(1);
+//				break;
+//			case MINUTES:
+//				dt_plus = dt_temp.plusMinutes(1);
+//				break;
+//			case HOURS:
+//				dt_plus = dt_temp.plusHours(1);
+//				break;
+//			case DAYS:
+//				dt_plus = dt_temp.plusDays(1);
+//				break;
+//			}
+//			long utc_plus = dt_plus.toEpochSecond(ZoneOffset.UTC);
+//			if (stepSize == 0) {
+//				stepSize = utc_plus - temp_utc;
+//			}
+//			
+//			buckets.put(temp_utc, 0);
+//			
+////			ScoreDoc[] rs = searchTimeRange(temp_utc, utc_plus, false, false);
+//			dt_temp = dt_plus;
+//			temp_utc = utc_plus;
+//		}
 		
 		
 		// ADD To Bins
@@ -1535,6 +1594,147 @@ public enum Lucene {
 		
 		withFollows = selection;
 		
+	}
+
+	public void reindexLastResult(String name) {
+		
+		reIndexCount++;
+		// MAP indexCount to name
+		
+		String ind = luceneIndex;
+		
+		String tempPath = ind.substring(0, ind.lastIndexOf("/")+1);
+		
+		File theDir = new File(tempPath+"temp");
+
+		// if the directory does not exist, create it
+		if (!theDir.exists()) {
+		    System.out.println("creating directory: " + theDir.getName());
+		    boolean result = false;
+
+		    try{
+		        theDir.mkdir();
+		        result = true;
+		    } 
+		    catch(SecurityException se){
+		        //handle it
+		    }        
+		    if(result) {    
+		        System.out.println("DIR created");  
+		    }
+		}
+		
+		File newIndex = new File(theDir+"/"+name);
+		if (!newIndex.exists()) {
+		    System.out.println("creating directory: " + newIndex.getName());
+		    boolean result = false;
+
+		    try{
+		    	newIndex.mkdir();
+		        result = true;
+		    } 
+		    catch(SecurityException se){
+		        //handle it
+		    }        
+		    if(result) {    
+		        System.out.println("DIR created");  
+		    }
+		}
+		
+		System.out.println("Indexing to directory '" + newIndex + "'...");
+		
+		try {
+			Directory dir = FSDirectory.open(Paths.get(newIndex.getAbsolutePath()));
+			
+			// ## LOAD Stopwords File
+			Properties prop = new Properties();
+			URL url = null;
+			try {
+			  url = new URL("platform:/plugin/"
+			    + "BostonCase/"
+			    + "stopwords/stopwords.txt");
+
+			    } catch (MalformedURLException e1) {
+			      e1.printStackTrace();
+			}
+			url = FileLocator.toFileURL(url);
+			
+			FileReader reader = new FileReader(new File(url.getPath()));
+			Analyzer analyzer = new StandardAnalyzer(reader);
+			IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
+			iwc.setOpenMode(OpenMode.CREATE);
+			
+			IndexWriter writer = new IndexWriter(dir, iwc);
+			
+			for (ScoreDoc doc : last_result) {
+				Document document = null;
+				try {
+					document = searcher.doc(doc.doc);
+					
+					// get content .. add content
+					// fulltext
+					String id = document.get("id");
+					String content = getContent(id);
+					content = content.replaceAll("\"", "");
+					TextField content_field = new TextField("content", content, Field.Store.NO);
+					document.add(content_field);
+					
+				} catch (IOException e) {
+					continue;
+				}
+				writer.addDocument(document);
+			}
+			
+			writer.close();
+			
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		
+		// TODO store mapping (index to foldername
+		// re-init Lucene with new created Lucene Index
+		// Add a dialog, to enable to open LuceneIndex files
+		
+		LuceneQuerySearcher lqs = LuceneQuerySearcher.INSTANCE;
+		LuceneIndexLoaderThread lilt = new LuceneIndexLoaderThread(this) {
+			@Override
+			public void execute() {
+				System.out.println("Loading Lucene Index ...");
+				initLucene(newIndex.getAbsolutePath(), lqs);
+			}
+		};
+		lilt.start();
+		
+		
+		
+	}
+	
+	
+	private String getContent(String tweetid) {
+		String content = "";
+		Connection c = DBManager.getConnection();
+    	try {
+			Statement stmt = c.createStatement();
+			String table = DBManager.getTweetdataTable();
+			
+//			String query = "select t.\"tweetScreenName\", t.\"tweetContent\", t.creationdate, t.sentiment, t.category, t.\"containsUrl\"  from "+table+" as t where t.tweetid = "+text;
+			String query = "select t.tweet_content from "+table+" as t where t.tweet_id = "+tweetid;
+			ResultSet rs = stmt.executeQuery(query);
+			while (rs.next()) {
+				content = rs.getString("tweet_content");
+			}
+			
+			stmt.close();
+			c.close();
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+    	
+    	
+    	return content;
 	}
 
 

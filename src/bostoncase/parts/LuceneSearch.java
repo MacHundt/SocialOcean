@@ -16,6 +16,7 @@ import java.util.Properties;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
+import javax.xml.validation.Validator;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ParameterizedCommand;
@@ -24,6 +25,7 @@ import org.eclipse.e4.core.commands.ECommandService;
 import org.eclipse.e4.core.commands.EHandlerService;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
@@ -50,6 +52,8 @@ public class LuceneSearch {
 	private Text text;
 //	private String luceneIndex = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/lucene_index";
 	private String luceneIndex = "";
+	
+//	private Composite parent = null;
 
 	
 	@Inject ECommandService commandService;
@@ -85,6 +89,7 @@ public class LuceneSearch {
 	@PostConstruct
 	public void postConstruct(Composite parent) {
 		
+//		this.parent = parent;
 		Display display = Display.getCurrent();
 		Color red = display.getSystemColor(SWT.COLOR_RED);
 		Color grey = display.getSystemColor(SWT.COLOR_GRAY);
@@ -160,7 +165,7 @@ public class LuceneSearch {
 		
 //		## BUILD GUI
 		
-		parent.setLayout(new GridLayout(8, false));
+		parent.setLayout(new GridLayout(9, false));
 		
 		
 		Button btnAdd = new Button(parent, SWT.CHECK );
@@ -274,6 +279,29 @@ public class LuceneSearch {
 		});
 		
 		
+		Button reindex = new Button(parent, SWT.BUTTON1);
+//		btnClear.setFont(newFont);
+		reindex.setText("Re-Index");
+		reindex.setBackground(grey);
+		
+		reindex.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				
+				InputDialog input = new InputDialog(parent.getShell(), "", "Enter Folder Name", "", null);
+				input.open();
+				
+				String name = input.getValue();
+				
+				// TODO Graph
+				// Clear all Results, Map, Graph
+				System.out.println("Re-Index");
+				l.printToConsole("Re-Index");
+				l.reindexLastResult(name);
+			}
+		});
+		
+		
 		Button btnClear = new Button(parent, SWT.BUTTON1);
 //		btnClear.setFont(newFont);
 		btnClear.setText("Clear");
@@ -300,6 +328,31 @@ public class LuceneSearch {
 	
 	@PreDestroy
 	public void preDestroy() {
+		
+		String tempPath = luceneIndex.substring(0, luceneIndex.lastIndexOf("/")+1);
+		
+		System.out.println("Clean up the temp folder ...");
+		File newIndex = new File(tempPath+"/temp");
+		
+		if (newIndex.exists() && newIndex.isDirectory()) {
+			// remove all files in dir
+			String[]entries = newIndex.list();
+			for(String s: entries){
+			    File currentIndexFolder = new File(newIndex.getPath(), s);
+			    
+			    if (currentIndexFolder.isDirectory()) {
+			    	String[] indexFiles = currentIndexFolder.list();
+					for(String index: indexFiles){
+					    File files = new File(currentIndexFolder.getPath(), index);
+					    files.delete();
+					}
+			    }
+			    
+			    currentIndexFolder.delete();
+			}
+			newIndex.delete();
+			System.out.println("DIR deleted");  
+		}
 		
 	}
 	

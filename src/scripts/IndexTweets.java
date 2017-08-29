@@ -33,9 +33,6 @@ public class IndexTweets {
 	
 	private static int Fetchsize = 10000;
 	
-	private static LocalDate mindate = LocalDate.of(2013, 4, 14);
-	private static LocalDate maxdate = LocalDate.of(2013, 4, 24);
-	
 //	private static String TWEETDATA = "tweetdata";
 //	private static String TWEETDATA = "bb_tweets";
 	private static String TWEETDATA = "nodexl_my2k_tweets";
@@ -134,18 +131,18 @@ public class IndexTweets {
 //				t.setCategory((rs.getString(13) != null) ? rs.getString(13) : "Other");
 //				t.setSentiment((rs.getString(14) != null) ? rs.getString(14) : "neu");
 				
-				Tweet t = new Tweet(rs.getString(1));
-				t.setTweet_creationdate(rs.getString(2));
-				t.setTweet_content(rs.getString(3));
-				t.setRelationship(rs.getString(4));
-				t.setLatitude(rs.getDouble(5));
-				t.setLongitude(rs.getDouble(6));
-				t.setHasurl(rs.getBoolean(7));
-				t.setUserScreenName(rs.getString(8));
-				t.setPositive(rs.getInt(9));
-				t.setNegative(rs.getInt(10));
-				t.setCategory((rs.getString(11) != null) ? rs.getString(11) : "Other");
-				t.setSentiment((rs.getString(12) != null) ? rs.getString(12) : "neu");
+				Tweet t = new Tweet(rs.getString("tweet_id"));
+				t.setTweet_creationdate(rs.getString("tweet_creationdate"));
+				t.setTweet_content(rs.getString("tweet_content"));
+				t.setRelationship(rs.getString("relationship"));
+				t.setLatitude(rs.getDouble("latitude"));
+				t.setLongitude(rs.getDouble("longitude"));
+				t.setHasurl(rs.getBoolean("hasurl"));
+				t.setUserScreenName(rs.getString("source"));
+				t.setPositive(rs.getInt("positive"));
+				t.setNegative(rs.getInt("negative"));
+				t.setCategory((rs.getString("category") != null) ? rs.getString(11) : "other");
+				t.setSentiment((rs.getString("sentiment") != null) ? rs.getString(12) : "neu");
 				
 				tweets.add(t);
 				
@@ -204,7 +201,7 @@ public class IndexTweets {
 			
 			
 //			doc.add(new StringField("isRetweet", (t.getTweet_replytostatus() > 0) ? "true" : "false", Field.Store.NO));
-			doc.add(new StringField("relationship", t.getRelationship(), Field.Store.NO));
+			doc.add(new StringField("relationship", t.getRelationship(), Field.Store.YES));
 
 			
 			category = t.getCategory();
@@ -214,13 +211,13 @@ public class IndexTweets {
 			doc.add(new StringField("hasURL", (t.isHasurl())? "true" : "false" , Field.Store.YES));
 			
 			// User_ScreenName
-			doc.add(new StringField("user_name", t.getUserScreenName(), Field.Store.NO));
+			doc.add(new StringField("name", t.getUserScreenName(), Field.Store.YES));
 			
 			// TweetSource
 //			doc.add(new StringField("source", t.getTweet_source(), Field.Store.YES));
 			
-			// User_id
-			doc.add(new StringField("user_id", t.getUser_id()+"", Field.Store.YES));
+//			// User_id
+//			doc.add(new StringField("uid", t.getUser_id()+"", Field.Store.YES));
 			
 			// Sentiment
 			doc.add(new StringField("sentiment", t.getSentiment(), Field.Store.YES));
@@ -239,12 +236,13 @@ public class IndexTweets {
 			
 			tags = getTagsFromTweets(content);
 			;
-			TextField tag_field = new TextField("tags", tags, Field.Store.NO);
+			TextField tag_field = new TextField("tags", tags, Field.Store.YES);
 			doc.add(tag_field);
 
 			// @ mentions
 			mentions = getMentionsFromTweets(content);
-			TextField mention_field = new TextField("mention", mentions, Field.Store.NO);
+			TextField hasMention = new TextField("has@", (mentions.isEmpty()) ? "false" : "true", Field.Store.YES);
+			TextField mention_field = new TextField("mention", mentions, Field.Store.YES);
 
 //			doc.add(mention_field);
 //			doc.add(new StringField("has@", (!mentions.isEmpty()) ? "true" : "false", Field.Store.YES));
@@ -344,6 +342,7 @@ public class IndexTweets {
 				output += token.substring(1) + " ";
 			}
 		}
+		output = output.replace(":", "");
 		return output.trim();
 	}
 

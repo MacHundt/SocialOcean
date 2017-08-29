@@ -23,7 +23,7 @@ public abstract class LuceneIndexLoaderThread extends Thread {
 			l.printStatistics();
 			l.showCatHisto();
 			
-			l.createTimeLine(Lucene.TimeBin.HOURS);
+//			l.createTimeLine(Lucene.TimeBin.HOURS);
 			l.printToConsole("Print TimeLine ... DONE");
 
 		} catch (Throwable t) {
