@@ -57,7 +57,7 @@ public class TopSelectionPart {
 //	public String[] detailsToShow = {"category", "content", "has@", "type", "neg", "pos",
 //			"isRetweet", "mention", "sentiment", "tags", "user_id", "user_name"};
 	public String[] detailsToShow = {"category", "content", "hasURL", "has@", "type", "neg", "pos",
-			"relationship", "mention", "sentiment", "tags", "user_id", "user_name"};
+			"relationship", "mention", "sentiment", "tags", "uid", "name"};
 	private DefaultTableModel detailsDataModel;
 	private int resultColumns = 3;
 	

@@ -713,6 +713,7 @@ public class GraphPanelCreator3 {
 	//				graph.removeCells(o, true);
 	//			}
 			}
+			
 			// DESC
 			filtered.sort(new Comparator<Object[]>() {
 				
@@ -721,8 +722,8 @@ public class GraphPanelCreator3 {
 					return Integer.compare( o2.length, o1.length);
 				}
 			});
-			Object[] most = filtered.get(0);
 			
+//			Object[] most = filtered.get(0);
 			
 			filterOutComponents(cc, 2);
 		}
