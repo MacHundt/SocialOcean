@@ -336,23 +336,25 @@ public enum Lucene {
 		LuceneStatistics ls = LuceneStatistics.getInstance();
 		build.forEach(item -> ls.printLuceneStatistics(item));
 
-		// wait for TOPSELECTIONPart -- be created
-
 		TopSelectionPart tsp = TopSelectionPart.getInstance();
 		
 		// fields - date, geo, id, path
 		Object[][] tableData = new Object[tsp.detailsToShow.length][tsp.detailsColumns];
-		int detailsToShow_counter = tsp.detailsToShow.length-4;
+//		int detailsToShow_counter = tsp.detailsToShow.length-4;
+		int index = 0;
 		for (int i = 0; i < fn.size(); i++) {
 			
 			String fieldname = fn.get(i);	// field name
-			if (isInDetails(fieldname, tsp.detailsToShow) && detailsToShow_counter >= 0) {
-				int index = detailsToShow_counter--;
+//			if (isInDetails(fieldname, tsp.detailsToShow) && detailsToShow_counter >= 0) {
+//				int index = detailsToShow_counter--;
+			if (isInDetails(fieldname, tsp.detailsToShow)) {
 				tableData[index][0] = fieldname; 
 				if (termCounts.get(fn.get(i)) != null )
 					tableData[index][1] = new Long(termCounts.get(fn.get(i)).termCount);
 				else 
 					tableData[index][1] = 0;
+				
+				index++;
 //				DecimalFormat format = new DecimalFormat("##.##");
 //				String s = format.format((termCounts.get(fn.get(i)).termCount * 100.0 / numTerms));
 //				tableData[index][2] = s + " %";
@@ -1605,26 +1607,32 @@ public enum Lucene {
 		
 		String tempPath = ind.substring(0, ind.lastIndexOf("/")+1);
 		
-		File theDir = new File(tempPath+"temp");
+		if (!tempPath.endsWith("temp/")) {
+			tempPath +="temp";
+			File theDir = new File(tempPath+"temp");
 
-		// if the directory does not exist, create it
-		if (!theDir.exists()) {
-		    System.out.println("creating directory: " + theDir.getName());
-		    boolean result = false;
+			// if the directory does not exist, create it
+			if (!theDir.exists()) {
+			    System.out.println("creating directory: " + theDir.getName());
+			    boolean result = false;
 
-		    try{
-		        theDir.mkdir();
-		        result = true;
-		    } 
-		    catch(SecurityException se){
-		        //handle it
-		    }        
-		    if(result) {    
-		        System.out.println("DIR created");  
-		    }
+			    try{
+			        theDir.mkdir();
+			        result = true;
+			    } 
+			    catch(SecurityException se){
+			        //handle it
+			    }        
+			    if(result) {    
+			        System.out.println("DIR created");  
+			    }
+			}
 		}
 		
-		File newIndex = new File(theDir+"/"+name);
+		
+		
+		
+		File newIndex = new File(tempPath+"/"+name);
 		if (!newIndex.exists()) {
 		    System.out.println("creating directory: " + newIndex.getName());
 		    boolean result = false;
@@ -1698,7 +1706,7 @@ public enum Lucene {
 		// Add a dialog, to enable to open LuceneIndex files
 		
 		LuceneQuerySearcher lqs = LuceneQuerySearcher.INSTANCE;
-		LuceneIndexLoaderThread lilt = new LuceneIndexLoaderThread(this) {
+		LuceneIndexLoaderThread lilt = new LuceneIndexLoaderThread(this, false, false) {
 			@Override
 			public void execute() {
 				System.out.println("Loading Lucene Index ...");
