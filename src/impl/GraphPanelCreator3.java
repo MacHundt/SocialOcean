@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -30,6 +29,7 @@ import javax.swing.SwingUtilities;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.spatial.geopoint.document.GeoPointField;
 
 import com.mxgraph.analysis.mxAnalysisGraph;
 import com.mxgraph.analysis.mxGraphStructure;
@@ -256,7 +256,7 @@ public class GraphPanelCreator3 {
 			String userTable = DBManager.getUserTable();
 			Statement stmt = c.createStatement();
 			
-			// Calibrate Min-Max
+			// Calibrate Min-Max for normalized user_creation
 			long now = Date.UTC(2017, 03, 3, 0, 0, 0);
 			double maxFollow = Math.log10(8448672);				// loged
 			double maxFriends = Math.log10(290739);
@@ -282,6 +282,15 @@ public class GraphPanelCreator3 {
 				boolean hasUrl = false;
 				boolean isRetreet = false; // --> replyusername != null
 				String relationship = "";
+				long hashgeo = (document.getField("geo")).numericValue().longValue();
+				double lat = GeoPointField.decodeLatitude(hashgeo);
+				double lon = GeoPointField.decodeLongitude(hashgeo);
+				
+				boolean hasGeo = false;
+				if (lat != 0.0 || lon != 0.0) {
+					hasGeo = true;
+				}
+					
 
 				// NODE information --> user meta data ..
 				int listedCount = 0;
@@ -487,13 +496,16 @@ public class GraphPanelCreator3 {
 						((MyEdge) edge).addCategory(category);
 						((MyEdge) edge).addSentiment(sentiment);
 						((MyEdge) edge).addDate(date);
-						// ((MyEdge)edge).addContent(content);
-						if (!geom.isEmpty()) {
-							geom = geom.toLowerCase().replace("point(", "").replace(")", "");
-							double lat = Double.parseDouble(geom.split(" ")[1]);
-							double longi = Double.parseDouble(geom.split(" ")[0]);
-							((MyEdge) edge).addPoint(lat, longi);
-						}
+						((MyEdge)edge).addContent(content);
+						
+						if (hasGeo)
+							((MyEdge) edge).addPoint(lat, lon);
+//						if (!geom.isEmpty()) {
+//							geom = geom.toLowerCase().replace("point(", "").replace(")", "");
+//							double lati = Double.parseDouble(geom.split(" ")[1]);
+//							double longi = Double.parseDouble(geom.split(" ")[0]);
+//							((MyEdge) edge).addPoint(lati, longi);
+//						}
 						// ...
 
 						// TODO // create an Edge Object for Properties
@@ -664,13 +676,17 @@ public class GraphPanelCreator3 {
 						((MyEdge) edge).addCredibility(edgeCredebility);
 						((MyEdge) edge).addCategory(category);
 						((MyEdge) edge).addSentiment(sentiment);
-						// ((MyEdge)edge).addContent(content);
-						if (!geom.isEmpty()) {
-							geom = geom.toLowerCase().replace("point(", "").replace(")", "");
-							double lat = Double.parseDouble(geom.split(" ")[1]);
-							double longi = Double.parseDouble(geom.split(" ")[0]);
-							((MyEdge) edge).addPoint(lat, longi);
-						}
+						((MyEdge)edge).addContent(content);
+						
+						if (hasGeo)
+							((MyEdge) edge).addPoint(lat, lon);
+						
+//						if (!geom.isEmpty()) {
+//							geom = geom.toLowerCase().replace("point(", "").replace(")", "");
+//							double lati = Double.parseDouble(geom.split(" ")[1]);
+//							double longi = Double.parseDouble(geom.split(" ")[0]);
+//							((MyEdge) edge).addPoint(lati, longi);
+//						}
 						// ...
 
 						// TODO // create an Edge Object for Properties
@@ -725,7 +741,7 @@ public class GraphPanelCreator3 {
 			
 //			Object[] most = filtered.get(0);
 			
-			filterOutComponents(cc, 2);
+//			filterOutComponents(cc, 2);
 		}
 		morphGraph(graph, graphComponent);
 		
@@ -792,12 +808,18 @@ public class GraphPanelCreator3 {
 			
 			// get all follows
 			Statement stmt = c.createStatement();
-			String query = "Select target, tweet_id From "+table+" where source = '"+name+"' and relationship = 'Followed'";
+			String query = "Select target, tweet_id, latitude, longitude From "+table+" where source = '"+name+"' and relationship = 'Followed'";
 			ResultSet rs = stmt.executeQuery(query);
 			while (rs.next()) {
 				// see if target is in keySet --> true add an edge
 				String target = rs.getString("target");
 				String id = rs.getString("tweet_id");
+				double lon = rs.getDouble("longitude");
+				double lat = rs.getDouble("latitude");
+				boolean hasGeo = false;
+				if (lat != 0.0 || lon != 0.0) {
+					hasGeo = true;
+				}
 				if (nodeNames.keySet().contains(target)) {
 					// add edge
 					Object edge = null;
@@ -815,17 +837,18 @@ public class GraphPanelCreator3 {
 					((MyEdge) edge).addCategory("");
 					((MyEdge) edge).addSentiment("neu");
 					((MyEdge) edge).addDate(null);
+					
+					if (hasGeo)
+						((MyEdge) edge).addPoint(lat, lon);
 
 					// TODO // create an Edge Object for Properties
 					graph.insertEdge(parent, null, edge, nodeNames.get(name), nodeNames.get(target),
-							"edgeStyle=elbowEdgeStyle;elbow=horizontal;" + "STYLE_PERIMETER_SPACING;"
+							"edgeStyle=elbowEdgeStyle;elbow=horizontal;" + "STYLE_PERIMETER_SPACING;"+"strokeColor=orange"
 					// +
 					// "exitX=0.5;exitY=1;exitPerimeter=1;entryX=0;entryY=0;entryPerimeter=1;"
 					);
-					
 				}
 			}
-			
 		}
 		
 	}

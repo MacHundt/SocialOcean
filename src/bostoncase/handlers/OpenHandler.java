@@ -26,7 +26,7 @@ public class OpenHandler {
 		LuceneQuerySearcher lqs = LuceneQuerySearcher.INSTANCE;
 		Lucene l = Lucene.INSTANCE;
 		if (!lucenIndex.isEmpty()) {
-			LuceneIndexLoaderThread lilt = new LuceneIndexLoaderThread(l) {
+			LuceneIndexLoaderThread lilt = new LuceneIndexLoaderThread(l, true, true) {
 				@Override
 				public void execute() {
 					System.out.println("Loading Lucene Index ...");

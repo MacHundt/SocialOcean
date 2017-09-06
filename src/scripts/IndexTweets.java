@@ -241,8 +241,10 @@ public class IndexTweets {
 
 			// @ mentions
 			mentions = getMentionsFromTweets(content);
-			TextField hasMention = new TextField("has@", (mentions.isEmpty()) ? "false" : "true", Field.Store.YES);
-			TextField mention_field = new TextField("mention", mentions, Field.Store.YES);
+			StringField hasMention = new StringField("has@", (mentions.isEmpty()) ? "false" : "true", Field.Store.YES);
+			doc.add(hasMention);
+			TextField mention_field = new TextField("mention", mentions, Field.Store.NO);
+			doc.add(mention_field);
 
 //			doc.add(mention_field);
 //			doc.add(new StringField("has@", (!mentions.isEmpty()) ? "true" : "false", Field.Store.YES));

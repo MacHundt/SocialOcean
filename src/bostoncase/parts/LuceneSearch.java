@@ -137,7 +137,7 @@ public class LuceneSearch {
 		LuceneQuerySearcher lqs = LuceneQuerySearcher.INSTANCE;
 		Lucene l = Lucene.INSTANCE;
 		if (!l.isInitialized && !luceneIndex.isEmpty()) {
-			LuceneIndexLoaderThread lilt = new LuceneIndexLoaderThread(l) {
+			LuceneIndexLoaderThread lilt = new LuceneIndexLoaderThread(l, true, true) {
 				@Override
 				public void execute() {
 					System.out.println("Loading Lucene Index ...");
