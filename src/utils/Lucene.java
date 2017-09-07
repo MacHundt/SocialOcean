@@ -51,6 +51,9 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Shell;
 
 import bostoncase.parts.CategoriesPart;
 import bostoncase.parts.Console;
@@ -155,9 +158,10 @@ public enum Lucene {
 	private boolean withMention = true;
 	private boolean withFollows = true;
 	private String luceneIndex;
+	private long user_minDate;
+	private long user_maxDate;
 	
-
-	public void initLucene(String index, ILuceneQuerySearcher querySearcher) {
+	public void initLucene( String index, ILuceneQuerySearcher querySearcher) {
 		
 		luceneIndex = index;
 		
@@ -223,9 +227,9 @@ public enum Lucene {
 //                }
 //            }
 //            client.logout();
-
-			reader = DirectoryReader.open(FSDirectory.open(Paths.get(index)));
-			idxInfo = new IndexInfo(reader, index);
+			
+			reader = DirectoryReader.open(FSDirectory.open(Paths.get(luceneIndex)));
+			idxInfo = new IndexInfo(reader, luceneIndex);
 			fn = idxInfo.getFieldNames();
 			numTerms = idxInfo.getNumTerms();
 			termCounts = idxInfo.getFieldTermCounts();
@@ -245,7 +249,7 @@ public enum Lucene {
 			// from tweetdata order by creationdate DESC Limit 1");
 
 		} catch (IOException e) {
-			System.out.println("Could not create LuceneSearcher, path to index not found " + index);
+			System.out.println("Could not create LuceneSearcher, path to index not found " + luceneIndex);
 			e.printStackTrace();
 			return;
 		} catch (Exception e) {
@@ -865,101 +869,116 @@ public enum Lucene {
 	}
 	
 
-	public void initMaxDate() {
-		try {
-			Connection c = DBManager.getConnection();
-			Statement stmt = c.createStatement();
-			// ResultSet rs = stmt.executeQuery("Select creationdate from
-			// tweetdata order by creationdate DESC Limit 1");
-			ResultSet rs = stmt.executeQuery("Select max from tw_minmax_date");
-			// ResultSet rs = pre_statement_max.executeQuery();
-			String maxDate = "";
-			while (rs != null && rs.next()) {
-				maxDate = rs.getString(1);
-			}
-			if (maxDate.isEmpty() || !maxDate.contains(" "))
-				return;
-			
-			maxDate = "2013-01-08 01:15:00";
+	/**
+	 * Init the max creation date
+	 * @param maxDate
+	 */
+	public void initMaxDate(String maxDate) {
+		// maxDate = "2013-01-08 01:15:00";
 
-			String[] datetime_String = maxDate.split(" ");
-			String date_Str = datetime_String[0];
-			String time_Str = datetime_String[1];
-			String[] date_arr = date_Str.trim().split("-");
-			String[] time_arr = time_Str.trim().split(":");
-			if (date_arr.length == 3 && time_arr.length == 3) {
-				// DATE
-				int year = Integer.parseInt(date_arr[0]);
-				int month = Integer.parseInt(date_arr[1]);
-				int day = Integer.parseInt(date_arr[2]);
-				// TIME
-				int hour = Integer.parseInt(time_arr[0]);
-				int min = Integer.parseInt(time_arr[1]);
-				int sec = Integer.parseInt(time_arr[2]);
+		String[] datetime_String = maxDate.split(" ");
+		String date_Str = datetime_String[0];
+		String time_Str = datetime_String[1];
+		String[] date_arr = date_Str.trim().split("-");
+		String[] time_arr = time_Str.trim().split(":");
+		if (date_arr.length == 3 && time_arr.length == 3) {
+			// DATE
+			int year = Integer.parseInt(date_arr[0]);
+			int month = Integer.parseInt(date_arr[1]);
+			int day = Integer.parseInt(date_arr[2]);
+			// TIME
+			int hour = Integer.parseInt(time_arr[0]);
+			int min = Integer.parseInt(time_arr[1]);
+			int sec = Integer.parseInt(time_arr[2]);
 
-				LocalDate date = LocalDate.of(year, month, day);
-				LocalTime time = LocalTime.of(hour, min, sec);
+			LocalDate date = LocalDate.of(year, month, day);
+			LocalTime time = LocalTime.of(hour, min, sec);
 
-				dt_max = LocalDateTime.of(date, time);
-				utc_time_max = dt_max.toEpochSecond(ZoneOffset.UTC);
-				hasStopTime = true;
+			dt_max = LocalDateTime.of(date, time);
+			utc_time_max = dt_max.toEpochSecond(ZoneOffset.UTC);
+			hasStopTime = true;
 
-				System.out.println(dt_max.toEpochSecond(ZoneOffset.UTC) + " = " + dt_max.toString());
+			System.out.println(dt_max.toEpochSecond(ZoneOffset.UTC) + " = " + dt_max.toString());
 
-			}
-			c.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
 		}
 	}
 
-	public void initMinDate() {
+	/**
+	 * Init the min creatino date
+	 * @param minDate
+	 */
+	public void initMinDate(String minDate) {
 
-		try {
-			Connection c = DBManager.getConnection();
-			Statement stmt = c.createStatement();
-			// ResultSet rs = stmt.executeQuery("Select creationdate from
-			// tweetdata order by creationdate ASC Limit 1");
-			ResultSet rs = stmt.executeQuery("Select min from tw_minmax_date");
-			// ResultSet rs = pre_statement_min.executeQuery();
-			String minDate = "";
-			while (rs != null && rs.next()) {
-				minDate = rs.getString(1);
-			}
-			if (minDate.isEmpty() || !minDate.contains(" "))
-				return;
-			
-			
-			minDate = "2013-01-07 12:42:00";		// my2k
-			
-			String[] datetime_String = minDate.split(" ");
-			String date_Str = datetime_String[0];
-			String time_Str = datetime_String[1];
-			String[] date_arr = date_Str.trim().split("-");
-			String[] time_arr = time_Str.trim().split(":");
-			if (date_arr.length == 3 && time_arr.length == 3) {
-				// DATE
-				int year = Integer.parseInt(date_arr[0]);
-				int month = Integer.parseInt(date_arr[1]);
-				int day = Integer.parseInt(date_arr[2]);
-				// TIME
-				int hour = Integer.parseInt(time_arr[0]);
-				int min = Integer.parseInt(time_arr[1]);
-				int sec = Integer.parseInt(time_arr[2]);
+//		minDate = "2013-01-07 12:42:00"; // my2k
+		String[] datetime_String = minDate.split(" ");
+		String date_Str = datetime_String[0];
+		String time_Str = datetime_String[1];
+		String[] date_arr = date_Str.trim().split("-");
+		String[] time_arr = time_Str.trim().split(":");
+		if (date_arr.length == 3 && time_arr.length == 3) {
+			// DATE
+			int year = Integer.parseInt(date_arr[0]);
+			int month = Integer.parseInt(date_arr[1]);
+			int day = Integer.parseInt(date_arr[2]);
+			// TIME
+			int hour = Integer.parseInt(time_arr[0]);
+			int min = Integer.parseInt(time_arr[1]);
+			int sec = Integer.parseInt(time_arr[2]);
 
-				LocalDate date = LocalDate.of(year, month, day);
-				LocalTime time = LocalTime.of(hour, min, sec);
+			LocalDate date = LocalDate.of(year, month, day);
+			LocalTime time = LocalTime.of(hour, min, sec);
 
-				dt_min = LocalDateTime.of(date, time);
-				utc_time_min = dt_min.toEpochSecond(ZoneOffset.UTC);
-				hasStartTime = true;
+			dt_min = LocalDateTime.of(date, time);
+			utc_time_min = dt_min.toEpochSecond(ZoneOffset.UTC);
+			hasStartTime = true;
 
-				System.out.println(dt_min.toEpochSecond(ZoneOffset.UTC) + " = " + dt_min.toString());
-			}
-			c.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
+			System.out.println(dt_min.toEpochSecond(ZoneOffset.UTC) + " = " + dt_min.toString());
 		}
+	}
+	
+	public void iniUserMinMaxCreationDate(String usermin, String usermax) {
+		
+//		user_maxDate = Date.UTC(2013, 04, 24, 19, 0, 0);
+//		user_minDate = Date.UTC(2006, 03, 21, 0, 0, 0);
+		
+		// MIN
+		String[] datetime_String = usermin.split(" ");
+		String date_Str = datetime_String[0];
+		String time_Str = datetime_String[1];
+		String[] date_arr = date_Str.trim().split("-");
+		String[] time_arr = time_Str.trim().split(":");
+		if (date_arr.length == 3 && time_arr.length == 3) {
+			// DATE
+			int year = Integer.parseInt(date_arr[0]);
+			int month = Integer.parseInt(date_arr[1]);
+			int day = Integer.parseInt(date_arr[2]);
+			
+			user_minDate = Date.UTC(year, month, day, 0, 0, 0);
+		}
+		
+		//MAX
+		datetime_String = usermax.split(" ");
+		date_Str = datetime_String[0];
+		time_Str = datetime_String[1];
+		date_arr = date_Str.trim().split("-");
+		time_arr = time_Str.trim().split(":");
+		if (date_arr.length == 3 && time_arr.length == 3) {
+			// DATE
+			int year = Integer.parseInt(date_arr[0]);
+			int month = Integer.parseInt(date_arr[1]);
+			int day = Integer.parseInt(date_arr[2]);
+			
+			user_maxDate = Date.UTC(year, month, day, 0, 0, 0);
+		}
+		
+	}
+
+	public long getUser_minDate() {
+		return user_minDate;
+	}
+
+	public long getUser_maxDate() {
+		return user_maxDate;
 	}
 
 	public void createTimeLine(TimeBin binsize) {
@@ -1200,8 +1219,7 @@ public enum Lucene {
 			
 //			 GraphML_Helper.createGraphML_Mention(fusedMention, searcher,
 //			 true, "/Users/michaelhundt/Desktop/"+name);
-			 GraphML_Helper.createGraphML_Mention(fusedMention, searcher,
-					 true, name);
+			 GraphML_Helper.createGraphML_Mention(fusedMention, searcher,true, name);
 			// GraphML_Helper.createGraphML_Mention(fusedMention, searcher,
 			// true, "./graphs/"+name);
 
@@ -1336,7 +1354,15 @@ public enum Lucene {
 					// MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(docID
 					// + "", sentiment, lat, lon));
 					String sentiment = (document.getField("sentiment")).stringValue();
-					MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, sentiment, lat, lon));
+					String category = (document.getField("category")).stringValue();
+					
+					Lucene l = Lucene.INSTANCE;
+					if (l.getColorScheme().equals(Lucene.ColorScheme.CATEGORY)) {
+						MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, category, lat, lon));
+					}
+					else {
+						MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, sentiment, lat, lon));
+					}
 
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
@@ -1710,12 +1736,10 @@ public enum Lucene {
 			@Override
 			public void execute() {
 				System.out.println("Loading Lucene Index ...");
-				initLucene(newIndex.getAbsolutePath(), lqs);
+				initLucene( newIndex.getAbsolutePath(), lqs);
 			}
 		};
 		lilt.start();
-		
-		
 		
 	}
 	
@@ -1737,15 +1761,12 @@ public enum Lucene {
 			stmt.close();
 			c.close();
 		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
     	
     	
     	return content;
 	}
-
-
 
 
 }

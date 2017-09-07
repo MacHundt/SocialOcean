@@ -21,7 +21,8 @@ public class AddSentimentScript {
 	static ResultSet rs = null;
 	static ArrayList<Tuple<Long, String>> list = null;
 	
-	private static boolean LOCAL = true; 
+	private static boolean LOCAL = true;
+	private static boolean RCP = false;
 	
 	public static void main(String[] args) {
 		// http://alias-i.com/lingpipe/demos/tutorial/classify/read-me.html
@@ -31,7 +32,7 @@ public class AddSentimentScript {
 		System.out.println(" DONE ");
 //		worker();
 		
-		Connection c = DBManager.getConnection(LOCAL, false);
+		Connection c = DBManager.getConnection(LOCAL, RCP);
 		String query = "Select tweet_id, tweet_content from "+tweet_table+" where sentiment is null";
 		try {
 			c.setAutoCommit(false);
@@ -111,7 +112,7 @@ public class AddSentimentScript {
 				.map(s -> new Tuple<Long, String>(s.getA(), sentClassifier.classify(s.getB())))
 				.collect(Collectors.toList());
 
-		Connection c = DBManager.getConnection(LOCAL, false);
+		Connection c = DBManager.getConnection(LOCAL, RCP);
 		c.setAutoCommit(false);
 
 		Statement st = c.createStatement();

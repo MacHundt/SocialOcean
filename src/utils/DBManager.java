@@ -21,7 +21,7 @@ public class DBManager {
 	private static String TWEETDATA = "nodexl_my2k_tweets";
 	private static String USERS = "nodexl_my2k_users";
 	
-	private static boolean local = true;
+	private static boolean local = false;
 	private static boolean rcp = true;
 	
 	private static Connection newConnection(boolean m_local, boolean rcp_flag) {
@@ -104,6 +104,12 @@ public class DBManager {
 	}
 	
 	
+	/**
+	 * Get DB-Connection
+	 * @param local local database
+	 * @param rcp 	load properties file in rcp context
+	 * @return
+	 */
 	public static Connection getConnection(boolean local, boolean rcp) {
 		return newConnection(local, rcp);
 		
