@@ -204,8 +204,9 @@ public class Histogram {
 				chart.redraw();
 				
 				Lucene l = Lucene.INSTANCE;
-				if (l.getColorScheme().equals(Lucene.ColorScheme.CATEGORY))
+				if (l.getColorScheme().equals(Lucene.ColorScheme.CATEGORY)) {
 					chart.getPlotArea().addListener(SWT.Paint, event -> changeBarColors(arrEntry, event, true));
+				}
 				else {
 					chart.getPlotArea().addListener(SWT.Paint, event -> changeBarColors(arrEntry, event, false));
 				}
@@ -218,7 +219,6 @@ public class Histogram {
 	}
 	
 	protected void mouseDoubleClicked(String[] categories, Event event) {
-		GC gc = event.gc;
 		
 		Rectangle rec = event.getBounds();
 		Point p = new Point(rec.x, rec.y);
@@ -277,7 +277,7 @@ public class Histogram {
 				l.showInMap(result, true);
 				l.changeHistogramm(result);
 				
-				l.createGraphML_Mention(result, true);
+//				l.createGraphML_Mention(result, true);
 			}
 			
 		}
@@ -444,7 +444,7 @@ public class Histogram {
 	}
 
 
-	private Color getCategoryColor(String category) {
+	public static Color getCategoryColor(String category) {
 		Color color = new Color(Display.getDefault(), 0, 0, 0);
 		
 		Color pink = new Color(Display.getDefault(), 250, 22, 129);		// Default

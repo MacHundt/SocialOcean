@@ -107,6 +107,7 @@ public class SettingsPart {
 				l.setColorScheme(combo.getText());
 				l.showInMap(l.getLastResult(), true);
 				l.changeHistogramm(l.getLastResult());
+				l.createGraphView();					// see ColorScheme
 				
 			}
 			

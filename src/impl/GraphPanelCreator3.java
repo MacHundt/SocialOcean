@@ -12,10 +12,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.TemporalField;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,6 +34,9 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.spatial.geopoint.document.GeoPointField;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Display;
 
 import com.mxgraph.analysis.mxAnalysisGraph;
 import com.mxgraph.analysis.mxGraphStructure;
@@ -39,11 +46,15 @@ import com.mxgraph.model.mxCell;
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.swing.handler.mxRubberband;
 import com.mxgraph.swing.util.mxMorphing;
+import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxEvent;
 import com.mxgraph.util.mxEventObject;
 import com.mxgraph.util.mxEventSource.mxIEventListener;
+import com.mxgraph.view.mxEdgeStyle;
 import com.mxgraph.view.mxGraph;
+import com.mxgraph.view.mxStylesheet;
 
+import bostoncase.parts.Histogram;
 import utils.DBManager;
 import utils.Lucene;
 
@@ -54,8 +65,9 @@ public class GraphPanelCreator3 {
 	
 	private static mxGraph graph = null;
 	private static Object parent = null;
-//	private static mxGraphComponent graphComponent = null;
 	private static MyGraphComponent graphComponent = null;
+	private static mxStylesheet stylesheet;
+	private static Hashtable<String, Object> followStyle;
 	
 	private static int topK = 5;
 	static boolean ASC = true;
@@ -73,6 +85,18 @@ public class GraphPanelCreator3 {
 			graph.setCellsEditable(false);
 //			graph.setMaximumGraphBounds(new mxRectangle(0, 0, 800, 600));
 			parent = graph.getDefaultParent();
+			
+			stylesheet = graph.getStylesheet();
+			// defaultEdge: endArrow=classic, shape=connector, fontColor=#446299, strokeColor=#6482B9, align=center, verticalAlign=middle
+			followStyle = new Hashtable<String, Object>();
+			followStyle.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_CONNECTOR);
+			followStyle.put(mxConstants.STYLE_OPACITY, 25);
+			followStyle.put(mxConstants.STYLE_DASHED, true );
+			followStyle.put(mxConstants.STYLE_ALIGN, mxConstants.ALIGN_CENTER );
+			followStyle.put(mxConstants.STYLE_ENDARROW, mxConstants.ARROW_CLASSIC );
+			followStyle.put(mxConstants.STYLE_VERTICAL_ALIGN, mxConstants.ALIGN_MIDDLE );
+			followStyle.put(mxConstants.STYLE_FONTCOLOR, "#774400");
+			stylesheet.putCellStyle("FollowEdge", followStyle);
 			
 //			graphComponent = new mxGraphComponent(graph);
 			
@@ -249,7 +273,7 @@ public class GraphPanelCreator3 {
 
 		HashMap<String, Integer> edgesMap = new HashMap<>();
 		int nodesCounter = 0;
-		
+		Lucene l = Lucene.INSTANCE;
 		try {
 			Connection c = DBManager.getConnection();
 			String table = DBManager.getTweetdataTable();
@@ -257,12 +281,14 @@ public class GraphPanelCreator3 {
 			Statement stmt = c.createStatement();
 			
 			// Calibrate Min-Max for normalized user_creation
-			long now = Date.UTC(2017, 03, 3, 0, 0, 0);
+			ZoneId zonedId = ZoneId.of( "Europe/Berlin" );
+			LocalDate today = LocalDate.now( zonedId );
+			long now = Date.UTC(today.getYear(), today.getMonthValue(), today.getDayOfMonth(), 0, 0, 0);
 			double maxFollow = Math.log10(8448672);				// loged
 			double maxFriends = Math.log10(290739);
 			double maxMessage = Math.log10(625638);
-			long maxDate = Date.UTC(2013, 04, 24, 19, 0, 0);
-			long minDate = Date.UTC(2006, 03, 21, 0, 0, 0);
+			long maxDate = l.getUser_maxDate();
+			long minDate = l.getUser_minDate();
 			
 			
 			for (ScoreDoc doc : result) {
@@ -277,7 +303,13 @@ public class GraphPanelCreator3 {
 				String screenName = "";
 				String content = "";
 //				double sentiment = 0;
+				String posStrength = (document.getField("pos")).stringValue();
+				String negStrength = (document.getField("neg")).stringValue();
+				int pos = (posStrength.isEmpty()) ? 0 : Integer.parseInt((document.getField("pos")).stringValue());
+				int neg = (negStrength.isEmpty()) ? 0 : Integer.parseInt((document.getField("neg")).stringValue());
+				
 				String sentiment = "neu";
+				
 				String category = "other";
 				boolean hasUrl = false;
 				boolean isRetreet = false; // --> replyusername != null
@@ -372,6 +404,33 @@ public class GraphPanelCreator3 {
 					nodexl_target = rs.getString("target");
 					
 				}
+				
+				// get Colors
+				String colorString = "";
+				if (l.getColorScheme().equals(Lucene.ColorScheme.CATEGORY)) {
+					Color color = Histogram.getCategoryColor(category);
+					colorString = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue()); 
+				}
+				else {
+					Color color = new Color(Display.getDefault(), 255,255,191);
+					colorString = "#fee08b";
+//					colorString = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue()); 
+					
+					if (sentiment.equals("pos")) {
+						color = color = new Color(Display.getDefault(), 26,152,80);
+//						colorString = "green";
+						colorString = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue()); 
+					}
+					else if (sentiment.equals("neg")) {
+						color = color = new Color(Display.getDefault(), 215,48,39);
+//						colorString = "red";
+						colorString = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue()); 
+					}
+				}
+				
+				
+				
+				
 				double sc_follow =  Math.log10(followers) / maxFollow;
 				double sc_friend =  Math.log10(friends) / maxFriends;
 				double sc_tweets =  Math.log10(tweetCount) / maxMessage;
@@ -497,6 +556,10 @@ public class GraphPanelCreator3 {
 						((MyEdge) edge).addSentiment(sentiment);
 						((MyEdge) edge).addDate(date);
 						((MyEdge)edge).addContent(content);
+						((MyEdge)edge).addPos(pos);
+						((MyEdge)edge).addNeg(neg);
+						((MyEdge)edge).changeToString(MyEdge.LabelType.SentiStrenth);
+						
 						
 						if (hasGeo)
 							((MyEdge) edge).addPoint(lat, lon);
@@ -510,7 +573,7 @@ public class GraphPanelCreator3 {
 
 						// TODO // create an Edge Object for Properties
 						graph.insertEdge(parent, null, edge, sourceID, nodeID,
-								"edgeStyle=elbowEdgeStyle;elbow=horizontal;" + "STYLE_PERIMETER_SPACING;"
+								"edgeStyle=elbowEdgeStyle;elbow=horizontal;" + "STYLE_PERIMETER_SPACING;"+"strokeColor="+colorString
 						// +
 						// "exitX=0.5;exitY=1;exitPerimeter=1;entryX=0;entryY=0;entryPerimeter=1;"
 						);
@@ -677,6 +740,9 @@ public class GraphPanelCreator3 {
 						((MyEdge) edge).addCategory(category);
 						((MyEdge) edge).addSentiment(sentiment);
 						((MyEdge)edge).addContent(content);
+						((MyEdge)edge).addPos(pos);
+						((MyEdge)edge).addNeg(neg);
+						((MyEdge)edge).changeToString(MyEdge.LabelType.SentiStrenth);
 						
 						if (hasGeo)
 							((MyEdge) edge).addPoint(lat, lon);
@@ -688,10 +754,10 @@ public class GraphPanelCreator3 {
 //							((MyEdge) edge).addPoint(lati, longi);
 //						}
 						// ...
-
-						// TODO // create an Edge Object for Properties
+						
+						
 						graph.insertEdge(parent, null, edge, sourceID, nodeID,
-								"edgeStyle=elbowEdgeStyle;elbow=horizontal;" + "STYLE_PERIMETER_SPACING;"
+								"edgeStyle=elbowEdgeStyle;elbow=horizontal;" + "STYLE_PERIMETER_SPACING;"+"strokeColor="+colorString
 						// +
 						// "exitX=0.5;exitY=1;exitPerimeter=1;entryX=0;entryY=0;entryPerimeter=1;"
 						);
@@ -840,10 +906,19 @@ public class GraphPanelCreator3 {
 					
 					if (hasGeo)
 						((MyEdge) edge).addPoint(lat, lon);
+					
+					
+					mxStylesheet stylesheet = graph.getStylesheet();
+					
+					String co = mxEdgeStyle.EntityRelation.toString();
+					
 
 					// TODO // create an Edge Object for Properties
+//					graph.insertEdge(parent, null, edge, nodeNames.get(name), nodeNames.get(target),
+//							"edgeStyle=elbowEdgeStyle;elbow=horizontal;"+"STYLE_GRADIENTCOLOR"+"STYLE_DASH_PATTERN"
 					graph.insertEdge(parent, null, edge, nodeNames.get(name), nodeNames.get(target),
-							"edgeStyle=elbowEdgeStyle;elbow=horizontal;" + "STYLE_PERIMETER_SPACING;"+"strokeColor=orange"
+							"FollowEdge"
+							
 					// +
 					// "exitX=0.5;exitY=1;exitPerimeter=1;entryX=0;entryY=0;entryPerimeter=1;"
 					);

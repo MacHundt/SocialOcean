@@ -13,6 +13,8 @@ public class MyEdge {
 	private String content;
 	
 //	private double sentiment;
+	private int pos;				// from sentiStrength lib, polarization
+	private int neg;
 	private String sentiment;
 	private String language = "";
 	private double cred_score = 0.5;
@@ -23,9 +25,15 @@ public class MyEdge {
 	private String category;
 	private Date date;
 	
+	private String toString = "";
+	
 	public MyEdge(String id) {
 		this.id = id;
 	}
+	
+	public enum LabelType {
+		Credibility, Sentiment, SentiStrenth, Category
+	};
 	
 	public String getRelationsip() {
 		return relationsip;
@@ -112,6 +120,46 @@ public class MyEdge {
 
 	@Override
 	public String toString() {
-		return cred_score+"";
+		return toString;
 	}
+	
+	public void changeToString(LabelType type) {
+		
+		switch (type) {
+		case Credibility:
+			toString = cred_score+"";
+			break;
+		case Sentiment:
+			toString = sentiment;
+			break;
+		case Category: 
+			toString = category;
+			break;
+		case SentiStrenth:
+			toString =  "("+pos+","+neg+")";
+			break;
+
+		default:
+			toString = "("+pos+","+neg+")";
+			break;
+		}
+	}
+
+	public int getPos() {
+		return pos;
+	}
+
+	public void addPos(int pos) {
+		this.pos = pos;
+	}
+
+	public int getNeg() {
+		return neg;
+	}
+
+	public void addNeg(int neg) {
+		this.neg = neg;
+	}
+	
+	
 }

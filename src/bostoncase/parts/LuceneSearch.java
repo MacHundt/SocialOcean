@@ -3,24 +3,19 @@ package bostoncase.parts;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
-import javax.xml.validation.Validator;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ParameterizedCommand;
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.e4.core.commands.ECommandService;
 import org.eclipse.e4.core.commands.EHandlerService;
 import org.eclipse.e4.ui.di.Focus;
@@ -40,9 +35,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
 
 import bostoncase.handlers.LuceneSearchHandler;
-import impl.GetMinMaxDateThread;
-import impl.LuceneIndexLoaderThread;
-import impl.LuceneQuerySearcher;
 import utils.Lucene;
 
 public class LuceneSearch {
@@ -52,9 +44,6 @@ public class LuceneSearch {
 	private Text text;
 //	private String luceneIndex = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/lucene_index";
 	private String luceneIndex = "";
-	
-//	private Composite parent = null;
-
 	
 	@Inject ECommandService commandService;
 	@Inject EHandlerService service;
@@ -99,72 +88,10 @@ public class LuceneSearch {
 //		FontData[] fd = standard.getFontData();
 //		Font newFont = new Font(display, fd[0].getName(), 13, fd[0].getStyle());
 		
-		InputStream input = null;
-		try {
-//			## LOAD Icons
-//			ImageDescriptor st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/open.png");
-//			Image img = st.createImage();
-			
-//			## LOAD Settings File
-			Properties prop = new Properties();
-			URL url = null;
-			try {
-			  url = new URL("platform:/plugin/"
-			    + "BostonCase/"
-			    + "settings/config.properties");
-
-			    } catch (MalformedURLException e1) {
-			      e1.printStackTrace();
-			}
-			url = FileLocator.toFileURL(url);
-			input = new FileInputStream(new File(url.getPath()));
-			prop.load(input);
-//			System.out.println(prop.getProperty("lucene_index"));
-			luceneIndex = prop.getProperty("lucene_index");
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		} finally {
-			if (input != null) {
-				try {
-					input.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		
-//		## Initialize LUCENE model class
-		LuceneQuerySearcher lqs = LuceneQuerySearcher.INSTANCE;
-		Lucene l = Lucene.INSTANCE;
-		if (!l.isInitialized && !luceneIndex.isEmpty()) {
-			LuceneIndexLoaderThread lilt = new LuceneIndexLoaderThread(l, true, true) {
-				@Override
-				public void execute() {
-					System.out.println("Loading Lucene Index ...");
-					l.initLucene(luceneIndex, lqs);
-				}
-			};
-			lilt.start();
-			
-			GetMinMaxDateThread gmdt = new GetMinMaxDateThread(l) {
-				
-				@Override
-				public void execute() {
-					System.out.println("Get MinMax Date ...");
-					l.initMinDate();
-					l.initMaxDate();
-				}
-			};
-			gmdt.start();
-			
-			
-		} else {
-			System.out.println(" Could not load the index at path: '"+luceneIndex+"'");
-		}
-		
 		
 //		## BUILD GUI
 		
+		Lucene l = Lucene.INSTANCE;
 		parent.setLayout(new GridLayout(9, false));
 		
 		
