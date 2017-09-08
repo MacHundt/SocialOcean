@@ -246,7 +246,7 @@ public class LuceneSearch {
 				l.clearMap();
 				l.showCatHisto();
 				l.resetTimeLine();
-//				l.clearGraph();							//TODO
+				l.clearGraph();							//TODO
 			}
 		});
 		

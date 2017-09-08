@@ -262,6 +262,14 @@ public class GraphPanelCreator3 {
 		}
 	}
 	
+	public static void clearGraph()	{
+		
+		graph.getModel().beginUpdate();
+		Object[] remove = graph.getChildVertices(parent);
+		graph.removeCells(remove, true);
+		graph.getModel().endUpdate();
+	}
+	
 	
 	public static <T> void createGraph(ScoreDoc[] result, IndexSearcher searcher, boolean withMentions, boolean withFollows) {
 		
