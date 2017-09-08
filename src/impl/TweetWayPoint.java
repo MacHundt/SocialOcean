@@ -39,7 +39,7 @@ public class TweetWayPoint  extends SwingWaypoint {
 	    button.setBorder(null);
         button.setSize(24,24);
 //        button.setBackground(new Color(255, 255, 255, 255));
-	    button.setPreferredSize(new Dimension(24, 24));
+	    button.setPreferredSize(new Dimension(25, 25));
         button.addMouseListener(new SwingWaypointMouseListener());
         button.setVisible(true);
     }
