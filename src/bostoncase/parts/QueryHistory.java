@@ -52,8 +52,14 @@ public class QueryHistory {
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
 				try {
-					history.setText(history.getText()+"\n"
+					String his = history.getText();
+					if (his.isEmpty()) {
+						history.setText(output);
+					}
+					else 
+						history.setText(history.getText()+"\n"
 							+ output);
+					
 					history.update();
 				} catch (Throwable t) {
 					t.printStackTrace();
@@ -67,6 +73,24 @@ public class QueryHistory {
 	
 	public void clearHistory() {
 		history.setText("");
+	}
+	
+	
+	public void removeLastQuery () {
+		Display.getDefault().asyncExec(new Runnable() {
+			public void run() {
+				try {
+					String his = history.getText();
+					int lastNewline = his.lastIndexOf("\n");
+					history.setText(his.substring(0, lastNewline));
+					history.update();
+				} catch (Throwable t) {
+					t.printStackTrace();
+					System.out.println(" Could not print to Console");
+					// app.showStatus(t.getMessage());
+				}
+			}
+		});
 	}
 	
 	

@@ -1554,6 +1554,12 @@ public enum Lucene {
 		graphThread.start();
 //		createGraphML_Mention(lastResult, true);
 		
+		if (QueryHistory.isInitialized) {
+			QueryHistory history = QueryHistory.getInstance();
+			history.removeLastQuery();
+		}
+		
+		
 		Time time = Time.getInstance();
 		last_result = lastResult;
 		last_query = queryResults.get(currentPointer).query.toString();
@@ -1766,6 +1772,10 @@ public enum Lucene {
     	
     	
     	return content;
+	}
+
+	public void clearGraph() {
+		GraphPanelCreator3.clearGraph();		
 	}
 
 
