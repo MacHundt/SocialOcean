@@ -51,7 +51,7 @@
         <children xsi:type="menu:HandledMenuItem" xmi:id="_6wlLi8gZEeSyMNYR5xypkQ" elementId="BostonCase.handleditem.file.open" label="Open" iconURI="platform:/plugin/BostonCase/icons/open.png" command="_6wlLgMgZEeSyMNYR5xypkQ"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_6wlLjMgZEeSyMNYR5xypkQ" elementId="BostonCase.handleditem.save" label="Save" iconURI="platform:/plugin/BostonCase/icons/save_edit.png" command="_6wlLg8gZEeSyMNYR5xypkQ"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_6wlLjcgZEeSyMNYR5xypkQ" elementId="BostonCase.handleditem.quit" label="Quit" iconURI="platform:/plugin/BostonCase/icons/button-close-icon.png" command="_6wlLfMgZEeSyMNYR5xypkQ"/>
-        <children xsi:type="menu:HandledMenuItem" xmi:id="_mbAakIovEeauXYmQDjn7lw" elementId="bostoncase.handledmenuitem.showsettings" label="showSettings" command="_qNf0wIovEeauXYmQDjn7lw"/>
+        <children xsi:type="menu:HandledMenuItem" xmi:id="_mbAakIovEeauXYmQDjn7lw" elementId="bostoncase.handledmenuitem.showsettings" toBeRendered="false" visible="false" label="showSettings" enabled="false" command="_qNf0wIovEeauXYmQDjn7lw"/>
       </children>
       <children xsi:type="menu:Menu" xmi:id="_6wlLjsgZEeSyMNYR5xypkQ" elementId="help" label="Help">
         <children xsi:type="menu:HandledMenuItem" xmi:id="_6wlLj8gZEeSyMNYR5xypkQ" elementId="BostonCase.handleditem.about" label="About" command="_6wlLhsgZEeSyMNYR5xypkQ"/>

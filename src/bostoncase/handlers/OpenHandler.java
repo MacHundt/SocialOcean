@@ -12,6 +12,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import impl.LuceneIndexLoaderThread;
 import impl.LuceneQuerySearcher;
+import utils.DBManager;
 import utils.Lucene;
 
 public class OpenHandler {
@@ -67,7 +68,7 @@ public class OpenHandler {
 			// System.out.println(prop.getProperty("lucene_index"));
 //			lucenIndex = prop.getProperty("lucene_index");
 			
-			input = new FileInputStream(new File(lucenIndex+"/minmax.properties"));
+			input = new FileInputStream(new File(lucenIndex+"/settings.properties"));
 			prop.load(input);
 			
 			min = prop.getProperty("min");
@@ -75,9 +76,15 @@ public class OpenHandler {
 			usermin = prop.getProperty("usermin");
 			usermax = prop.getProperty("usermax");
 			
+			// init db tables
+			DBManager.setTweetdataTable(prop.getProperty("tweetdata"));
+			DBManager.setUserTable(prop.getProperty("users"));
+			
+			// init times
 			l.initMinDate(min);
 			l.initMaxDate(max);
 			l.iniUserMinMaxCreationDate(usermin, usermax);
+			
 			System.out.println("Get MinMax Dates ... DONE");
 			l.printToConsole("Get MinMax-Date ... DONE");
 			
