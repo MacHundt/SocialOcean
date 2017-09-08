@@ -27,6 +27,7 @@ import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.spatial.geopoint.document.GeoPointField;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+
 import utils.DBManager;
 
 public class IndexTweets {
@@ -35,10 +36,10 @@ public class IndexTweets {
 	
 //	private static String TWEETDATA = "tweetdata";
 //	private static String TWEETDATA = "bb_tweets";
-	private static String TWEETDATA = "nodexl_my2k_tweets";
+	private static String TWEETDATA = "nodexl_ohsen_tweets";
 //	private static String USERS = "users";
 //	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/lucene_index_tweets/";
-	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/lucene_index_nodexl/";
+	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/lucene_index_nodexlOHSEN/";
 
 	private static boolean LOCAL = true;
 	

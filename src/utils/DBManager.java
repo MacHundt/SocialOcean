@@ -74,8 +74,8 @@ public class DBManager {
 			DBNAME = prop.getProperty("dbname");
 			USER = prop.getProperty("username");
 			PASS = prop.getProperty("pw");
-			TWEETDATA = prop.getProperty("tweetdata");
-			USERS = prop.getProperty("users");
+//			TWEETDATA = prop.getProperty("tweetdata");
+//			USERS = prop.getProperty("users");
 			// PASS = "\'"+PASS+"\'";
 			// ADD SSL=true & ssl Factory
 			// @see https://bowerstudios.com/node/739
@@ -98,9 +98,17 @@ public class DBManager {
 		return TWEETDATA;
 	}
 	
+	public static void setTweetdataTable(String tablename) {
+		TWEETDATA = tablename;
+	}
+	
 	
 	public static String getUserTable( ) {
 		return USERS;
+	}
+	
+	public static void setUserTable( String usertable ) {
+		USERS = usertable;
 	}
 	
 	

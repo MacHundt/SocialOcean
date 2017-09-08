@@ -620,8 +620,11 @@ public class GraphPanelCreator3 {
 									+ " t.user_creationdate, t.friends, " + "t.followers, t.status_count  from "
 									+ userTable + " as t where t.user_name = '" + target + "'";
 						}
-
-						rs = stmt.executeQuery(query);
+						try {
+							rs = stmt.executeQuery(query);
+						} catch (Exception e ) {
+							continue;
+						}
 
 						boolean userFound = false;
 						while (rs.next()) {
