@@ -25,7 +25,7 @@ public class SettingsPart {
 	
 	@PostConstruct
 	public void postConstruct(Composite parent) {
-		parent.setLayout(new GridLayout(6, false));
+		parent.setLayout(new GridLayout(8, false));
 		
 		Button mentions = new Button(parent, SWT.CHECK);
 		mentions.setText("mentions");
@@ -88,7 +88,7 @@ public class SettingsPart {
 		lblColor.setText("ColorScheme:");
 		
 		Combo combo = new Combo(parent, SWT.NONE);
-		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		combo.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		combo.add("Sentiment");
 		combo.add("Category");
 		combo.select(0);

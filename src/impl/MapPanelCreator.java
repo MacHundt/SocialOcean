@@ -100,18 +100,40 @@ public class MapPanelCreator {
 		image = FilesUtil.readIconFile("icons/pos_24.png");
 		tweetIcon_p = new ImageIcon(image);
 		
-//		image = FilesUtil.readIconFile("icons/pos_24.png");
+		image = FilesUtil.readIconFile("icons/cat_icons/health24.png");
 		tweetIcon_health = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/cat_icons/pets24.png");
 		tweetIcon_pets = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/cat_icons/music24.png");
 		tweetIcon_music = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/cat_icons/family24.png");
 		tweetIcon_family = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/cat_icons/politics24.png");
 		tweetIcon_politics = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/cat_icons/marketing24.png");
 		tweetIcon_marketing = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/cat_icons/education24.png");
 		tweetIcon_education = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/cat_icons/sports24.png");
 		tweetIcon_rec_sport = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/cat_icons/news24.png");
 		tweetIcon_news = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/cat_icons/computer24.png");
 		tweetIcon_computer = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/cat_icons/food24.png");
 		tweetIcon_food = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/cat_icons/other24.png");
 		tweetIcon_other = new ImageIcon(image);
 		
 
