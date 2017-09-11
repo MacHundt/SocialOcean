@@ -58,7 +58,7 @@ public class OpenHandler {
 			
 //			URL url = null;
 //			try {
-//				url = new URL("platform:/plugin/" + "BostonCase/" + "settings/config.properties");
+//				url = new URL("platform:/plugin/" + "SocialOcean/" + "settings/config.properties");
 //
 //			} catch (MalformedURLException e1) {
 //				e1.printStackTrace();

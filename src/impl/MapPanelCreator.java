@@ -86,7 +86,7 @@ public class MapPanelCreator {
 	
 	public static void loadTweetIcons() {
 		// ## LOAD Icons
-//		ImageDescriptor st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/tweet.png");
+//		ImageDescriptor st = AbstractUIPlugin.imageDescriptorFromPlugin("SocialOcean", "icons/tweet.png");
 //		ImageDescriptor st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/neutral.png");
 //		org.eclipse.swt.graphics.Image img = st.createImage();
 //		BufferedImage image = Swing_SWT.convertToAWT(img.getImageData());

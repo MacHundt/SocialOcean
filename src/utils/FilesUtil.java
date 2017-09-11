@@ -35,7 +35,7 @@ public class FilesUtil {
 		BufferedImage image = null;
 		try {
 			url = new URL("platform:/plugin/"
-		    + "BostonCase/"
+		    + "SocialOcean/"
 		    + fileName);
 
 		    } catch (MalformedURLException e1) {
@@ -60,7 +60,7 @@ public class FilesUtil {
 		URL url = null;
 		try {
 		  url = new URL("platform:/plugin/"
-		    + "BostonCase/"
+		    + "SocialOcean/"
 		    + fileName);
 
 		    } catch (MalformedURLException e1) {
@@ -83,7 +83,7 @@ public class FilesUtil {
 		URL url = null;
 		try {
 		  url = new URL("platform:/plugin/"
-		    + "BostonCase/"
+		    + "SocialOcean/"
 		    + fileName);
 
 		    } catch (MalformedURLException e1) {
@@ -104,7 +104,7 @@ public class FilesUtil {
 		URL url = null;
 		try {
 		  url = new URL("platform:/plugin/"
-		    + "BostonCase/"
+		    + "SocialOcean/"
 		    + referenceFile);
 
 		    } catch (MalformedURLException e1) {
@@ -122,7 +122,7 @@ public class FilesUtil {
 		URL url = null;
 		try {
 		  url = new URL("platform:/plugin/"
-		    + "BostonCase/"
+		    + "SocialOcean/"
 		    + referenceFile);
 
 		    } catch (MalformedURLException e1) {

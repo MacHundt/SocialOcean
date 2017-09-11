@@ -44,7 +44,7 @@ public class DBManager {
 			if (rcp) {
 				URL url = null;
 				try {
-					url = new URL("platform:/plugin/" + "BostonCase/" + "settings/db_config.properties");
+					url = new URL("platform:/plugin/" + "SocialOcean/" + "settings/db_config.properties");
 
 				} catch (MalformedURLException e1) {
 					e1.printStackTrace();

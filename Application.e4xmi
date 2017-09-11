@@ -1,46 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<application:Application xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:advanced="http://www.eclipse.org/ui/2010/UIModel/application/ui/advanced" xmlns:application="http://www.eclipse.org/ui/2010/UIModel/application" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:menu="http://www.eclipse.org/ui/2010/UIModel/application/ui/menu" xmi:id="_6wlLcMgZEeSyMNYR5xypkQ" elementId="BostonCase.application" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ">
-  <children xsi:type="basic:TrimmedWindow" xmi:id="_6wlLccgZEeSyMNYR5xypkQ" elementId="BostonCase.window.main" label="SocialOcean" width="1570" height="800">
+<application:Application xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:advanced="http://www.eclipse.org/ui/2010/UIModel/application/ui/advanced" xmlns:application="http://www.eclipse.org/ui/2010/UIModel/application" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:menu="http://www.eclipse.org/ui/2010/UIModel/application/ui/menu" xmi:id="_6wlLcMgZEeSyMNYR5xypkQ" elementId="SocialOcean.application" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ">
+  <children xsi:type="basic:TrimmedWindow" xmi:id="_6wlLccgZEeSyMNYR5xypkQ" elementId="SocialOcean.window.main" label="SocialOcean" width="1570" height="800">
     <children xsi:type="advanced:PerspectiveStack" xmi:id="_6wlLkMgZEeSyMNYR5xypkQ" elementId="org.eclipse.ui.ide.perspectivestack">
-      <children xsi:type="advanced:Perspective" xmi:id="_6wlLkcgZEeSyMNYR5xypkQ" elementId="BostonCase.perspective.sample">
-        <children xsi:type="basic:PartSashContainer" xmi:id="_6wlLksgZEeSyMNYR5xypkQ" elementId="BostonCase.partsashcontainer.main">
-          <children xsi:type="basic:PartStack" xmi:id="_6wlLk8gZEeSyMNYR5xypkQ" elementId="BostonCase.partstack.selectionpart" containerData="800" accessibilityPhrase="" selectedElement="_XETc0Jw3EeaqBeVOr5nmKw">
-            <children xsi:type="basic:Part" xmi:id="_XETc0Jw3EeaqBeVOr5nmKw" elementId="bostoncase.part.lucene" contributionURI="bundleclass://BostonCase/bostoncase.parts.LuceneSearch" label="" iconURI="platform:/plugin/BostonCase/icons/search_icon.png" tooltip="Search Panel"/>
-            <children xsi:type="basic:Part" xmi:id="_OQvIcCpgEeevD-C7DPB0Og" elementId="bostoncase.part.settings" contributionURI="bundleclass:// SocialOceanCase/bostoncase.parts.SettingsPart" label="" iconURI="platform:/plugin/ SocialOcean/icons/settings_bars.png" tooltip="Settings"/>
+      <children xsi:type="advanced:Perspective" xmi:id="_6wlLkcgZEeSyMNYR5xypkQ" elementId="SocialOcean.perspective.sample">
+        <children xsi:type="basic:PartSashContainer" xmi:id="_6wlLksgZEeSyMNYR5xypkQ" elementId="SocialOcean.partsashcontainer.main">
+          <children xsi:type="basic:PartStack" xmi:id="_6wlLk8gZEeSyMNYR5xypkQ" elementId="SocialOcean.partstack.selectionpart" containerData="800" accessibilityPhrase="" selectedElement="_XETc0Jw3EeaqBeVOr5nmKw">
+            <children xsi:type="basic:Part" xmi:id="_XETc0Jw3EeaqBeVOr5nmKw" elementId="bostoncase.part.lucene" contributionURI="bundleclass://SocialOcean/bostoncase.parts.LuceneSearch" label="" iconURI="platform:/plugin/SocialOcean/icons/search_icon.png" tooltip="Search Panel"/>
+            <children xsi:type="basic:Part" xmi:id="_OQvIcCpgEeevD-C7DPB0Og" elementId="bostoncase.part.settings" contributionURI="bundleclass://SocialOcean/bostoncase.parts.SettingsPart" label="" iconURI="platform:/plugin/SocialOcean/icons/settings_bars.png" tooltip="Settings"/>
           </children>
           <children xsi:type="basic:PartSashContainer" xmi:id="_jkLewIosEeauXYmQDjn7lw" elementId="bostoncase.partsashcontainer.mappart" containerData="6000" horizontal="true">
             <children xsi:type="basic:PartStack" xmi:id="_nKjIgIosEeauXYmQDjn7lw" elementId="bostoncase.partstack.datalayers" containerData="2000" selectedElement="_cCvw0KApEearzvHMhN-SAg">
-              <children xsi:type="basic:CompositePart" xmi:id="_cCvw0KApEearzvHMhN-SAg" elementId="bostoncase.compositepart.overviewcontainer" containerData="" accessibilityPhrase="" label="" iconURI="platform:/plugin/ SocialOcean/icons/overview.png" tooltip="Overview" selectedElement="_WLEnwLAMEeaGfPETKLtUAQ">
+              <children xsi:type="basic:CompositePart" xmi:id="_cCvw0KApEearzvHMhN-SAg" elementId="bostoncase.compositepart.overviewcontainer" containerData="" accessibilityPhrase="" label="" iconURI="platform:/plugin/SocialOcean/icons/overview.png" tooltip="Overview" selectedElement="_WLEnwLAMEeaGfPETKLtUAQ">
                 <children xsi:type="basic:PartSashContainer" xmi:id="_WLEnwLAMEeaGfPETKLtUAQ" elementId="bostoncase.partsashcontainer.0">
-                  <children xsi:type="basic:Part" xmi:id="_gLDqAKApEearzvHMhN-SAg" elementId="bostoncase.part.statistics" visible="false" containerData="1400" contributionURI="bundleclass:// SocialOcean/bostoncase.parts.LuceneStatistics" label="Statistics"/>
-                  <children xsi:type="basic:Part" xmi:id="_7_AY8LAKEeaGfPETKLtUAQ" elementId="bostoncase.part.topselection" containerData="5000" contributionURI="bundleclass:// SocialOcean/bostoncase.parts.TopSelectionPart" label="topSelection"/>
+                  <children xsi:type="basic:Part" xmi:id="_gLDqAKApEearzvHMhN-SAg" elementId="bostoncase.part.statistics" visible="false" containerData="1400" contributionURI="bundleclass://SocialOcean/bostoncase.parts.LuceneStatistics" label="Statistics"/>
+                  <children xsi:type="basic:Part" xmi:id="_7_AY8LAKEeaGfPETKLtUAQ" elementId="bostoncase.part.topselection" containerData="5000" contributionURI="bundleclass://SocialOcean/bostoncase.parts.TopSelectionPart" label="topSelection"/>
                 </children>
               </children>
-              <children xsi:type="basic:Part" xmi:id="_utZO4IosEeauXYmQDjn7lw" elementId="bostoncase.part.queryhistory" contributionURI="bundleclass:// SocialOcean/bostoncase.parts.QueryHistory" label="" iconURI="platform:/plugin/ SocialOcean/icons/queryhistory.png" tooltip="Query History" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ"/>
+              <children xsi:type="basic:Part" xmi:id="_utZO4IosEeauXYmQDjn7lw" elementId="bostoncase.part.queryhistory" contributionURI="bundleclass://SocialOcean/bostoncase.parts.QueryHistory" label="" iconURI="platform:/plugin/SocialOcean/icons/queryhistory.png" tooltip="Query History" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ"/>
             </children>
             <children xsi:type="basic:PartStack" xmi:id="_n1WZAIosEeauXYmQDjn7lw" elementId="bostoncase.partstack.settings" containerData="4000" accessibilityPhrase="settingsPartStack" selectedElement="_M9Y_oBMGEeenmLxjomef8A">
-              <children xsi:type="basic:Part" xmi:id="_4NByEIosEeauXYmQDjn7lw" elementId="bostoncase.part.settings" visible="false" contributionURI="bundleclass:// SocialOcean/bostoncase.parts.SamplePart" label="settings" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ" closeable="true"/>
-              <children xsi:type="basic:Part" xmi:id="_M9Y_oBMGEeenmLxjomef8A" elementId="bostoncase.part.graph" contributionURI="bundleclass:// SocialOcean/bostoncase.parts.GraphPart" label="" iconURI="platform:/plugin/ SocialOcean/icons/socialgraph_icon.png" tooltip="Mention Graph"/>
+              <children xsi:type="basic:Part" xmi:id="_4NByEIosEeauXYmQDjn7lw" elementId="bostoncase.part.settings" visible="false" contributionURI="bundleclass://SocialOcean/bostoncase.parts.SamplePart" label="settings" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ" closeable="true"/>
+              <children xsi:type="basic:Part" xmi:id="_M9Y_oBMGEeenmLxjomef8A" elementId="bostoncase.part.graph" contributionURI="bundleclass://SocialOcean/bostoncase.parts.GraphPart" label="" iconURI="platform:/plugin/SocialOcean/icons/socialgraph_icon.png" tooltip="Mention Graph"/>
             </children>
             <children xsi:type="basic:PartStack" xmi:id="_ngQSwIosEeauXYmQDjn7lw" elementId="bostoncase.partstack.map" containerData="4000" selectedElement="_LGak0IorEeauXYmQDjn7lw">
-              <children xsi:type="basic:Part" xmi:id="_LGak0IorEeauXYmQDjn7lw" elementId="bostoncase.part.map" containerData="" contributionURI="bundleclass:// SocialOcean/bostoncase.parts.MapPart" label="" iconURI="platform:/plugin/ SocialOcean/icons/map_icon.png" tooltip="Map"/>
+              <children xsi:type="basic:Part" xmi:id="_LGak0IorEeauXYmQDjn7lw" elementId="bostoncase.part.map" containerData="" contributionURI="bundleclass://SocialOcean/bostoncase.parts.MapPart" label="" iconURI="platform:/plugin/SocialOcean/icons/map_icon.png" tooltip="Map"/>
             </children>
           </children>
           <children xsi:type="basic:PartStack" xmi:id="_65wQMCpgEeevD-C7DPB0Og" elementId="bostoncase.partstack.0" containerData="1200">
-            <children xsi:type="basic:Part" xmi:id="_4zh_kLM4EeaFV8chLnp6Gg" elementId="bostoncase.part.histogram" containerData="" contributionURI="bundleclass:// SocialOcean/bostoncase.parts.Histogram" label="" iconURI="platform:/plugin/ SocialOcean/icons/histogram_icon.png" tooltip="Histogram"/>
+            <children xsi:type="basic:Part" xmi:id="_4zh_kLM4EeaFV8chLnp6Gg" elementId="bostoncase.part.histogram" containerData="" contributionURI="bundleclass://SocialOcean/bostoncase.parts.Histogram" label="" iconURI="platform:/plugin/SocialOcean/icons/histogram_icon.png" tooltip="Histogram"/>
           </children>
           <children xsi:type="basic:PartStack" xmi:id="_I_X_0IorEeauXYmQDjn7lw" elementId="bostoncase.partstack.vis" containerData="1000" selectedElement="_UdkhcIorEeauXYmQDjn7lw">
-            <children xsi:type="basic:Part" xmi:id="_UdkhcIorEeauXYmQDjn7lw" elementId="bostoncase.part.console" contributionURI="bundleclass:// SocialOcean/bostoncase.parts.Console" label="" iconURI="platform:/plugin/ SocialOcean/icons/console_icon.png" tooltip="Console" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ"/>
-            <children xsi:type="basic:Part" xmi:id="_t_I9YLOPEeaD75P0e42SYA" elementId="bostoncase.part.timeline" contributionURI="bundleclass:// SocialOcean/bostoncase.parts.Time" label="" iconURI="platform:/plugin/ SocialOcean/icons/timeline_icon.png" tooltip="Timeline"/>
-            <children xsi:type="basic:Part" xmi:id="_brSc8CeKEeeipJjBZrtd_A" elementId="bostoncase.part.categories" toBeRendered="false" visible="false" contributionURI="bundleclass:// SocialOcean/bostoncase.parts.CategoriesPart" label="Categories"/>
+            <children xsi:type="basic:Part" xmi:id="_UdkhcIorEeauXYmQDjn7lw" elementId="bostoncase.part.console" contributionURI="bundleclass://SocialOcean/bostoncase.parts.Console" label="" iconURI="platform:/plugin/SocialOcean/icons/console_icon.png" tooltip="Console" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ"/>
+            <children xsi:type="basic:Part" xmi:id="_t_I9YLOPEeaD75P0e42SYA" elementId="bostoncase.part.timeline" contributionURI="bundleclass://SocialOcean/bostoncase.parts.Time" label="" iconURI="platform:/plugin/SocialOcean/icons/timeline_icon.png" tooltip="Timeline"/>
+            <children xsi:type="basic:Part" xmi:id="_brSc8CeKEeeipJjBZrtd_A" elementId="bostoncase.part.categories" toBeRendered="false" visible="false" contributionURI="bundleclass://SocialOcean/bostoncase.parts.CategoriesPart" label="Categories"/>
           </children>
         </children>
         <children xsi:type="basic:PartStack" xmi:id="_iCa-YMLSEeaZZbPopcVK-g" elementId="bostoncase.partstack.views" visible="false" accessibilityPhrase="views" selectedElement="_pJJJcMLSEeaZZbPopcVK-g">
           <children xsi:type="basic:CompositePart" xmi:id="_wm4GUMLSEeaZZbPopcVK-g" elementId="bostoncase.compositepart.timestory" visible="false" accessibilityPhrase="timestory" label="Timestory">
-            <children xsi:type="basic:Part" xmi:id="_0FCPQMLSEeaZZbPopcVK-g" elementId="bostoncase.part.timelinecurator" contributionURI="bundleclass:// SocialOcean/bostoncase.parts.TimeLineStoryPart" label="TimeLineCurator"/>
+            <children xsi:type="basic:Part" xmi:id="_0FCPQMLSEeaZZbPopcVK-g" elementId="bostoncase.part.timelinecurator" contributionURI="bundleclass://SocialOcean/bostoncase.parts.TimeLineStoryPart" label="TimeLineCurator"/>
           </children>
           <children xsi:type="basic:CompositePart" xmi:id="_4exA4MLYEeaZZbPopcVK-g" elementId="bostoncase.compositepart.0" visible="false" label="MapStory">
-            <children xsi:type="basic:Part" xmi:id="_8BWW0MLYEeaZZbPopcVK-g" elementId="bostoncase.part.mapstorypart" visible="false" contributionURI="bundleclass:// SocialOcean/bostoncase.parts.StoryMapPart" label="MapStoryPart"/>
+            <children xsi:type="basic:Part" xmi:id="_8BWW0MLYEeaZZbPopcVK-g" elementId="bostoncase.part.mapstorypart" visible="false" contributionURI="bundleclass://SocialOcean/bostoncase.parts.StoryMapPart" label="MapStoryPart"/>
           </children>
           <children xsi:type="basic:CompositePart" xmi:id="_pJJJcMLSEeaZZbPopcVK-g" elementId="bostoncase.compositepart.analysis" visible="false" accessibilityPhrase="analysis" label="Analysis"/>
         </children>
@@ -48,33 +48,33 @@
     </children>
     <mainMenu xmi:id="_6wlLicgZEeSyMNYR5xypkQ" elementId="org.eclipse.ui.main.menu">
       <children xsi:type="menu:Menu" xmi:id="_6wlLisgZEeSyMNYR5xypkQ" elementId="file" label="File">
-        <children xsi:type="menu:HandledMenuItem" xmi:id="_6wlLi8gZEeSyMNYR5xypkQ" elementId=" SocialOcean.handleditem.file.open" label="Open" iconURI="platform:/plugin/ SocialOcean/icons/open.png" command="_6wlLgMgZEeSyMNYR5xypkQ"/>
-        <children xsi:type="menu:HandledMenuItem" xmi:id="_6wlLjMgZEeSyMNYR5xypkQ" elementId=" SocialOcean.handleditem.save" label="Save" iconURI="platform:/plugin/ SocialOcean/icons/save_edit.png" command="_6wlLg8gZEeSyMNYR5xypkQ"/>
-        <children xsi:type="menu:HandledMenuItem" xmi:id="_6wlLjcgZEeSyMNYR5xypkQ" elementId=" SocialOcean.handleditem.quit" label="Quit" iconURI="platform:/plugin/ SocialOcean/icons/button-close-icon.png" command="_6wlLfMgZEeSyMNYR5xypkQ"/>
+        <children xsi:type="menu:HandledMenuItem" xmi:id="_6wlLi8gZEeSyMNYR5xypkQ" elementId="SocialOcean.handleditem.file.open" label="Open" iconURI="platform:/plugin/SocialOcean/icons/open.png" command="_6wlLgMgZEeSyMNYR5xypkQ"/>
+        <children xsi:type="menu:HandledMenuItem" xmi:id="_6wlLjMgZEeSyMNYR5xypkQ" elementId="SocialOcean.handleditem.save" label="Save" iconURI="platform:/plugin/SocialOcean/icons/save_edit.png" command="_6wlLg8gZEeSyMNYR5xypkQ"/>
+        <children xsi:type="menu:HandledMenuItem" xmi:id="_6wlLjcgZEeSyMNYR5xypkQ" elementId="SocialOcean.handleditem.quit" label="Quit" iconURI="platform:/plugin/SocialOcean/icons/button-close-icon.png" command="_6wlLfMgZEeSyMNYR5xypkQ"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_mbAakIovEeauXYmQDjn7lw" elementId="bostoncase.handledmenuitem.showsettings" toBeRendered="false" visible="false" label="showSettings" enabled="false" command="_qNf0wIovEeauXYmQDjn7lw"/>
       </children>
       <children xsi:type="menu:Menu" xmi:id="_6wlLjsgZEeSyMNYR5xypkQ" elementId="help" label="Help">
-        <children xsi:type="menu:HandledMenuItem" xmi:id="_6wlLj8gZEeSyMNYR5xypkQ" elementId=" SocialOcean.handleditem.about" label="About" command="_6wlLhsgZEeSyMNYR5xypkQ"/>
+        <children xsi:type="menu:HandledMenuItem" xmi:id="_6wlLj8gZEeSyMNYR5xypkQ" elementId="SocialOcean.handleditem.about" label="About" command="_6wlLhsgZEeSyMNYR5xypkQ"/>
       </children>
     </mainMenu>
-    <trimBars xmi:id="_6wlLlcgZEeSyMNYR5xypkQ" elementId=" SocialOcean.trimbar.top" toBeRendered="false" visible="false">
+    <trimBars xmi:id="_6wlLlcgZEeSyMNYR5xypkQ" elementId="SocialOcean.trimbar.top" toBeRendered="false" visible="false">
       <children xsi:type="menu:ToolBar" xmi:id="_6wlLlsgZEeSyMNYR5xypkQ" elementId="org.eclipse.ui.main.toolbar">
-        <children xsi:type="menu:HandledToolItem" xmi:id="_6wlLl8gZEeSyMNYR5xypkQ" elementId=" SocialOcean.handleditem.trimbar.top.open" iconURI="platform:/plugin/ SocialOcean/icons/sample.png" command="_6wlLgMgZEeSyMNYR5xypkQ"/>
-        <children xsi:type="menu:HandledToolItem" xmi:id="_6wlLmMgZEeSyMNYR5xypkQ" elementId=" SocialOcean.handleditem.trimbar.top.save" iconURI="platform:/plugin/ SocialOcean/icons/save_edit.png" command="_6wlLg8gZEeSyMNYR5xypkQ"/>
+        <children xsi:type="menu:HandledToolItem" xmi:id="_6wlLl8gZEeSyMNYR5xypkQ" elementId="SocialOcean.handleditem.trimbar.top.open" iconURI="platform:/plugin/SocialOcean/icons/sample.png" command="_6wlLgMgZEeSyMNYR5xypkQ"/>
+        <children xsi:type="menu:HandledToolItem" xmi:id="_6wlLmMgZEeSyMNYR5xypkQ" elementId="SocialOcean.handleditem.trimbar.top.save" iconURI="platform:/plugin/SocialOcean/icons/save_edit.png" command="_6wlLg8gZEeSyMNYR5xypkQ"/>
       </children>
     </trimBars>
   </children>
-  <handlers xmi:id="_6wlLfcgZEeSyMNYR5xypkQ" elementId="bostoncase.handler.quitCommand" contributionURI="bundleclass:// SocialOcean/bostoncase.handlers.QuitHandler" command="_6wlLfMgZEeSyMNYR5xypkQ"/>
-  <handlers xmi:id="_6wlLgcgZEeSyMNYR5xypkQ" elementId="bostoncase.handler.openCommand" contributionURI="bundleclass:// SocialOcean/bostoncase.handlers.OpenHandler" command="_6wlLgMgZEeSyMNYR5xypkQ"/>
-  <handlers xmi:id="_6wlLhMgZEeSyMNYR5xypkQ" elementId="bostoncase.handler.saveCommand" contributionURI="bundleclass:// SocialOcean/bostoncase.handlers.SaveHandler" command="_6wlLg8gZEeSyMNYR5xypkQ"/>
-  <handlers xmi:id="_6wlLh8gZEeSyMNYR5xypkQ" elementId="bostoncase.handler.aboutCommand" contributionURI="bundleclass:// SocialOcean/bostoncase.handlers.AboutHandler" command="_6wlLhsgZEeSyMNYR5xypkQ"/>
-  <handlers xmi:id="_F_0sMIowEeauXYmQDjn7lw" elementId="bostoncase.handler.showSettings" contributionURI="bundleclass:// SocialOcean/bostoncase.handlers.ShowSettingsHandler" command="_qNf0wIovEeauXYmQDjn7lw"/>
-  <handlers xmi:id="_AKLDYJw3EeaqBeVOr5nmKw" elementId="bostoncase.handler.lucenesearch" contributionURI="bundleclass:// SocialOcean/bostoncase.handlers.LuceneSearchHandler" command="_xfTKYJw2EeaqBeVOr5nmKw"/>
-  <bindingTables xmi:id="_6wlLfsgZEeSyMNYR5xypkQ" elementId=" SocialOcean.bindingtable" bindingContext="_6wlLecgZEeSyMNYR5xypkQ">
-    <bindings xmi:id="_6wlLf8gZEeSyMNYR5xypkQ" elementId=" SocialOcean.keybinding.m1q" keySequence="M1+Q" command="_6wlLfMgZEeSyMNYR5xypkQ"/>
-    <bindings xmi:id="_6wlLgsgZEeSyMNYR5xypkQ" elementId=" SocialOcean.keybinding.m1o" keySequence="M1+O" command="_6wlLgMgZEeSyMNYR5xypkQ"/>
-    <bindings xmi:id="_6wlLhcgZEeSyMNYR5xypkQ" elementId=" SocialOcean.keybinding.m1s" keySequence="M1+S" command="_6wlLg8gZEeSyMNYR5xypkQ"/>
-    <bindings xmi:id="_6wlLiMgZEeSyMNYR5xypkQ" elementId=" SocialOcean.keybinding.m1a" keySequence="M1+A" command="_6wlLhsgZEeSyMNYR5xypkQ"/>
+  <handlers xmi:id="_6wlLfcgZEeSyMNYR5xypkQ" elementId="bostoncase.handler.quitCommand" contributionURI="bundleclass://SocialOcean/bostoncase.handlers.QuitHandler" command="_6wlLfMgZEeSyMNYR5xypkQ"/>
+  <handlers xmi:id="_6wlLgcgZEeSyMNYR5xypkQ" elementId="bostoncase.handler.openCommand" contributionURI="bundleclass://SocialOcean/bostoncase.handlers.OpenHandler" command="_6wlLgMgZEeSyMNYR5xypkQ"/>
+  <handlers xmi:id="_6wlLhMgZEeSyMNYR5xypkQ" elementId="bostoncase.handler.saveCommand" contributionURI="bundleclass://SocialOcean/bostoncase.handlers.SaveHandler" command="_6wlLg8gZEeSyMNYR5xypkQ"/>
+  <handlers xmi:id="_6wlLh8gZEeSyMNYR5xypkQ" elementId="bostoncase.handler.aboutCommand" contributionURI="bundleclass://SocialOcean/bostoncase.handlers.AboutHandler" command="_6wlLhsgZEeSyMNYR5xypkQ"/>
+  <handlers xmi:id="_F_0sMIowEeauXYmQDjn7lw" elementId="bostoncase.handler.showSettings" contributionURI="bundleclass://SocialOcean/bostoncase.handlers.ShowSettingsHandler" command="_qNf0wIovEeauXYmQDjn7lw"/>
+  <handlers xmi:id="_AKLDYJw3EeaqBeVOr5nmKw" elementId="bostoncase.handler.lucenesearch" contributionURI="bundleclass://SocialOcean/bostoncase.handlers.LuceneSearchHandler" command="_xfTKYJw2EeaqBeVOr5nmKw"/>
+  <bindingTables xmi:id="_6wlLfsgZEeSyMNYR5xypkQ" elementId="SocialOcean.bindingtable" bindingContext="_6wlLecgZEeSyMNYR5xypkQ">
+    <bindings xmi:id="_6wlLf8gZEeSyMNYR5xypkQ" elementId="SocialOcean.keybinding.m1q" keySequence="M1+Q" command="_6wlLfMgZEeSyMNYR5xypkQ"/>
+    <bindings xmi:id="_6wlLgsgZEeSyMNYR5xypkQ" elementId="SocialOcean.keybinding.m1o" keySequence="M1+O" command="_6wlLgMgZEeSyMNYR5xypkQ"/>
+    <bindings xmi:id="_6wlLhcgZEeSyMNYR5xypkQ" elementId="SocialOcean.keybinding.m1s" keySequence="M1+S" command="_6wlLg8gZEeSyMNYR5xypkQ"/>
+    <bindings xmi:id="_6wlLiMgZEeSyMNYR5xypkQ" elementId="SocialOcean.keybinding.m1a" keySequence="M1+A" command="_6wlLhsgZEeSyMNYR5xypkQ"/>
   </bindingTables>
   <rootContext xmi:id="_6wlLecgZEeSyMNYR5xypkQ" elementId="org.eclipse.ui.contexts.dialogAndWindow" name="In Dialog and Windows">
     <children xmi:id="_6wlLesgZEeSyMNYR5xypkQ" elementId="org.eclipse.ui.contexts.window" name="In Windows"/>
