@@ -55,13 +55,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Shell;
 
-import bostoncase.parts.CategoriesPart;
-import bostoncase.parts.Console;
-import bostoncase.parts.Histogram;
-import bostoncase.parts.LuceneStatistics;
-import bostoncase.parts.QueryHistory;
-import bostoncase.parts.Time;
-import bostoncase.parts.TopSelectionPart;
 import impl.GraphCreatorThread;
 import impl.GraphML_Helper;
 import impl.GraphPanelCreator3;
@@ -71,6 +64,13 @@ import impl.MapPanelCreator;
 import impl.MyEdge;
 import impl.TimeLineCreatorThread;
 import interfaces.ILuceneQuerySearcher;
+import socialocean.parts.CategoriesPart;
+import socialocean.parts.Console;
+import socialocean.parts.Histogram;
+import socialocean.parts.LuceneStatistics;
+import socialocean.parts.QueryHistory;
+import socialocean.parts.Time;
+import socialocean.parts.TopSelectionPart;
 
 // as singleton
 public enum Lucene {

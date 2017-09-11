@@ -1,5 +1,5 @@
 
-package bostoncase.parts;
+package socialocean.parts;
 
 import java.awt.Frame;
 import java.io.IOException;

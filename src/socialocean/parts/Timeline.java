@@ -1,5 +1,5 @@
  
-package bostoncase.parts;
+package socialocean.parts;
 
 import java.awt.Color;
 import java.awt.Frame;

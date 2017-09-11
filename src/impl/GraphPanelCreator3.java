@@ -54,7 +54,7 @@ import com.mxgraph.view.mxEdgeStyle;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxStylesheet;
 
-import bostoncase.parts.Histogram;
+import socialocean.parts.Histogram;
 import utils.DBManager;
 import utils.Lucene;
 

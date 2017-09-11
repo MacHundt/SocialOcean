@@ -1,5 +1,5 @@
  
-package bostoncase.handlers;
+package socialocean.handlers;
 
 import javax.inject.Named;
 

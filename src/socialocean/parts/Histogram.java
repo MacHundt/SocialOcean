@@ -1,5 +1,5 @@
  
-package bostoncase.parts;
+package socialocean.parts;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -1,5 +1,5 @@
  
-package bostoncase.parts;
+package socialocean.parts;
 
 import javax.inject.Inject;
 import javax.annotation.PostConstruct;

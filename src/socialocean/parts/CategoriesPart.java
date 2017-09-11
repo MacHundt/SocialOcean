@@ -1,5 +1,5 @@
  
-package bostoncase.parts;
+package socialocean.parts;
 
 import java.awt.EventQueue;
 import java.awt.Frame;
