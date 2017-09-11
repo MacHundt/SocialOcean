@@ -16,10 +16,12 @@ import org.eclipse.core.runtime.FileLocator;
 public class DBManager {
 	
 //	private static boolean local = true;
-	private static String TWEETDATA = "tweetdata";
-	private static String USERS = "users";
+//	private static String TWEETDATA = "tweetdata";
+//	private static String USERS = "users";
+	private static String TWEETDATA = "nodexl_my2k_tweets";
+	private static String USERS = "nodexl_my2k_users";
 	
-	private static boolean local = true;
+	private static boolean local = false;
 	private static boolean rcp = true;
 	
 	private static Connection newConnection(boolean m_local, boolean rcp_flag) {
@@ -42,7 +44,7 @@ public class DBManager {
 			if (rcp) {
 				URL url = null;
 				try {
-					url = new URL("platform:/plugin/" + "BostonCase/" + "settings/db_config.properties");
+					url = new URL("platform:/plugin/" + "SocialOcean/" + "settings/db_config.properties");
 
 				} catch (MalformedURLException e1) {
 					e1.printStackTrace();
@@ -72,8 +74,8 @@ public class DBManager {
 			DBNAME = prop.getProperty("dbname");
 			USER = prop.getProperty("username");
 			PASS = prop.getProperty("pw");
-			TWEETDATA = prop.getProperty("tweetdata");
-			USERS = prop.getProperty("users");
+//			TWEETDATA = prop.getProperty("tweetdata");
+//			USERS = prop.getProperty("users");
 			// PASS = "\'"+PASS+"\'";
 			// ADD SSL=true & ssl Factory
 			// @see https://bowerstudios.com/node/739
@@ -96,12 +98,26 @@ public class DBManager {
 		return TWEETDATA;
 	}
 	
+	public static void setTweetdataTable(String tablename) {
+		TWEETDATA = tablename;
+	}
+	
 	
 	public static String getUserTable( ) {
 		return USERS;
 	}
 	
+	public static void setUserTable( String usertable ) {
+		USERS = usertable;
+	}
 	
+	
+	/**
+	 * Get DB-Connection
+	 * @param local local database
+	 * @param rcp 	load properties file in rcp context
+	 * @return
+	 */
 	public static Connection getConnection(boolean local, boolean rcp) {
 		return newConnection(local, rcp);
 		

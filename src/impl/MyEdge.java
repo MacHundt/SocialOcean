@@ -1,5 +1,7 @@
 package impl;
 
+import java.util.Date;
+
 public class MyEdge {
 
 	/**
@@ -10,17 +12,53 @@ public class MyEdge {
 	private String id;
 	private String content;
 	
-	private double sentiment;
+//	private double sentiment;
+	private int pos;				// from sentiStrength lib, polarization
+	private int neg;
+	private String sentiment;
 	private String language = "";
 	private double cred_score = 0.5;
 	private boolean hasGeo = false;
 	private double latitude;
 	private double longitude;
+	private String relationsip;
+	private String category;
+	private Date date;
+	
+	private String toString = "";
 	
 	public MyEdge(String id) {
 		this.id = id;
 	}
 	
+	public enum LabelType {
+		Credibility, Sentiment, SentiStrenth, Category
+	};
+	
+	public String getRelationsip() {
+		return relationsip;
+	}
+
+	public Date getDate() {
+		return date;
+	}
+
+	public void addDate(Date date2) {
+		this.date = date2;
+	}
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void addCategory(String category) {
+		this.category = category;
+	}
+
+	public void setRelationsip(String relationsip) {
+		this.relationsip = relationsip;
+	}
+
 	public void addLanguage(String lanuage) {
 		this.language = language;
 	}
@@ -29,7 +67,11 @@ public class MyEdge {
 		this.cred_score = cred_score;
 	}
 	
-	public void addSentiment(double sentiment) {
+//	public void addSentiment(double sentiment) {
+//		this.sentiment = sentiment;
+//	}
+	
+	public void addSentiment(String sentiment) {
 		this.sentiment = sentiment;
 	}
 	
@@ -52,7 +94,11 @@ public class MyEdge {
 		return content;
 	}
 
-	public double getSentiment() {
+//	public double getSentiment() {
+//		return sentiment;
+//	}
+	
+	public String getSentiment() {
 		return sentiment;
 	}
 
@@ -74,6 +120,46 @@ public class MyEdge {
 
 	@Override
 	public String toString() {
-		return cred_score+"";
+		return toString;
 	}
+	
+	public void changeToString(LabelType type) {
+		
+		switch (type) {
+		case Credibility:
+			toString = cred_score+"";
+			break;
+		case Sentiment:
+			toString = sentiment;
+			break;
+		case Category: 
+			toString = category;
+			break;
+		case SentiStrenth:
+			toString =  "("+pos+","+neg+")";
+			break;
+
+		default:
+			toString = "("+pos+","+neg+")";
+			break;
+		}
+	}
+
+	public int getPos() {
+		return pos;
+	}
+
+	public void addPos(int pos) {
+		this.pos = pos;
+	}
+
+	public int getNeg() {
+		return neg;
+	}
+
+	public void addNeg(int neg) {
+		this.neg = neg;
+	}
+	
+	
 }

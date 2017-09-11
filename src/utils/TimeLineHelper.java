@@ -20,12 +20,4 @@ public class TimeLineHelper {
 		return freq;
 	}
 	
-	
-	// TODO to DATETIME 
-	// TODO to String!
-	
-	// Parse the dt to String
-	
-	
-	
 }

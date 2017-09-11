@@ -25,17 +25,21 @@ public class SettingsPart {
 	
 	@PostConstruct
 	public void postConstruct(Composite parent) {
-		parent.setLayout(new GridLayout(6, false));
+		parent.setLayout(new GridLayout(8, false));
 		
-		Button btnNegativ = new Button(parent, SWT.CHECK);
-		btnNegativ.setText("negativ");
-		btnNegativ.setSelection(true);
+		Button mentions = new Button(parent, SWT.CHECK);
+		mentions.setText("mentions");
+		mentions.setSelection(true);
 		
-		btnNegativ.addSelectionListener(new SelectionListener() {
+		mentions.addSelectionListener(new SelectionListener() {
 			
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
-				System.out.println(btnNegativ.getText() + " is turned to: "+btnNegativ.getSelection());
+				System.out.println(mentions.getText() + " is turned to: "+mentions.getSelection());
+				
+				Lucene l = Lucene.INSTANCE;
+				l.setWithMentions(mentions.getSelection());
+				l.createGraphView();
 			}
 			
 			@Override
@@ -43,35 +47,40 @@ public class SettingsPart {
 			}
 		});
 		
-		Button btnNeutrag = new Button(parent, SWT.CHECK);
-		btnNeutrag.setText("neutral");
-		btnNeutrag.setSelection(true);
-		btnNeutrag.addSelectionListener(new SelectionListener() {
+		Button follows = new Button(parent, SWT.CHECK);
+		follows.setText("follows");
+		follows.setSelection(true);
+		follows.addSelectionListener(new SelectionListener() {
 			
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
-				System.out.println(btnNeutrag.getText() + " is turned to: "+btnNeutrag.getSelection());
+				System.out.println(follows.getText() + " is turned to: "+follows.getSelection());
+				
+				Lucene l = Lucene.INSTANCE;
+				l.setWithFollows(follows.getSelection());
+				l.createGraphView();
 			}
+			
 			
 			@Override
 			public void widgetDefaultSelected(SelectionEvent arg0) {
 			}
 		});
 		
-		Button btnPositiv = new Button(parent, SWT.CHECK);
-		btnPositiv.setText("positiv");
-		btnPositiv.setSelection(true);
-		btnPositiv.addSelectionListener(new SelectionListener() {
-			
-			@Override
-			public void widgetSelected(SelectionEvent arg0) {
-				System.out.println(btnPositiv.getText() + " is turned to: "+btnPositiv.getSelection());
-			}
-			
-			@Override
-			public void widgetDefaultSelected(SelectionEvent arg0) {
-			}
-		});
+//		Button btnPositiv = new Button(parent, SWT.CHECK);
+//		btnPositiv.setText("positiv");
+//		btnPositiv.setSelection(true);
+//		btnPositiv.addSelectionListener(new SelectionListener() {
+//			
+//			@Override
+//			public void widgetSelected(SelectionEvent arg0) {
+//				System.out.println(btnPositiv.getText() + " is turned to: "+btnPositiv.getSelection());
+//			}
+//			
+//			@Override
+//			public void widgetDefaultSelected(SelectionEvent arg0) {
+//			}
+//		});
 		
 		
 		Label lblColor = new Label(parent, SWT.NONE);
@@ -79,7 +88,7 @@ public class SettingsPart {
 		lblColor.setText("ColorScheme:");
 		
 		Combo combo = new Combo(parent, SWT.NONE);
-		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		combo.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		combo.add("Sentiment");
 		combo.add("Category");
 		combo.select(0);
@@ -98,6 +107,7 @@ public class SettingsPart {
 				l.setColorScheme(combo.getText());
 				l.showInMap(l.getLastResult(), true);
 				l.changeHistogramm(l.getLastResult());
+				l.createGraphView();					// see ColorScheme
 				
 			}
 			

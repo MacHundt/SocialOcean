@@ -2,8 +2,6 @@
 This repository is an Eclipse RCP project. 
 
 In my project I will primary analyze twitter data.
-Data Fusion of Twitter and Flickr and aother sources into PostGis and a Lucene Full Search Index is done by preprocessing.
-For the Map Visualization I am using OSM.
 
 The name of the Project comes from the Boston Bombing Case, my first use case.
 

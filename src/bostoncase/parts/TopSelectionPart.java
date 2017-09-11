@@ -3,7 +3,6 @@ package bostoncase.parts;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
@@ -36,12 +35,11 @@ import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.widgets.Composite;
 
 import impl.GraphCreatorThread;
-import impl.LuceneIndexLoaderThread;
 import impl.TimeLineCreatorThread;
 import utils.Lucene;
+import utils.Lucene.TimeBin;
 import utils.Swing_SWT;
 import utils.TermStats;
-import utils.Lucene.TimeBin;
 
 public class TopSelectionPart {
 	
@@ -54,7 +52,14 @@ public class TopSelectionPart {
 	public int detailsColumns = 2;
 	private JTable detail;
 	// content, tags, mentions, type, category, isRetweet //crimetype, //date, //id, sentiment, hasURL, has@ )
-	public String[] detailsToShow = {"category", "content", "has@", "hasURL", "isRetweet", "mention", "sentiment", "tags", "type"};
+//	public String[] detailsToShow = {"category", "content", "has@", "hasURL", 
+//			"isRetweet", "mention", "sentiment", "tags", "type"};
+//	public String[] detailsToShow = {"category", "content", "has@", "type", "neg", "pos",
+//			"isRetweet", "mention", "sentiment", "tags", "user_id", "user_name"};
+	
+	// The details should be present in the Lucene Index!
+	public String[] detailsToShow = {"category", "content", "hasURL", "has@", "type", "neg", "pos",
+			"relationship", "mention", "sentiment", "tags", "name"};
 	private DefaultTableModel detailsDataModel;
 	private int resultColumns = 3;
 	
@@ -126,7 +131,7 @@ public class TopSelectionPart {
 		
 //		String[] result_header = {"Rank", "Freq", "Field", "Text"};
 		String[] result_header = {"Rank", "Freq", "Text"};
-		Object[][] result_data = new Object[8][resultColumns];
+		Object[][] result_data = new Object[9][resultColumns];
 		resultDataModel = new DefaultTableModel(result_data, result_header);
 		results = new JTable(resultDataModel);
 		JScrollPane resultPane = new JScrollPane(results);
@@ -209,6 +214,7 @@ public class TopSelectionPart {
 					@Override
 					public void execute() {
 						l.changeTimeLine(TimeBin.HOURS);
+//						l.changeTimeLine(TimeBin.MINUTES);
 					}
 				};
 				lilt.start();

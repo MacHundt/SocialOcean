@@ -35,8 +35,10 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.time.Hour;
+import org.jfree.data.time.Minute;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.data.time.TimeSeriesDataItem;
 
 import impl.GraphCreatorThread;
 import javafx.util.converter.NumberStringConverter;
@@ -124,35 +126,6 @@ public class Time {
 			
 			@Override
 			public void mouseReleased(MouseEvent e) {
-//				markerEnd = getPosition(e).longValue();
-//				Number maximum = DatasetUtilities.findMaximumRangeValue(dataset);
-//
-//				XYPlot plot = chart.getXYPlot();
-//
-//				// Number lower =
-//				// plot.getDomainAxis().getRange().getLowerBound();
-//				// Number upper =
-//				// plot.getDomainAxis().getRange().getUpperBound();
-//
-//				if (marker != null) {
-//					plot.removeDomainMarker(marker, Layer.BACKGROUND);
-//				}
-//				if (markerStart != null && markerEnd != null) {
-//					if (markerEnd > markerStart) {
-//						marker = new IntervalMarker(markerStart.longValue(), markerEnd.longValue());
-//						// marker.setPaint(new Color(0xDD, 0xFF, 0xDD,
-//						// 0x80));
-//
-//					} else {
-//						marker = new IntervalMarker(markerEnd.longValue(), markerStart.longValue());
-//					}
-//
-//					marker.setPaint(Color.blue);
-//					marker.setAlpha(0.6f);
-//					marker.setLabel("1");
-//					marker.setLabelTextAnchor(TextAnchor.TOP_LEFT);
-//					plot.addDomainMarker(marker, Layer.BACKGROUND);
-//				}
 				
 				Plot p = chart.getPlot();
 				System.out.println("GET Domain Range:");
@@ -201,59 +174,8 @@ public class Time {
 					l.showLastResult();
 				}
 				
-//				System.out.println(">>LOW: "+.getDomainAxis().getRange().getLowerBound());
-					
-//					ValueMarker maxX = new ValueMarker(markerEnd.longValue());
-//					maxX.setPaint(Color.blue);
-//					maxX.setLabel("Max");
-//					maxX.setLabelTextAnchor(TextAnchor.CENTER_LEFT);
-//					plot.addDomainMarker(maxX, Layer.BACKGROUND);
-//					
-//					ValueMarker minX = new ValueMarker(markerStart.longValue());
-//					minX.setPaint(Color.blue);
-//					minX.setLabel("Min");
-//					minX.setLabelTextAnchor(TextAnchor.CENTER_LEFT);
-//					plot.addDomainMarker(minX, Layer.BACKGROUND);
-				
-//				ValueMarker max = new ValueMarker(maximum.floatValue());
-//				max.setPaint(Color.orange);
-//				// max.setLabel("Highest Value");
-//				max.setLabelTextAnchor(TextAnchor.CENTER_LEFT);
-//				plot.addRangeMarker(max, Layer.BACKGROUND);
-//
-//				Number xValue = DatasetUtilities.findMinimumDomainValue(dataset);
-//				for (int seriesIndex = 0; seriesIndex < dataset.getSeriesCount(); seriesIndex++) {
-//					for (int itemIndex = 0; itemIndex < dataset.getItemCount(seriesIndex); itemIndex++) {
-//						Number yValue = dataset.getY(seriesIndex, itemIndex);
-//						Number X = dataset.getX(seriesIndex, itemIndex);
-//
-//						Long xlong = X.longValue();
-//
-//						if (yValue.equals(maximum)) {
-//							if (dataset.getX(seriesIndex, itemIndex).floatValue() > xValue.floatValue())
-//								xValue = dataset.getX(seriesIndex, itemIndex);
-//						}
-//					}
-//				}
-//				ValueMarker maxX = new ValueMarker(xValue.floatValue());
-//				maxX.setPaint(Color.orange);
-//				maxX.setLabel("Maximum");
-//				maxX.setLabelTextAnchor(TextAnchor.CENTER_LEFT);
-//				plot.addDomainMarker(maxX, Layer.BACKGROUND);
-				
-				
-			
-
-				
 			}
 			
-//			private long normalizeDate(long date, int precision) {
-//				String dateStr = ""+date;
-//				dateStr = dateStr.substring(0, precision);
-//				long out = Long.parseLong(dateStr);
-//
-//				return out;
-//			}
 
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -344,7 +266,21 @@ public class Time {
 					int min = Integer.parseInt(time[1]);
 //					int sec = Integer.parseInt(time[2]);
 					
-					series.add(new Hour(hour, day, month, year), (double) freq);
+					Hour h = new Hour(hour, day, month, year);
+//					Minute m = new Minute(min, h);
+					
+					TimeSeriesDataItem test = series.getDataItem(h);
+					if (test != null) {
+						System.out.println("same period");
+						if (freq > 0) {
+							series.addOrUpdate(h, (double) freq);
+//							series.addOrUpdate(m, (double) freq);
+						}
+					}
+					else {
+						series.add(h, (double) freq);
+//						series.add(m, (double) freq);
+					}
 				}
 				dataset.addSeries(series);	
 //				dataset.setAutoWidth(true);

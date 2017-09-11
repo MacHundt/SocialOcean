@@ -5,9 +5,13 @@ import utils.Lucene;
 public abstract class LuceneIndexLoaderThread extends Thread {
 	
 	private Lucene l;
+	private boolean changeHisto;
+	private boolean changeTime;
 	
-	public LuceneIndexLoaderThread(Lucene l) {
+	public LuceneIndexLoaderThread(Lucene l, boolean changeHisto, boolean changeTime) {
 		this.l = l;
+		this.changeHisto = changeHisto;
+		this.changeTime = changeTime;
 	}
 	
 	public abstract void execute();
@@ -21,10 +25,10 @@ public abstract class LuceneIndexLoaderThread extends Thread {
 			l.printToConsole("Loading Lucene Index ... DONE");
 			
 			l.printStatistics();
-			l.showCatHisto();
-			
-			l.createTimeLine(Lucene.TimeBin.HOURS);
-			l.printToConsole("Print TimeLine ... DONE");
+			if (changeHisto)
+				l.showCatHisto();
+			if (changeTime)
+				l.createTimeLine(Lucene.TimeBin.HOURS);
 
 		} catch (Throwable t) {
 			t.printStackTrace();

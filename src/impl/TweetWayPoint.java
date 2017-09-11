@@ -39,7 +39,7 @@ public class TweetWayPoint  extends SwingWaypoint {
 	    button.setBorder(null);
         button.setSize(24,24);
 //        button.setBackground(new Color(255, 255, 255, 255));
-	    button.setPreferredSize(new Dimension(24, 24));
+	    button.setPreferredSize(new Dimension(25, 25));
         button.addMouseListener(new SwingWaypointMouseListener());
         button.setVisible(true);
     }
@@ -58,15 +58,25 @@ public class TweetWayPoint  extends SwingWaypoint {
 				Statement stmt = c.createStatement();
 				String table = DBManager.getTweetdataTable();
 				
-				String query = "select t.\"tweetScreenName\", t.\"tweetContent\", t.creationdate, t.sentiment, t.category, t.\"containsUrl\"  from "+table+" as t where t.tweetid = "+text;
+//				String query = "select t.\"tweetScreenName\", t.\"tweetContent\", t.creationdate, t.sentiment, t.category, t.\"containsUrl\"  from "+table+" as t where t.tweetid = "+text;
+				String query = "select t.source, t.target, t.relationship, t.tweet_content, t.tweet_creationdate, t.sentiment, t.category, t.hasurl  from "+table+" as t where t.tweet_id = "+text;
+
 				ResultSet rs = stmt.executeQuery(query);
 				while (rs.next()) {
-					String scName = rs.getString(1);
-					String content = rs.getString(2);
-					String date = rs.getString(3);
-					int sentiment = rs.getInt(4);
-					String category = rs.getString(5);
-					boolean hasUrl = rs.getBoolean(6);
+					String scName = rs.getString("source");
+					String target = rs.getString("target");
+					String relationship = rs.getString("relationship");
+					String content = rs.getString("tweet_content");
+					String date = rs.getString("tweet_creationdate");
+//					int sentiment = rs.getInt(4);
+					String sentiment = rs.getString("sentiment");
+					String category = rs.getString("category");
+					boolean hasUrl = rs.getBoolean("hasurl");
+					
+					if (relationship.equals("Followed")) {
+						details += "\n"+scName+" follows "+target;
+						break;
+					}
 					
 					
 					details += "\n"+scName+" wrote on "+date+":";

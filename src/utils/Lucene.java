@@ -1,7 +1,12 @@
 package utils;
 
 import java.awt.Color;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -13,17 +18,27 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.TreeMap;
+
+import javax.swing.table.DefaultTableModel;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.DateTools.Resolution;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -32,7 +47,13 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.spatial.geopoint.document.GeoPointField;
 import org.apache.lucene.spatial.geopoint.search.GeoPointInBBoxQuery;
+import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Shell;
 
 import bostoncase.parts.CategoriesPart;
 import bostoncase.parts.Console;
@@ -44,6 +65,8 @@ import bostoncase.parts.TopSelectionPart;
 import impl.GraphCreatorThread;
 import impl.GraphML_Helper;
 import impl.GraphPanelCreator3;
+import impl.LuceneIndexLoaderThread;
+import impl.LuceneQuerySearcher;
 import impl.MapPanelCreator;
 import impl.MyEdge;
 import impl.TimeLineCreatorThread;
@@ -98,6 +121,8 @@ public enum Lucene {
 	private String query_type = "";
 
 	private MultiFieldQueryParser mq = null;
+	
+	private static int reIndexCount = 0;
 
 	public static enum TimeBin {
 		SECONDS, MINUTES, HOURS, DAYS
@@ -130,12 +155,17 @@ public enum Lucene {
 	public int serialCounter = 0;
 	public boolean isInitialized = false;
 	private boolean changedTimeSeries;
+	private boolean withMention = true;
+	private boolean withFollows = true;
+	private String luceneIndex;
+	private long user_minDate;
+	private long user_maxDate;
 	
-
-	public void initLucene(String index, ILuceneQuerySearcher querySearcher) {
+	public void initLucene( String index, ILuceneQuerySearcher querySearcher) {
+		
+		luceneIndex = index;
+		
 		try {
-			
-			String pass = "VwKhvTEkzzVdL2tPyFZX";
 			
 			// ### JSch ###
 //			JSch jsch = new JSch();
@@ -170,8 +200,6 @@ public enum Lucene {
 //			reader = DirectoryReader.open(FSDirectory.open(Paths.get(path2)));
 			
 			
-			
-			
 //			### commons-net  -- doesn't work
 //			FTPSClient client = new FTPSClient();
 //			
@@ -199,9 +227,9 @@ public enum Lucene {
 //                }
 //            }
 //            client.logout();
-
-			reader = DirectoryReader.open(FSDirectory.open(Paths.get(index)));
-			idxInfo = new IndexInfo(reader, index);
+			
+			reader = DirectoryReader.open(FSDirectory.open(Paths.get(luceneIndex)));
+			idxInfo = new IndexInfo(reader, luceneIndex);
 			fn = idxInfo.getFieldNames();
 			numTerms = idxInfo.getNumTerms();
 			termCounts = idxInfo.getFieldTermCounts();
@@ -221,7 +249,7 @@ public enum Lucene {
 			// from tweetdata order by creationdate DESC Limit 1");
 
 		} catch (IOException e) {
-			System.out.println("Could not create LuceneSearcher, path to index not found " + index);
+			System.out.println("Could not create LuceneSearcher, path to index not found " + luceneIndex);
 			e.printStackTrace();
 			return;
 		} catch (Exception e) {
@@ -233,7 +261,6 @@ public enum Lucene {
 		parser.setDateResolution(dateResolution);
 		this.querySearcher = querySearcher;
 		querySearcher.initQuerySearcher(searcher, analyzer);
-
 	}
 
 	public void printToConsole(String msg) {
@@ -313,26 +340,34 @@ public enum Lucene {
 		LuceneStatistics ls = LuceneStatistics.getInstance();
 		build.forEach(item -> ls.printLuceneStatistics(item));
 
-		// wait for TOPSELECTIONPart -- be created
-
 		TopSelectionPart tsp = TopSelectionPart.getInstance();
 		
 		// fields - date, geo, id, path
 		Object[][] tableData = new Object[tsp.detailsToShow.length][tsp.detailsColumns];
-		int detailsToShow_counter = tsp.detailsToShow.length-1;
+//		int detailsToShow_counter = tsp.detailsToShow.length-4;
+		int index = 0;
 		for (int i = 0; i < fn.size(); i++) {
 			
 			String fieldname = fn.get(i);	// field name
-			if (isInDetails(fieldname, tsp.detailsToShow) && detailsToShow_counter >= 0) {
-				int index = detailsToShow_counter--;
+//			if (isInDetails(fieldname, tsp.detailsToShow) && detailsToShow_counter >= 0) {
+//				int index = detailsToShow_counter--;
+			if (isInDetails(fieldname, tsp.detailsToShow)) {
 				tableData[index][0] = fieldname; 
-				tableData[index][1] = new Long(termCounts.get(fn.get(i)).termCount);
+				if (termCounts.get(fn.get(i)) != null )
+					tableData[index][1] = new Long(termCounts.get(fn.get(i)).termCount);
+				else 
+					tableData[index][1] = 0;
+				
+				index++;
 //				DecimalFormat format = new DecimalFormat("##.##");
 //				String s = format.format((termCounts.get(fn.get(i)).termCount * 100.0 / numTerms));
 //				tableData[index][2] = s + " %";
 			}
 		}
 		tsp.setDetailTable(tableData);
+		
+		Object[][] result_data = new Object[9][3];
+		tsp.setResultTable(result_data);
 
 	}
 	
@@ -790,10 +825,18 @@ public enum Lucene {
 				continue;
 
 			field = (document.getField("category")).stringValue();
+//			String sentiment_str = (document.getField("sentiment")).stringValue();
+//			if (sentiment_str.equals("positive"))
+//				sentiment = 1.0;
+//			else if (sentiment_str.equals("negative")) 
+//				sentiment = -1.0;
+//			else 
+//				sentiment = 0;
+			
 			String sentiment_str = (document.getField("sentiment")).stringValue();
-			if (sentiment_str.equals("positive"))
+			if (sentiment_str.equals("pos"))
 				sentiment = 1.0;
-			else if (sentiment_str.equals("negative")) 
+			else if (sentiment_str.equals("neg")) 
 				sentiment = -1.0;
 			else 
 				sentiment = 0;
@@ -826,96 +869,116 @@ public enum Lucene {
 	}
 	
 
-	public void initMaxDate() {
-		try {
-			Connection c = DBManager.getConnection();
-			Statement stmt = c.createStatement();
-			// ResultSet rs = stmt.executeQuery("Select creationdate from
-			// tweetdata order by creationdate DESC Limit 1");
-			ResultSet rs = stmt.executeQuery("Select max from tw_minmax_date");
-			// ResultSet rs = pre_statement_max.executeQuery();
-			String maxDate = "";
-			while (rs != null && rs.next()) {
-				maxDate = rs.getString(1);
-			}
-			if (maxDate.isEmpty() || !maxDate.contains(" "))
-				return;
+	/**
+	 * Init the max creation date
+	 * @param maxDate
+	 */
+	public void initMaxDate(String maxDate) {
+		// maxDate = "2013-01-08 01:15:00";
 
-			String[] datetime_String = maxDate.split(" ");
-			String date_Str = datetime_String[0];
-			String time_Str = datetime_String[1];
-			String[] date_arr = date_Str.trim().split("-");
-			String[] time_arr = time_Str.trim().split(":");
-			if (date_arr.length == 3 && time_arr.length == 3) {
-				// DATE
-				int year = Integer.parseInt(date_arr[0]);
-				int month = Integer.parseInt(date_arr[1]);
-				int day = Integer.parseInt(date_arr[2]);
-				// TIME
-				int hour = Integer.parseInt(time_arr[0]);
-				int min = Integer.parseInt(time_arr[1]);
-				int sec = Integer.parseInt(time_arr[2]);
+		String[] datetime_String = maxDate.split(" ");
+		String date_Str = datetime_String[0];
+		String time_Str = datetime_String[1];
+		String[] date_arr = date_Str.trim().split("-");
+		String[] time_arr = time_Str.trim().split(":");
+		if (date_arr.length == 3 && time_arr.length == 3) {
+			// DATE
+			int year = Integer.parseInt(date_arr[0]);
+			int month = Integer.parseInt(date_arr[1]);
+			int day = Integer.parseInt(date_arr[2]);
+			// TIME
+			int hour = Integer.parseInt(time_arr[0]);
+			int min = Integer.parseInt(time_arr[1]);
+			int sec = Integer.parseInt(time_arr[2]);
 
-				LocalDate date = LocalDate.of(year, month, day);
-				LocalTime time = LocalTime.of(hour, min, sec);
+			LocalDate date = LocalDate.of(year, month, day);
+			LocalTime time = LocalTime.of(hour, min, sec);
 
-				dt_max = LocalDateTime.of(date, time);
-				utc_time_max = dt_max.toEpochSecond(ZoneOffset.UTC);
-				hasStopTime = true;
+			dt_max = LocalDateTime.of(date, time);
+			utc_time_max = dt_max.toEpochSecond(ZoneOffset.UTC);
+			hasStopTime = true;
 
-				System.out.println(dt_max.toEpochSecond(ZoneOffset.UTC) + " = " + dt_max.toString());
+			System.out.println(dt_max.toEpochSecond(ZoneOffset.UTC) + " = " + dt_max.toString());
 
-			}
-			c.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
 		}
 	}
 
-	public void initMinDate() {
+	/**
+	 * Init the min creatino date
+	 * @param minDate
+	 */
+	public void initMinDate(String minDate) {
 
-		try {
-			Connection c = DBManager.getConnection();
-			Statement stmt = c.createStatement();
-			// ResultSet rs = stmt.executeQuery("Select creationdate from
-			// tweetdata order by creationdate ASC Limit 1");
-			ResultSet rs = stmt.executeQuery("Select min from tw_minmax_date");
-			// ResultSet rs = pre_statement_min.executeQuery();
-			String minDate = "";
-			while (rs != null && rs.next()) {
-				minDate = rs.getString(1);
-			}
-			if (minDate.isEmpty() || !minDate.contains(" "))
-				return;
+//		minDate = "2013-01-07 12:42:00"; // my2k
+		String[] datetime_String = minDate.split(" ");
+		String date_Str = datetime_String[0];
+		String time_Str = datetime_String[1];
+		String[] date_arr = date_Str.trim().split("-");
+		String[] time_arr = time_Str.trim().split(":");
+		if (date_arr.length == 3 && time_arr.length == 3) {
+			// DATE
+			int year = Integer.parseInt(date_arr[0]);
+			int month = Integer.parseInt(date_arr[1]);
+			int day = Integer.parseInt(date_arr[2]);
+			// TIME
+			int hour = Integer.parseInt(time_arr[0]);
+			int min = Integer.parseInt(time_arr[1]);
+			int sec = Integer.parseInt(time_arr[2]);
 
-			String[] datetime_String = minDate.split(" ");
-			String date_Str = datetime_String[0];
-			String time_Str = datetime_String[1];
-			String[] date_arr = date_Str.trim().split("-");
-			String[] time_arr = time_Str.trim().split(":");
-			if (date_arr.length == 3 && time_arr.length == 3) {
-				// DATE
-				int year = Integer.parseInt(date_arr[0]);
-				int month = Integer.parseInt(date_arr[1]);
-				int day = Integer.parseInt(date_arr[2]);
-				// TIME
-				int hour = Integer.parseInt(time_arr[0]);
-				int min = Integer.parseInt(time_arr[1]);
-				int sec = Integer.parseInt(time_arr[2]);
+			LocalDate date = LocalDate.of(year, month, day);
+			LocalTime time = LocalTime.of(hour, min, sec);
 
-				LocalDate date = LocalDate.of(year, month, day);
-				LocalTime time = LocalTime.of(hour, min, sec);
+			dt_min = LocalDateTime.of(date, time);
+			utc_time_min = dt_min.toEpochSecond(ZoneOffset.UTC);
+			hasStartTime = true;
 
-				dt_min = LocalDateTime.of(date, time);
-				utc_time_min = dt_min.toEpochSecond(ZoneOffset.UTC);
-				hasStartTime = true;
-
-				System.out.println(dt_min.toEpochSecond(ZoneOffset.UTC) + " = " + dt_min.toString());
-			}
-			c.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
+			System.out.println(dt_min.toEpochSecond(ZoneOffset.UTC) + " = " + dt_min.toString());
 		}
+	}
+	
+	public void iniUserMinMaxCreationDate(String usermin, String usermax) {
+		
+//		user_maxDate = Date.UTC(2013, 04, 24, 19, 0, 0);
+//		user_minDate = Date.UTC(2006, 03, 21, 0, 0, 0);
+		
+		// MIN
+		String[] datetime_String = usermin.split(" ");
+		String date_Str = datetime_String[0];
+		String time_Str = datetime_String[1];
+		String[] date_arr = date_Str.trim().split("-");
+		String[] time_arr = time_Str.trim().split(":");
+		if (date_arr.length == 3 && time_arr.length == 3) {
+			// DATE
+			int year = Integer.parseInt(date_arr[0]);
+			int month = Integer.parseInt(date_arr[1]);
+			int day = Integer.parseInt(date_arr[2]);
+			
+			user_minDate = Date.UTC(year, month, day, 0, 0, 0);
+		}
+		
+		//MAX
+		datetime_String = usermax.split(" ");
+		date_Str = datetime_String[0];
+		time_Str = datetime_String[1];
+		date_arr = date_Str.trim().split("-");
+		time_arr = time_Str.trim().split(":");
+		if (date_arr.length == 3 && time_arr.length == 3) {
+			// DATE
+			int year = Integer.parseInt(date_arr[0]);
+			int month = Integer.parseInt(date_arr[1]);
+			int day = Integer.parseInt(date_arr[2]);
+			
+			user_maxDate = Date.UTC(year, month, day, 0, 0, 0);
+		}
+		
+	}
+
+	public long getUser_minDate() {
+		return user_minDate;
+	}
+
+	public long getUser_maxDate() {
+		return user_maxDate;
 	}
 
 	public void createTimeLine(TimeBin binsize) {
@@ -977,6 +1040,7 @@ public enum Lucene {
 			return;
 		}
 
+		// get min-max values
 		for (ScoreDoc doc : last_result) {
 
 			int docID = doc.doc;
@@ -997,7 +1061,8 @@ public enum Lucene {
 
 		}
 
-		long temp_utc = utc_time_min;
+		long temp_utc = minDate;
+//		long temp_utc = utc_time_min;
 		long stepSize = 0;
 		
 		HashMap<Long, Integer> buckets = new HashMap<>();
@@ -1005,7 +1070,7 @@ public enum Lucene {
 		LocalDateTime dt_temp = longTOLocalDateTime(minDate);
 		
 		// CREATE TIME Bins
-		while (temp_utc <= utc_time_max) {
+		while (temp_utc <= maxDate) {
 			LocalDateTime dt_plus = dt_temp;
 			switch (binsize) {
 			case SECONDS:
@@ -1034,6 +1099,35 @@ public enum Lucene {
 		}
 		
 		
+//		while (temp_utc <= utc_time_max) {
+//			LocalDateTime dt_plus = dt_temp;
+//			switch (binsize) {
+//			case SECONDS:
+//				dt_plus = dt_temp.plusSeconds(1);
+//				break;
+//			case MINUTES:
+//				dt_plus = dt_temp.plusMinutes(1);
+//				break;
+//			case HOURS:
+//				dt_plus = dt_temp.plusHours(1);
+//				break;
+//			case DAYS:
+//				dt_plus = dt_temp.plusDays(1);
+//				break;
+//			}
+//			long utc_plus = dt_plus.toEpochSecond(ZoneOffset.UTC);
+//			if (stepSize == 0) {
+//				stepSize = utc_plus - temp_utc;
+//			}
+//			
+//			buckets.put(temp_utc, 0);
+//			
+////			ScoreDoc[] rs = searchTimeRange(temp_utc, utc_plus, false, false);
+//			dt_temp = dt_plus;
+//			temp_utc = utc_plus;
+//		}
+		
+		
 		// ADD To Bins
 		for (ScoreDoc doc : last_result) {
 			
@@ -1044,7 +1138,10 @@ public enum Lucene {
 				long time = Long.parseLong((document.getField("date")).stringValue());
 				
 				long key = getBucket(buckets, stepSize,  time);
-				buckets.put(key, ( buckets.get(key) + 1 ));
+				if (key >= 0)
+					buckets.put(key, ( buckets.get(key) + 1 ));
+				else 
+					continue;
 				
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -1092,7 +1189,7 @@ public enum Lucene {
 	public void createGraphView() {
 		ScoreDoc[] result = last_result;
 		
-		GraphPanelCreator3.createGraph(result, searcher);
+		GraphPanelCreator3.createGraph(result, searcher, withMention, withFollows);
 		
 	}
 	
@@ -1122,8 +1219,7 @@ public enum Lucene {
 			
 //			 GraphML_Helper.createGraphML_Mention(fusedMention, searcher,
 //			 true, "/Users/michaelhundt/Desktop/"+name);
-			 GraphML_Helper.createGraphML_Mention(fusedMention, searcher,
-					 true, name);
+			 GraphML_Helper.createGraphML_Mention(fusedMention, searcher,true, name);
 			// GraphML_Helper.createGraphML_Mention(fusedMention, searcher,
 			// true, "./graphs/"+name);
 
@@ -1258,7 +1354,15 @@ public enum Lucene {
 					// MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(docID
 					// + "", sentiment, lat, lon));
 					String sentiment = (document.getField("sentiment")).stringValue();
-					MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, sentiment, lat, lon));
+					String category = (document.getField("category")).stringValue();
+					
+					Lucene l = Lucene.INSTANCE;
+					if (l.getColorScheme().equals(Lucene.ColorScheme.CATEGORY)) {
+						MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, category, lat, lon));
+					}
+					else {
+						MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, sentiment, lat, lon));
+					}
 
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
@@ -1272,6 +1376,11 @@ public enum Lucene {
 	}
 	
 	
+	/**
+	 * 
+	 * @param edges
+	 * @param clearMap clear all WayPoints
+	 */
 	public void showSelectionInMap(ArrayList<MyEdge> edges, boolean clearMap) {
 		if (!edges.isEmpty()) {
 			if (clearMap)
@@ -1279,21 +1388,123 @@ public enum Lucene {
 			
 			for (MyEdge edge : edges) {
 				String id = edge.getId();
-				double sentiment = edge.getSentiment();
+//				double sentiment = edge.getSentiment();
+				String senti = edge.getSentiment();
 				double lat = edge.getLatitude();
 				double lon = edge.getLongitude();
-				String senti = "neutral";
-				if (sentiment > 0)
-					senti = "positive";
-				else if (sentiment < 0)
-					senti = "negative";
+//				String senti = "neutral";
+//				if (sentiment > 0)
+//					senti = "positive";
+//				else if (sentiment < 0)
+//					senti = "negative";
 					
 				MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, senti, lat, lon));
 			}
 			MapPanelCreator.showWayPointsOnMap();
 		}
-		
 	}
+	
+	
+	public void showSelectionInHistogramm(ArrayList<MyEdge> edges) {
+		if (!edges.isEmpty()) {
+			Histogram histogram = Histogram.getInstance();
+			HashMap<String, HistogramEntry> counter = new HashMap<>();
+			
+			for (MyEdge edge : edges) {
+				String id = edge.getId();
+				String sentiment = edge.getSentiment();
+				String category = edge.getCategory();
+				double senti = 0.0;
+				if (category == null || category.isEmpty())
+					continue;
+				
+				if (sentiment.equals("pos"))
+					senti = 1.0;
+				else if (sentiment.equals("neg")) 
+					senti = -1.0;
+				else 
+					senti = 0;
+				
+				if (counter.containsKey(category)) {
+					HistogramEntry entry = counter.get(category);
+					entry.count();
+					entry.addSentiment(senti);
+				} else {
+					HistogramEntry entry = new HistogramEntry(category);
+					entry.count();
+					entry.addSentiment(senti);
+					counter.put(category, entry);
+				}
+				
+			}
+			histogram.changeDataSet(counter);
+		}
+	}
+	
+	
+	
+	public void showSelectionInTimeline(ArrayList<MyEdge> edges, TimeBin binsize) {
+
+		ArrayList<TimeLineHelper> tl_data = new ArrayList<>();
+
+		long minDate = Long.MAX_VALUE;
+		long maxDate = Long.MIN_VALUE;
+		
+		for (MyEdge edge : edges) {
+			String id = edge.getId();
+			
+			Date date = edge.getDate();
+
+		}
+
+		long temp_utc = utc_time_min;
+		long stepSize = 0;
+		
+		HashMap<Long, Integer> buckets = new HashMap<>();
+		// From Start Date to StopDate .. make bins and plot
+		LocalDateTime dt_temp = longTOLocalDateTime(minDate);
+		
+		// CREATE TIME Bins
+		while (temp_utc <= utc_time_max) {
+			LocalDateTime dt_plus = dt_temp;
+			switch (binsize) {
+			case SECONDS:
+				dt_plus = dt_temp.plusSeconds(1);
+				break;
+			case MINUTES:
+				dt_plus = dt_temp.plusMinutes(1);
+				break;
+			case HOURS:
+				dt_plus = dt_temp.plusHours(1);
+				break;
+			case DAYS:
+				dt_plus = dt_temp.plusDays(1);
+				break;
+			}
+			long utc_plus = dt_plus.toEpochSecond(ZoneOffset.UTC);
+			if (stepSize == 0) {
+				stepSize = utc_plus - temp_utc;
+			}
+			
+			buckets.put(temp_utc, 0);
+			
+//			ScoreDoc[] rs = searchTimeRange(temp_utc, utc_plus, false, false);
+			dt_temp = dt_plus;
+			temp_utc = utc_plus;
+		}
+		
+				
+		for (Long key:  buckets.keySet()) {
+//			buckets.put(key, randomVal);
+			tl_data.add(new TimeLineHelper(longTOLocalDateTime(key), buckets.get(key)));
+		}
+
+		Time time = Time.getInstance();
+		time.changeDataSet(tl_data);
+		changedTimeSeries = true;
+
+	}
+	
 	
 
 	public void setQeryType(String text) {
@@ -1341,6 +1552,12 @@ public enum Lucene {
 		graphThread.start();
 //		createGraphML_Mention(lastResult, true);
 		
+		if (QueryHistory.isInitialized) {
+			QueryHistory history = QueryHistory.getInstance();
+			history.removeLastQuery();
+		}
+		
+		
 		Time time = Time.getInstance();
 		last_result = lastResult;
 		last_query = queryResults.get(currentPointer).query.toString();
@@ -1348,6 +1565,7 @@ public enum Lucene {
 			@Override
 			public void execute() {
 				changeTimeLine(TimeBin.HOURS);
+//				changeTimeLine(TimeBin.MINUTES);
 			}
 		};
 		lilt.start();
@@ -1397,7 +1615,166 @@ public enum Lucene {
 		this.colorScheme = colorScheme;
 	}
 
+	public void setWithMentions(boolean selection) {
+		
+		withMention = selection;
+		
+		
+	}
 
+	public void setWithFollows(boolean selection) {
+		
+		withFollows = selection;
+		
+	}
+
+	public void reindexLastResult(String name) {
+		
+		reIndexCount++;
+		// MAP indexCount to name
+		
+		String ind = luceneIndex;
+		
+		String tempPath = ind.substring(0, ind.lastIndexOf("/")+1);
+		
+		if (!tempPath.endsWith("temp/")) {
+			tempPath +="temp";
+			File theDir = new File(tempPath+"temp");
+
+			// if the directory does not exist, create it
+			if (!theDir.exists()) {
+			    System.out.println("creating directory: " + theDir.getName());
+			    boolean result = false;
+
+			    try{
+			        theDir.mkdir();
+			        result = true;
+			    } 
+			    catch(SecurityException se){
+			        //handle it
+			    }        
+			    if(result) {    
+			        System.out.println("DIR created");  
+			    }
+			}
+		}
+		
+		
+		
+		
+		File newIndex = new File(tempPath+"/"+name);
+		if (!newIndex.exists()) {
+		    System.out.println("creating directory: " + newIndex.getName());
+		    boolean result = false;
+
+		    try{
+		    	newIndex.mkdir();
+		        result = true;
+		    } 
+		    catch(SecurityException se){
+		        //handle it
+		    }        
+		    if(result) {    
+		        System.out.println("DIR created");  
+		    }
+		}
+		
+		System.out.println("Indexing to directory '" + newIndex + "'...");
+		
+		try {
+			Directory dir = FSDirectory.open(Paths.get(newIndex.getAbsolutePath()));
+			
+			// ## LOAD Stopwords File
+			Properties prop = new Properties();
+			URL url = null;
+			try {
+			  url = new URL("platform:/plugin/"
+			    + "BostonCase/"
+			    + "stopwords/stopwords.txt");
+
+			    } catch (MalformedURLException e1) {
+			      e1.printStackTrace();
+			}
+			url = FileLocator.toFileURL(url);
+			
+			FileReader reader = new FileReader(new File(url.getPath()));
+			Analyzer analyzer = new StandardAnalyzer(reader);
+			IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
+			iwc.setOpenMode(OpenMode.CREATE);
+			
+			IndexWriter writer = new IndexWriter(dir, iwc);
+			
+			for (ScoreDoc doc : last_result) {
+				Document document = null;
+				try {
+					document = searcher.doc(doc.doc);
+					
+					// get content .. add content
+					// fulltext
+					String id = document.get("id");
+					String content = getContent(id);
+					content = content.replaceAll("\"", "");
+					TextField content_field = new TextField("content", content, Field.Store.NO);
+					document.add(content_field);
+					
+				} catch (IOException e) {
+					continue;
+				}
+				writer.addDocument(document);
+			}
+			
+			writer.close();
+			
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		
+		// TODO store mapping (index to foldername
+		// re-init Lucene with new created Lucene Index
+		// Add a dialog, to enable to open LuceneIndex files
+		
+		LuceneQuerySearcher lqs = LuceneQuerySearcher.INSTANCE;
+		LuceneIndexLoaderThread lilt = new LuceneIndexLoaderThread(this, false, false) {
+			@Override
+			public void execute() {
+				System.out.println("Loading Lucene Index ...");
+				initLucene( newIndex.getAbsolutePath(), lqs);
+			}
+		};
+		lilt.start();
+		
+	}
+	
+	
+	private String getContent(String tweetid) {
+		String content = "";
+		Connection c = DBManager.getConnection();
+    	try {
+			Statement stmt = c.createStatement();
+			String table = DBManager.getTweetdataTable();
+			
+//			String query = "select t.\"tweetScreenName\", t.\"tweetContent\", t.creationdate, t.sentiment, t.category, t.\"containsUrl\"  from "+table+" as t where t.tweetid = "+text;
+			String query = "select t.tweet_content from "+table+" as t where t.tweet_id = "+tweetid;
+			ResultSet rs = stmt.executeQuery(query);
+			while (rs.next()) {
+				content = rs.getString("tweet_content");
+			}
+			
+			stmt.close();
+			c.close();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+    	
+    	
+    	return content;
+	}
+
+	public void clearGraph() {
+		GraphPanelCreator3.clearGraph();		
+	}
 
 
 }

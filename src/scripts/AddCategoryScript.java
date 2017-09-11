@@ -2,7 +2,6 @@ package scripts;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -10,15 +9,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import utils.DBManager;
+
 public class AddCategoryScript {
 	
-	private static String tweet_table = "bb_tweets";
+//	private static String tweet_table = "bb_tweets";
+	private static String tweet_table = "nodexl_ohsen_tweets";
+	
 	private static int fetchsize = 10000;
 	private static TopicClassification classifier;
 	private static int batchcounter = 0;
 	static ResultSet rs = null;
 	static ArrayList<Tuple<Long, String>> list = null;
-
+	
+	private static boolean LOCAL = true;
+	private static boolean RCP = false;
+	
 	public static void main(String[] args) {
 		// http://alias-i.com/lingpipe/demos/tutorial/classify/read-me.html
 		System.out.println("LOAD Model Newsgroup Model ... ");
@@ -30,11 +36,11 @@ public class AddCategoryScript {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		System.out.println("LOAD LingPipe 20 Newsgroup Model >>> DONE \n");
+		System.out.println("LOAD LingPipe 12 Newsgroup Model >>> DONE \n");
 		
 //		worker();
 		
-		Connection c = getConnection();
+		Connection c = DBManager.getConnection(LOCAL, RCP);
 		String query = "Select tweet_id, tweet_content from "+tweet_table+" where category is null";
 		try {
 			c.setAutoCommit(false);
@@ -44,11 +50,13 @@ public class AddCategoryScript {
 			list = new ArrayList<>();
 			int counter = 0;
 			while (rs.next()) {
+				counter++;
 				long id = Long.parseLong(rs.getString(1));
 				String text = rs.getString(2);
+				if (text == null || text.isEmpty())
+					continue;
 				Tuple<Long, String> tup = new Tuple<>(id, text);
 				list.add(tup);
-				counter++;
 				if ( counter == fetchsize) {
 					counter = 0;
 					addCategories(list);
@@ -60,12 +68,18 @@ public class AddCategoryScript {
 						System.out.print("-");
 				}
 			}
+			// add last
+			addCategories(list);
+			list.clear();
 		}  catch (SQLException e) {
 			e.printStackTrace();
 			
 			main(args);
 			
 		}
+		
+		System.out.println("\nADD Cagegories to table "+tweet_table+" ... COMPLETE");
+		
 	}
 	
 	public static class Tuple<A, B> {
@@ -107,7 +121,7 @@ public class AddCategoryScript {
 				classifier.getCategory(s.getB()))).collect(Collectors.toList());
 		
 		
-		Connection c = getConnection();
+		Connection c = DBManager.getConnection(LOCAL, RCP);
 		c.setAutoCommit(false);
 		
 		Statement st = c.createStatement();
@@ -124,28 +138,11 @@ public class AddCategoryScript {
 				counter = 0;
 			}
 		}
+		st.executeBatch();
+		c.commit();
+		
 		st.close();
 		c.close();
 	}
 	
-
-	private static Connection getConnection() {
-		Connection c = null;
-		String host = "db.dbvis.de";
-		String port = "5432";
-		String dbname = "socialoceandb";
-		String username = "socialocean";
-		String pw = "blFDvUic4DL0V3ODkvbK";
-		
-		String connection_str = "jdbc:postgresql://"+host+":"+port+"/"+dbname+"?ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory";
-		try {
-			c = DriverManager.getConnection(connection_str.trim(), username.trim(), pw.trim());
-		} catch (SQLException e) {
-			System.err.println("Could not connect to DB \n"
-					+ ""+connection_str);
-			e.printStackTrace();
-		}
-		return c;
-	}
-		
 }

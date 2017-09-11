@@ -12,9 +12,13 @@ public class Tweet {
 	 private String tweet_source = "";
 	 private boolean hasurl;
 	 private long user_id;
+	 private String user_screenname;
 	 private int positive;
 	 private int negative;
+	 private String sentiment;
 	 private String category = "";
+	 
+	 private String relationship = "";
 	 
 	 // ...
 	 
@@ -22,6 +26,29 @@ public class Tweet {
 		 tweet_id = id;
 	 }
 	 
+	 public String getSentiment() {
+		return sentiment;
+	}
+
+	public String getRelationship() {
+		return relationship;
+	}
+
+	public void setRelationship(String relationship) {
+		this.relationship = relationship;
+	}
+
+	public void setSentiment(String sentiment) {
+		this.sentiment = sentiment;
+	}
+
+	public void setUserScreenName(String name) {
+		 user_screenname = name;
+	 }
+	 
+	 public String getUserScreenName()	{
+		 return user_screenname;
+	 }
 	 
 	 public String getTweet_creationdate() {
 		return tweet_creationdate;

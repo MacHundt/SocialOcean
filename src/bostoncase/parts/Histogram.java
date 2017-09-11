@@ -13,10 +13,8 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
-import org.eclipse.swt.events.MouseTrackListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -24,15 +22,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.swtchart.Chart;
+import org.swtchart.IAxisTick;
 import org.swtchart.IBarSeries;
 import org.swtchart.ISeries;
 import org.swtchart.ISeries.SeriesType;
+import org.swtchart.LineStyle;
 
 import impl.GraphCreatorThread;
 import impl.TimeLineCreatorThread;
-
-import org.swtchart.LineStyle;
-
 import utils.HistogramEntry;
 import utils.Lucene;
 import utils.Lucene.TimeBin;
@@ -105,6 +102,10 @@ public class Histogram {
 				chart.getAxisSet().getYAxis(0).getTitle().setVisible(true); 
 //				Font font = chart.getAxisSet().getYAxis(0).getTitle().getFont();
 //				System.out.println(font.getFontData().toString());
+				IAxisTick xTick = chart.getAxisSet().getXAxis(0).getTick();
+				Font font = new Font(Display.getDefault(), "Arial", 16, SWT.NORMAL);
+				xTick.setFont(font);
+				
 				chart.getAxisSet().getXAxis(0).getGrid().setForeground(gray);
 				chart.getAxisSet().getYAxis(0).getGrid().setForeground(gray);
 				
@@ -143,7 +144,7 @@ public class Histogram {
 		ArrayList<HistogramEntry> arrEntry = new ArrayList<>(counter.size()); 
 		for (HistogramEntry e : counter.values())
 			arrEntry.add(e);
-		Collections.sort(arrEntry);
+		Collections.sort(arrEntry, Collections.reverseOrder());
 		
 		
 		prepareChart();
@@ -203,8 +204,9 @@ public class Histogram {
 				chart.redraw();
 				
 				Lucene l = Lucene.INSTANCE;
-				if (l.getColorScheme().equals(Lucene.ColorScheme.CATEGORY))
+				if (l.getColorScheme().equals(Lucene.ColorScheme.CATEGORY)) {
 					chart.getPlotArea().addListener(SWT.Paint, event -> changeBarColors(arrEntry, event, true));
+				}
 				else {
 					chart.getPlotArea().addListener(SWT.Paint, event -> changeBarColors(arrEntry, event, false));
 				}
@@ -217,7 +219,6 @@ public class Histogram {
 	}
 	
 	protected void mouseDoubleClicked(String[] categories, Event event) {
-		GC gc = event.gc;
 		
 		Rectangle rec = event.getBounds();
 		Point p = new Point(rec.x, rec.y);
@@ -258,6 +259,7 @@ public class Histogram {
 					@Override
 					public void execute() {
 						l.changeTimeLine(TimeBin.HOURS);
+//						l.changeTimeLine(TimeBin.MINUTES);
 					}
 				};
 				lilt.start();
@@ -275,7 +277,7 @@ public class Histogram {
 				l.showInMap(result, true);
 				l.changeHistogramm(result);
 				
-				l.createGraphML_Mention(result, true);
+//				l.createGraphML_Mention(result, true);
 			}
 			
 		}
@@ -413,6 +415,7 @@ public class Histogram {
 				barSeries.getLabel().setFormat("##.0");
 				barSeries.setBarColor(gray);
 				
+				
 				barSeries.getLabel().setVisible(false);
 				
 				chart.getAxisSet().adjustRange();
@@ -441,53 +444,96 @@ public class Histogram {
 	}
 
 
-	private Color getCategoryColor(String category) {
+	public static Color getCategoryColor(String category) {
 		Color color = new Color(Display.getDefault(), 0, 0, 0);
 		
 		Color pink = new Color(Display.getDefault(), 250, 22, 129);		// Default
 		
 		switch (category.toLowerCase()) {
 		case "computers_technology":
-			color = new Color(Display.getDefault(), 228, 26, 28);
+			color = new Color(Display.getDefault(), 166,206,227);
 			break;
 		case "education":
-			color = new Color(Display.getDefault(), 102, 99, 14);
+			color = new Color(Display.getDefault(), 31,120,180);
 			break;
 		case "family":
-			color = new Color(Display.getDefault(), 65, 148, 134);
+			color = new Color(Display.getDefault(), 178,223,138);
 			break;
 		case "food":
-			color = new Color(Display.getDefault(), 91, 157, 90);
+			color = new Color(Display.getDefault(), 51,160,44);
 			break;
 		case "health":
-			color = new Color(Display.getDefault(), 145, 87, 155);
+			color = new Color(Display.getDefault(), 251,154,153);
 			break;
 		case "marketing":
-			color = new Color(Display.getDefault(), 218, 109, 59);
+			color = new Color(Display.getDefault(), 227,26,28);
 			break;
 		case "music":
-			color = new Color(Display.getDefault(), 255, 174, 19);
+			color = new Color(Display.getDefault(), 253,191,111);
 			break;
 		case "news_media":
-			color = new Color(Display.getDefault(), 247, 240, 50);
+			color = new Color(Display.getDefault(), 255,127,0);
 			break;
 		case "other":
-			color = new Color(Display.getDefault(), 182, 117, 42);
+			color = new Color(Display.getDefault(), 202,178,214);
 			break;
 		case "pets":
-			color = new Color(Display.getDefault(), 210, 109, 122);
+			color = new Color(Display.getDefault(), 106,61,154);
 			break;
 		case "politics":
-			color = new Color(Display.getDefault(), 221, 136, 181);
+			color = new Color(Display.getDefault(), 255,255,153);
 			break;
 		case "recreation_sports":
-			color = new Color(Display.getDefault(), 153, 153, 153);
+			color = new Color(Display.getDefault(), 177,89,40);
 			break;
 
 		default:
 			color = pink;
 			break;
 		}
+		
+//		switch (category.toLowerCase()) {
+//		case "computers_technology":
+//			color = new Color(Display.getDefault(), 228, 26, 28);
+//			break;
+//		case "education":
+//			color = new Color(Display.getDefault(), 102, 99, 14);
+//			break;
+//		case "family":
+//			color = new Color(Display.getDefault(), 65, 148, 134);
+//			break;
+//		case "food":
+//			color = new Color(Display.getDefault(), 91, 157, 90);
+//			break;
+//		case "health":
+//			color = new Color(Display.getDefault(), 145, 87, 155);
+//			break;
+//		case "marketing":
+//			color = new Color(Display.getDefault(), 218, 109, 59);
+//			break;
+//		case "music":
+//			color = new Color(Display.getDefault(), 255, 174, 19);
+//			break;
+//		case "news_media":
+//			color = new Color(Display.getDefault(), 247, 240, 50);
+//			break;
+//		case "other":
+//			color = new Color(Display.getDefault(), 182, 117, 42);
+//			break;
+//		case "pets":
+//			color = new Color(Display.getDefault(), 210, 109, 122);
+//			break;
+//		case "politics":
+//			color = new Color(Display.getDefault(), 221, 136, 181);
+//			break;
+//		case "recreation_sports":
+//			color = new Color(Display.getDefault(), 153, 153, 153);
+//			break;
+//
+//		default:
+//			color = pink;
+//			break;
+//		}
 		
 		return color;
 	}

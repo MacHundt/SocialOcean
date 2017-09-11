@@ -61,6 +61,21 @@ public class MapPanelCreator {
 	private static ImageIcon tweetIcon_n;
 	private static ImageIcon tweetIcon_;
 	
+	private static ImageIcon tweetIcon_health;
+	private static ImageIcon tweetIcon_pets;
+	private static ImageIcon tweetIcon_music;
+	private static ImageIcon tweetIcon_family;
+	private static ImageIcon tweetIcon_politics;
+	private static ImageIcon tweetIcon_marketing;
+	private static ImageIcon tweetIcon_education;
+	private static ImageIcon tweetIcon_rec_sport;
+	private static ImageIcon tweetIcon_news;
+	private static ImageIcon tweetIcon_computer;
+	private static ImageIcon tweetIcon_food;
+	private static ImageIcon tweetIcon_other;
+	
+	
+	
 	private static boolean loadedIcons = false;
 	
 	private static Point startPoint;
@@ -71,7 +86,7 @@ public class MapPanelCreator {
 	
 	public static void loadTweetIcons() {
 		// ## LOAD Icons
-//		ImageDescriptor st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/tweet.png");
+//		ImageDescriptor st = AbstractUIPlugin.imageDescriptorFromPlugin("SocialOcean", "icons/tweet.png");
 //		ImageDescriptor st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/neutral.png");
 //		org.eclipse.swt.graphics.Image img = st.createImage();
 //		BufferedImage image = Swing_SWT.convertToAWT(img.getImageData());
@@ -79,19 +94,48 @@ public class MapPanelCreator {
 		BufferedImage image = FilesUtil.readIconFile("icons/neutral24y.png");
 		tweetIcon_ = new ImageIcon(image);
 
-//		st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/tweetn.png");
-//		st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/neg.png");
-//		img = st.createImage();
-//		image = Swing_SWT.convertToAWT(img.getImageData());
 		image = FilesUtil.readIconFile("icons/neg24_icon.png");
 		tweetIcon_n = new ImageIcon(image);
 
-//		st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/tweetp.png");
-//		st = AbstractUIPlugin.imageDescriptorFromPlugin("BostonCase", "icons/pos.png");
-//		img = st.createImage();
-//		image = Swing_SWT.convertToAWT(img.getImageData());
 		image = FilesUtil.readIconFile("icons/pos_24.png");
 		tweetIcon_p = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/cat_icons/health24.png");
+		tweetIcon_health = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/cat_icons/pets24.png");
+		tweetIcon_pets = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/cat_icons/music24.png");
+		tweetIcon_music = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/cat_icons/family24.png");
+		tweetIcon_family = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/cat_icons/politics24.png");
+		tweetIcon_politics = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/cat_icons/marketing24.png");
+		tweetIcon_marketing = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/cat_icons/education24.png");
+		tweetIcon_education = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/cat_icons/sports24.png");
+		tweetIcon_rec_sport = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/cat_icons/news24.png");
+		tweetIcon_news = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/cat_icons/computer24.png");
+		tweetIcon_computer = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/cat_icons/food24.png");
+		tweetIcon_food = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/cat_icons/other24.png");
+		tweetIcon_other = new ImageIcon(image);
+		
 
 	}
 	
@@ -242,6 +286,7 @@ public class MapPanelCreator {
 							@Override
 							public void execute() {
 								l.changeTimeLine(TimeBin.HOURS);
+//								l.changeTimeLine(TimeBin.MINUTES);
 							}
 						};
 						lilt.start();
@@ -454,7 +499,7 @@ public class MapPanelCreator {
 	}
 	
 
-	public static TweetWayPoint createTweetWayPoint(String label, String sentiment, double lat, double lon ) {
+	public static TweetWayPoint createTweetWayPoint(String label, String type, double lat, double lon ) {
 		
 		if (!loadedIcons) {
 			loadTweetIcons();
@@ -465,12 +510,67 @@ public class MapPanelCreator {
 		
 		ImageIcon icon = null;
 		// Check the sentiment for the right icon
-		if (sentiment.equals("positive"))
+//		if (sentiment.equals("positive"))
+//			icon = tweetIcon_p;
+//		else if (sentiment.equals("negative")) 
+//			icon = tweetIcon_n;
+//		else 
+//			icon = tweetIcon_;
+		
+		switch (type.toLowerCase()) {
+		case "pos":
 			icon = tweetIcon_p;
-		else if (sentiment.equals("negative")) 
+			break;
+		case "neg":
 			icon = tweetIcon_n;
-		else 
+			break;
+		case "neu":
 			icon = tweetIcon_;
+			break;
+			
+		case "family":
+			icon = tweetIcon_family;
+			break;
+		case "food":
+			icon = tweetIcon_food;
+			break;
+		case "computers_technology":
+			icon = tweetIcon_computer;
+			break;
+		case "other":
+			icon = tweetIcon_other;
+			break;
+		case "recreation_sports":
+			icon = tweetIcon_rec_sport;
+			break;
+		case "politics":
+			icon = tweetIcon_politics;
+			break;
+		case "marketing":
+			icon = tweetIcon_marketing;
+			break;
+		case "education":
+			icon = tweetIcon_education;
+			break;
+		case "pets":
+			icon = tweetIcon_pets;
+			break;
+		case "health":
+			icon = tweetIcon_health;
+			break;
+		case "news_media":
+			icon = tweetIcon_news;
+			break;
+		case "music":
+			icon = tweetIcon_music;
+			break;
+
+		default:
+			icon = tweetIcon_;
+			break;
+		}
+		
+
 			
 		return new TweetWayPoint(label, icon, geo);
 	}

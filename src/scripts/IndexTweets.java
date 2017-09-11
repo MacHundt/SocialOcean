@@ -5,7 +5,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -35,20 +34,20 @@ public class IndexTweets {
 	
 	private static int Fetchsize = 10000;
 	
-	private static LocalDate mindate = LocalDate.of(2013, 4, 14);
-	private static LocalDate maxdate = LocalDate.of(2013, 4, 24);
-	
 //	private static String TWEETDATA = "tweetdata";
-	private static String TWEETDATA = "bb_tweets";
-	private static String USERS = "users";
-	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/lucene_index_tweets/";
+//	private static String TWEETDATA = "bb_tweets";
+	private static String TWEETDATA = "nodexl_ohsen_tweets";
+//	private static String USERS = "users";
+//	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/lucene_index_tweets/";
+	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/lucene_index_nodexlOHSEN/";
 
+	private static boolean LOCAL = true;
+	
 	// index all tweets from DB
 	public static void main(String[] args) {
 		
-		Connection c = DBManager.getConnection(false, false);
+		Connection c = DBManager.getConnection(LOCAL, false);
 		boolean create = true;	// create new Index
-		
 		
 		Date start = new Date();
 		System.out.println("Indexing to directory '" + indexPath + "'...");
@@ -75,22 +74,39 @@ public class IndexTweets {
 			Statement stmt = c.createStatement();
 			stmt.setFetchSize(Fetchsize);
 			
+//			String query = "Select "
+//					+ "tweet_id, "
+//					+ "tweet_creationdate, "
+//					+ "tweet_content,"
+//					+ "tweet_replytostatus,"
+//					+ "latitude, "
+//					+ "longitude, "
+//					+ "tweet_source, "
+//					+ "hasurl, "
+//					+ "user_id, "
+//					+ "user_screenname, "
+//					+ "positive, "
+//					+ "negative, "
+//					+ "category, "
+//					+ "sentiment "
+//					+ "from "+TWEETDATA;
+			
 			String query = "Select "
 					+ "tweet_id, "
 					+ "tweet_creationdate, "
-					+ "tweet_content,"
-					+ "tweet_replytostatus,"
+					+ "tweet_content, "
+					+ "relationship, "
 					+ "latitude, "
 					+ "longitude, "
-					+ "tweet_source, "
 					+ "hasurl, "
-					+ "user_id, "
+					+ "source, "
 					+ "positive, "
 					+ "negative, "
-					+ "category "
+					+ "category, "
+					+ "sentiment "
 					+ "from "+TWEETDATA;
 			
-			
+			  
 			ResultSet rs = stmt.executeQuery(query);
 			
 			ArrayList<Tweet> tweets = new ArrayList<>(Fetchsize);
@@ -98,21 +114,36 @@ public class IndexTweets {
 			int doc_counter = 0;
 			int counter = 0;
 			int stat = 1;
-//			int topX = 2;
+//			int topX = 1;
 			while (rs.next()) {
 				counter++;
-				Tweet t = new Tweet(rs.getString(1));
-				t.setTweet_creationdate(rs.getString(2));
-				t.setTweet_content(rs.getString(3));
-				t.setTweet_replytostatus(rs.getLong(4));
-				t.setLatitude(rs.getDouble(5));
-				t.setLongitude(rs.getDouble(6));
-				t.setTweet_source(rs.getString(7));
-				t.setHasurl(rs.getBoolean(8));
-				t.setUser_id(rs.getLong(9));
-				t.setPositive(rs.getInt(10));
-				t.setNegative(rs.getInt(11));
-				t.setCategory((rs.getString(12) != null) ? rs.getString(12) : "Other");
+//				Tweet t = new Tweet(rs.getString(1));
+//				t.setTweet_creationdate(rs.getString(2));
+//				t.setTweet_content(rs.getString(3));
+//				t.setTweet_replytostatus(rs.getLong(4));
+//				t.setLatitude(rs.getDouble(5));
+//				t.setLongitude(rs.getDouble(6));
+//				t.setTweet_source(rs.getString(7));
+//				t.setHasurl(rs.getBoolean(8));
+//				t.setUser_id(rs.getLong(9));
+//				t.setUserScreenName(rs.getString(10));
+//				t.setPositive(rs.getInt(11));
+//				t.setNegative(rs.getInt(12));
+//				t.setCategory((rs.getString(13) != null) ? rs.getString(13) : "Other");
+//				t.setSentiment((rs.getString(14) != null) ? rs.getString(14) : "neu");
+				
+				Tweet t = new Tweet(rs.getString("tweet_id"));
+				t.setTweet_creationdate(rs.getString("tweet_creationdate"));
+				t.setTweet_content(rs.getString("tweet_content"));
+				t.setRelationship(rs.getString("relationship"));
+				t.setLatitude(rs.getDouble("latitude"));
+				t.setLongitude(rs.getDouble("longitude"));
+				t.setHasurl(rs.getBoolean("hasurl"));
+				t.setUserScreenName(rs.getString("source"));
+				t.setPositive(rs.getInt("positive"));
+				t.setNegative(rs.getInt("negative"));
+				t.setCategory((rs.getString("category") != null) ? rs.getString(11) : "other");
+				t.setSentiment((rs.getString("sentiment") != null) ? rs.getString(12) : "neu");
 				
 				tweets.add(t);
 				
@@ -133,8 +164,6 @@ public class IndexTweets {
 				}
 			}
 			
-			
-			
 			writer.close();
 
 			Date end = new Date();
@@ -151,7 +180,6 @@ public class IndexTweets {
 			e.printStackTrace();
 		}
 		
-		
 	}
 	
 	
@@ -166,46 +194,61 @@ public class IndexTweets {
 		double longi = 0;
 		double lati = 0;
 		String category = "";
-		String sentiment_string = "neutral";
 		for (Tweet t : tweets) {
 			doc.clear();
-
+			// type
+			doc.add(new StringField("type", "twitter", Field.Store.YES));
 			doc.add(new StringField("id", t.getTweet_id(), Field.Store.YES));
-			doc.add(new StringField("isRetweet", (t.getTweet_replytostatus() > 0) ? "true" : "false", Field.Store.YES));
+			
+			
+//			doc.add(new StringField("isRetweet", (t.getTweet_replytostatus() > 0) ? "true" : "false", Field.Store.NO));
+			doc.add(new StringField("relationship", t.getRelationship(), Field.Store.YES));
+
+			
 			category = t.getCategory();
 			category = category.replace(" & ", "_").toLowerCase();
 			doc.add(new StringField("category", category, Field.Store.YES));
+		
+			doc.add(new StringField("hasURL", (t.isHasurl())? "true" : "false" , Field.Store.YES));
 			
-			// type
-			Field typeField = new StringField("type", "twitter", Field.Store.YES);
-			doc.add(typeField);
+			// User_ScreenName
+			doc.add(new StringField("name", t.getUserScreenName(), Field.Store.YES));
 			
-			// sentiment
-			int neg = t.getNegative();
-			int pos = t.getPositive();
-			int sentiment = pos + neg;
-			if (sentiment == -1)
-				sentiment_string = "negative";		// for negative
-			else if (sentiment == 1) 
-				sentiment_string = "positive";
-			else 
-				sentiment_string = "neutral";
+			// TweetSource
+//			doc.add(new StringField("source", t.getTweet_source(), Field.Store.YES));
 			
-			doc.add(new StringField("sentiment", sentiment_string, Field.Store.YES));
-
+//			// User_id
+//			doc.add(new StringField("uid", t.getUser_id()+"", Field.Store.YES));
+			
+			// Sentiment
+			doc.add(new StringField("sentiment", t.getSentiment(), Field.Store.YES));
+			doc.add(new StringField("neg", t.getNegative()+"", Field.Store.YES));
+			doc.add(new StringField("pos", t.getPositive()+"", Field.Store.YES));
+//			doc.add(new IntPoint("neg",t.getNegative()));
+//			doc.add(new StoredField("neg", t.getNegative()));
+//			doc.add(new IntPoint("pos",t.getPositive()));
+//			doc.add(new StoredField("pos", t.getPositive()));
+			
 			// # tags
 			content = t.getTweet_content();
+			
+			if (content == null)
+				continue;
+			
 			tags = getTagsFromTweets(content);
 			;
-			TextField tag_field = new TextField("tags", tags, Field.Store.NO);
+			TextField tag_field = new TextField("tags", tags, Field.Store.YES);
 			doc.add(tag_field);
 
 			// @ mentions
 			mentions = getMentionsFromTweets(content);
+			StringField hasMention = new StringField("has@", (mentions.isEmpty()) ? "false" : "true", Field.Store.YES);
+			doc.add(hasMention);
 			TextField mention_field = new TextField("mention", mentions, Field.Store.NO);
-
 			doc.add(mention_field);
-			doc.add(new StringField("has@", (!mentions.isEmpty()) ? "true" : "false", Field.Store.YES));
+
+//			doc.add(mention_field);
+//			doc.add(new StringField("has@", (!mentions.isEmpty()) ? "true" : "false", Field.Store.YES));
 
 			// fulltext
 			content = content.replaceAll("\"", "");
@@ -302,6 +345,7 @@ public class IndexTweets {
 				output += token.substring(1) + " ";
 			}
 		}
+		output = output.replace(":", "");
 		return output.trim();
 	}
 
