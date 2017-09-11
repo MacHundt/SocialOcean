@@ -1,5 +1,5 @@
  
-package bostoncase.parts;
+package socialocean.parts;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -34,7 +34,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
 
-import bostoncase.handlers.LuceneSearchHandler;
+import socialocean.handlers.LuceneSearchHandler;
 import utils.Lucene;
 
 public class LuceneSearch {

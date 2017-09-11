@@ -1,4 +1,4 @@
-package bostoncase.parts;
+package socialocean.parts;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
