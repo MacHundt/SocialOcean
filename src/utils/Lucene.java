@@ -1506,8 +1506,6 @@ public enum Lucene {
 	}
 	
 	
-	
-	
 
 	public void setQeryType(String text) {
 		query_type = text;
