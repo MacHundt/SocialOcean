@@ -35,13 +35,11 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.time.Hour;
-import org.jfree.data.time.Minute;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.time.TimeSeriesDataItem;
 
 import impl.GraphCreatorThread;
-import javafx.util.converter.NumberStringConverter;
 import utils.Lucene;
 import utils.TimeLineHelper;
 

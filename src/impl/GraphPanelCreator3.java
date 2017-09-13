@@ -142,7 +142,7 @@ public class GraphPanelCreator3 {
 							}
 						}
 						
-						System.out.println("Cahnged !! >> "+selected);
+						System.out.println("Changed !! >> "+selected);
 						l.showSelectionInMap(edges, true);
 						l.showSelectionInHistogramm(edges);
 					}
@@ -170,7 +170,13 @@ public class GraphPanelCreator3 {
 					{
 						if(cell instanceof mxCell) {
 							if (((mxCell)cell).getValue() instanceof MyUser) {
-								System.out.println("YES -- I can access all fields");
+								String name = ((MyUser)((mxCell)cell).getValue()).toString();
+								System.out.println("User: "+name);
+							}
+							
+							if (((mxCell)cell).getValue() instanceof MyEdge) {
+								String content = ((MyEdge)((mxCell)cell).getValue()).getContent();
+								System.out.println("Edge: "+content);
 							}
 						}
 							
