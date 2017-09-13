@@ -21,7 +21,7 @@ public class MyEdge {
 	private boolean hasGeo = false;
 	private double latitude;
 	private double longitude;
-	private String relationsip;
+	private String relationsip ="";
 	private String category;
 	private Date date;
 	
