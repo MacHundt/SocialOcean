@@ -39,7 +39,7 @@ import utils.Lucene;
 
 public class LuceneSearch {
 	
-	public static final String SEARCH_LUCENE_QUERY_COMMAND_ID = "bostoncase.command.lucenesearch";
+	public static final String SEARCH_LUCENE_QUERY_COMMAND_ID = "socialocean.command.lucenesearch";
 	
 	private Text text;
 //	private String luceneIndex = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/lucene_index";

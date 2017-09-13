@@ -87,6 +87,9 @@ public class OpenHandler {
 			
 			System.out.println("Get MinMax Dates ... DONE");
 			l.printToConsole("Get MinMax-Date ... DONE");
+			l.clearGraph();
+			l.clearMap();
+			l.clearQueryHistroy();
 			
 		} catch (IOException e1) {
 			e1.printStackTrace();
