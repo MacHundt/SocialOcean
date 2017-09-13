@@ -825,6 +825,7 @@ public enum Lucene {
 				continue;
 
 			field = (document.getField("category")).stringValue();
+			field = field.replace(" & ", "_").toLowerCase();
 //			String sentiment_str = (document.getField("sentiment")).stringValue();
 //			if (sentiment_str.equals("positive"))
 //				sentiment = 1.0;
@@ -1192,6 +1193,12 @@ public enum Lucene {
 		GraphPanelCreator3.createGraph(result, searcher, withMention, withFollows);
 		
 	}
+	
+	
+	public void changeEdgeColor() {
+		GraphPanelCreator3.changeEdgeColor();
+	}
+
 	
 	
 

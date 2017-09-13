@@ -171,16 +171,16 @@ public class GraphPanelCreator3 {
 						if(cell instanceof mxCell) {
 							if (((mxCell)cell).getValue() instanceof MyUser) {
 								String name = ((MyUser)((mxCell)cell).getValue()).toString();
-								System.out.println("User: "+name);
+//								System.out.println("User: "+name);
 							}
 							
 							if (((mxCell)cell).getValue() instanceof MyEdge) {
 								String content = ((MyEdge)((mxCell)cell).getValue()).getContent();
-								System.out.println("Edge: "+content);
+//								System.out.println("Edge: "+content);
 							}
 						}
 							
-						System.out.println("cell="+graph.getLabel(cell));
+//						System.out.println("cell="+graph.getLabel(cell));
 					}
 				}
 				
@@ -406,6 +406,7 @@ public class GraphPanelCreator3 {
 					content = rs.getString(2);
 					sentiment = rs.getString(3);
 					category = rs.getString(4);
+					category = category.replace(" & ", "_").toLowerCase();
 					hasUrl = rs.getBoolean(5);
 					relationship = rs.getString(6);
 					// DATE
@@ -566,6 +567,7 @@ public class GraphPanelCreator3 {
 
 						edge = new MyEdge(id);
 						((MyEdge) edge).addCredibility(edgeCredebility);
+						category = category.replace(" & ", "_").toLowerCase();
 						((MyEdge) edge).addCategory(category);
 						((MyEdge) edge).addSentiment(sentiment);
 						((MyEdge) edge).addDate(date);
@@ -920,6 +922,7 @@ public class GraphPanelCreator3 {
 					((MyEdge) edge).addCategory("");
 					((MyEdge) edge).addSentiment("neu");
 					((MyEdge) edge).addDate(null);
+					((MyEdge) edge).setRelationsip("Followed");
 					
 					if (hasGeo)
 						((MyEdge) edge).addPoint(lat, lon);
@@ -1095,6 +1098,57 @@ public class GraphPanelCreator3 {
 
 	        return sortedMap;
 	    }
+
+	 
+	public static void changeEdgeColor() {
+		
+		Object[] edges = graph.getChildEdges(parent);
+		
+		graph.getModel().beginUpdate();
+		for (Object edge : edges) {
+			MyEdge ed = ((MyEdge)((mxCell)edge).getValue());
+			String category = ed.getCategory();
+			String sentiment = ed.getSentiment();
+			String relationship = ed.getRelationsip();
+			
+			
+		 	Lucene l = Lucene.INSTANCE;
+			// get Colors
+			String colorString = "";
+			
+			if (l.getColorScheme().equals(Lucene.ColorScheme.CATEGORY)) {
+				Color color = Histogram.getCategoryColor(category);
+				colorString = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
+			} else {
+				Color color = new Color(Display.getDefault(), 255, 255, 191);
+				colorString = "#fee08b";
+				// colorString = String.format("#%02x%02x%02x", color.getRed(),
+				// color.getGreen(), color.getBlue());
+
+				if (sentiment.equals("pos")) {
+					color = color = new Color(Display.getDefault(), 26, 152, 80);
+					// colorString = "green";
+					colorString = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
+				} else if (sentiment.equals("neg")) {
+					color = color = new Color(Display.getDefault(), 215, 48, 39);
+					// colorString = "red";
+					colorString = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
+				}
+			}
+			
+			if (relationship.equals("Followed"))
+				((mxCell)edge).setStyle("FollowEdge");
+			else
+			((mxCell)edge).setStyle("edgeStyle=elbowEdgeStyle;elbow=horizontal;" + "STYLE_PERIMETER_SPACING;"+"strokeColor="+colorString);
+			
+		}
+		
+		graph.getModel().endUpdate();
+		graph.refresh();
+		
+		
+		
+	}
 
 
 }

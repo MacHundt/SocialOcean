@@ -36,10 +36,10 @@ public class IndexTweets {
 	
 //	private static String TWEETDATA = "tweetdata";
 //	private static String TWEETDATA = "bb_tweets";
-	private static String TWEETDATA = "nodexl_ohsen_tweets";
+	private static String TWEETDATA = "nodexl_my2k_tweets";
 //	private static String USERS = "users";
 //	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/lucene_index_tweets/";
-	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/lucene_index_nodexlOHSEN/";
+	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/lucene_index_nodexl/";
 
 	private static boolean LOCAL = true;
 	
@@ -173,10 +173,8 @@ public class IndexTweets {
 			
 			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -203,58 +201,97 @@ public class IndexTweets {
 			
 //			doc.add(new StringField("isRetweet", (t.getTweet_replytostatus() > 0) ? "true" : "false", Field.Store.NO));
 			doc.add(new StringField("relationship", t.getRelationship(), Field.Store.YES));
-
-			
-			category = t.getCategory();
-			category = category.replace(" & ", "_").toLowerCase();
-			doc.add(new StringField("category", category, Field.Store.YES));
-		
-			doc.add(new StringField("hasURL", (t.isHasurl())? "true" : "false" , Field.Store.YES));
 			
 			// User_ScreenName
 			doc.add(new StringField("name", t.getUserScreenName(), Field.Store.YES));
 			
-			// TweetSource
-//			doc.add(new StringField("source", t.getTweet_source(), Field.Store.YES));
-			
-//			// User_id
-//			doc.add(new StringField("uid", t.getUser_id()+"", Field.Store.YES));
-			
-			// Sentiment
-			doc.add(new StringField("sentiment", t.getSentiment(), Field.Store.YES));
-			doc.add(new StringField("neg", t.getNegative()+"", Field.Store.YES));
-			doc.add(new StringField("pos", t.getPositive()+"", Field.Store.YES));
-//			doc.add(new IntPoint("neg",t.getNegative()));
-//			doc.add(new StoredField("neg", t.getNegative()));
-//			doc.add(new IntPoint("pos",t.getPositive()));
-//			doc.add(new StoredField("pos", t.getPositive()));
 			
 			// # tags
 			content = t.getTweet_content();
 			
-			if (content == null)
-				continue;
+			if (content != null) {
 			
-			tags = getTagsFromTweets(content);
-			;
-			TextField tag_field = new TextField("tags", tags, Field.Store.YES);
-			doc.add(tag_field);
+				tags = getTagsFromTweets(content);
+				TextField tag_field = new TextField("tags", tags, Field.Store.YES);
+				doc.add(tag_field);
 
-			// @ mentions
-			mentions = getMentionsFromTweets(content);
-			StringField hasMention = new StringField("has@", (mentions.isEmpty()) ? "false" : "true", Field.Store.YES);
-			doc.add(hasMention);
-			TextField mention_field = new TextField("mention", mentions, Field.Store.NO);
-			doc.add(mention_field);
+				// @ mentions
+				mentions = getMentionsFromTweets(content);
+				StringField hasMention = new StringField("has@", (mentions.isEmpty()) ? "false" : "true", Field.Store.YES);
+				doc.add(hasMention);
+				TextField mention_field = new TextField("mention", mentions, Field.Store.NO);
+				doc.add(mention_field);
 
-//			doc.add(mention_field);
-//			doc.add(new StringField("has@", (!mentions.isEmpty()) ? "true" : "false", Field.Store.YES));
+//				doc.add(mention_field);
+//				doc.add(new StringField("has@", (!mentions.isEmpty()) ? "true" : "false", Field.Store.YES));
 
-			// fulltext
-			content = content.replaceAll("\"", "");
-			TextField content_field = new TextField("content", content, Field.Store.NO);
-			doc.add(content_field);
+				// fulltext
+				content = content.replaceAll("\"", "");
+				TextField content_field = new TextField("content", content, Field.Store.NO);
+				doc.add(content_field);
+				
+				category = t.getCategory();
+				category = category.replace(" & ", "_").toLowerCase();
+				doc.add(new StringField("category", category, Field.Store.YES));
+			
+				doc.add(new StringField("hasURL", (t.isHasurl())? "true" : "false" , Field.Store.YES));
+				
+				// TweetSource
+//				doc.add(new StringField("source", t.getTweet_source(), Field.Store.YES));
+				
+//				// User_id
+//				doc.add(new StringField("uid", t.getUser_id()+"", Field.Store.YES));
+				
+				// Sentiment
+				doc.add(new StringField("sentiment", t.getSentiment(), Field.Store.YES));
+				doc.add(new StringField("neg", t.getNegative()+"", Field.Store.YES));
+				doc.add(new StringField("pos", t.getPositive()+"", Field.Store.YES));
+//				doc.add(new IntPoint("neg",t.getNegative()));
+//				doc.add(new StoredField("neg", t.getNegative()));
+//				doc.add(new IntPoint("pos",t.getPositive()));
+//				doc.add(new StoredField("pos", t.getPositive()));
+				
+				
+				// time
+				String[] datetime = t.getTweet_creationdate().split(" ");
+				String date_Str = datetime[0];
+				String time_Str = datetime[1];
+				String[] date_arr = date_Str.trim().split("-");
+				String[] time_arr = time_Str.trim().split(":");
+				if (date_arr.length == 3 && time_arr.length == 3) {
+					// DATE
+					int year = Integer.parseInt(date_arr[0]);
+					int month = Integer.parseInt(date_arr[1]);
+					int day = Integer.parseInt(date_arr[2]);
+					// TIME
+					int hour = Integer.parseInt(time_arr[0]);
+					int min = Integer.parseInt(time_arr[1]);
+					int sec = Integer.parseInt(time_arr[2]);
+					
+					LocalDate date = LocalDate.of(year, month, day);
+					LocalTime time = LocalTime.of(hour, min, sec);
+					
+//					boolean isbefor = date.isBefore(mindate);
+//					boolean isafter = date.isAfter(maxdate);
+//					
+//					if (isbefor || isafter ) {
+//						continue;
+//					}
+					
+					LocalDateTime dt = LocalDateTime.of(date, time);
+					long utc_time = dt.toEpochSecond(ZoneOffset.UTC);
+//					String date_str = DateTools.dateToString(dt, Resolution.SECOND);
+					doc.add(new StringField("date", ""+utc_time , Field.Store.YES ));
+					
+				} else {
+					continue;
+				}
 
+			}
+			else {
+				continue;
+			}
+			
 			// geo
 			lati = t.getLatitude();
 			longi = t.getLongitude();
@@ -264,42 +301,6 @@ public class IndexTweets {
 
 			GeoPointField geo = new GeoPointField("geo", lati, longi, GeoPointField.Store.YES);
 			doc.add(geo);
-			
-			
-			// time
-			String[] datetime = t.getTweet_creationdate().split(" ");
-			String date_Str = datetime[0];
-			String time_Str = datetime[1];
-			String[] date_arr = date_Str.trim().split("-");
-			String[] time_arr = time_Str.trim().split(":");
-			if (date_arr.length == 3 && time_arr.length == 3) {
-				// DATE
-				int year = Integer.parseInt(date_arr[0]);
-				int month = Integer.parseInt(date_arr[1]);
-				int day = Integer.parseInt(date_arr[2]);
-				// TIME
-				int hour = Integer.parseInt(time_arr[0]);
-				int min = Integer.parseInt(time_arr[1]);
-				int sec = Integer.parseInt(time_arr[2]);
-				
-				LocalDate date = LocalDate.of(year, month, day);
-				LocalTime time = LocalTime.of(hour, min, sec);
-				
-//				boolean isbefor = date.isBefore(mindate);
-//				boolean isafter = date.isAfter(maxdate);
-//				
-//				if (isbefor || isafter ) {
-//					continue;
-//				}
-				
-				LocalDateTime dt = LocalDateTime.of(date, time);
-				long utc_time = dt.toEpochSecond(ZoneOffset.UTC);
-//				String date_str = DateTools.dateToString(dt, Resolution.SECOND);
-				doc.add(new StringField("date", ""+utc_time , Field.Store.YES ));
-				
-			} else {
-				continue;
-			}
 			
 
 			if (writer.getConfig().getOpenMode() == OpenMode.CREATE) {

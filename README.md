@@ -31,7 +31,8 @@ Depending on the system that you use, you may have to adapt the configuration of
 But first try to change the settings at:
 
 	SocialOcean.product --> Configuration --> Configuration File (maxosx, solaris, win32)
-If this doesn't work, change go to:
+	SocialOcean.product --> Contents --> Add Required Plug-ins
+If this doesn't work, go to:
 
 	targetPlatform --> SocialOcean.target --> Environment --> Target Environment
 and change the settings and click *Set as Target Platform*.
@@ -41,11 +42,55 @@ The folder *example* includes a Lucene Index and a Postgres backup file.
 
 - Create a database
 - Load the .backup file into your database.
-	- Section #1 (Pre-data, Daten, Post-data)
-
+	- PgAdmin: right click on database --> 'Wiederherstellen.. (restore database..)' --> my2k.backup 
+- Enter your login data into the settings/db\_config\_template.properties file and save it as settings/**db\_config.properties**
 
 ## Pre-Processing
 
+There are three scripts, that offer some basic pre-processing.
+
+	src/scripts:
+		(1) AddCategoryScript.java
+		(2) AddCategoryScript.java
+		(3) IndexTweets.java
+
+The first two (1) und (2) scripts need the following database fields:
+
+	tweet_id, long
+	tweet_content,  String
+
+The indexing scripts (3) in the current form needs the following database fields:
+
+	tweet_id, 				long
+	tweet_creationdate, 	String, timestamp of the form "yyyy-dd-MM hh:mm:ss", example: "2013-08-01 01:15:00"
+	tweet_content, 			String
+	relationship, 			String (Tweet, Followed)
+	latitude, 				double
+	longitude, 				double
+	hasurl, 				boolean
+	source, 				String (=user_screenname)
+	positive, 				int (result of SentiStrength.jar)
+	negative, 				int (result of SentiStrength.jar)
+	category, 				String (from AddCategoryScript.java)
+	sentiment, 				String (from AddCategoryScript.java)
+
+and yields the following indexed Lucene fields:
+
+- type, StringField: what data type are you indexing. Here we use "twitter".
+- id, StringField: we store the individual tweet\_id
+- relationship
+- category, StringField
+- hasURL, StringField: boolean
+- name, StringField: the user\_screenname
+- sentiment, StringField (pos, neg, neu)
+- neg, StringField
+- pos, StringField
+- tags, TextField: all #tags
+- mention, TextField: all @mentions
+- content, TextField: the tweet content
+- geo, GeoPointField: taken from latitude and longitude
+
+Depending on the data sources you use, you could change and adapt these fields.
 
 ## Used Libraries
 - Lucene
