@@ -76,19 +76,19 @@ The indexing scripts (3) in the current form needs the following database fields
 
 and yields the following indexed Lucene fields:
 
-- type, StringField: what data type are you indexing. Here we use "twitter".
-- id, StringField: we store the individual tweet\_id
-- relationship
-- category, StringField
-- hasURL, StringField: boolean
-- name, StringField: the user\_screenname
-- sentiment, StringField (pos, neg, neu)
-- neg, StringField
-- pos, StringField
-- tags, TextField: all #tags
-- mention, TextField: all @mentions
-- content, TextField: the tweet content
-- geo, GeoPointField: taken from latitude and longitude
+- **type**, StringField: what data type are you indexing. Here we use "twitter".
+- **id**, StringField: we store the individual tweet\_id
+- **relationship**
+- **category**, StringField
+- **hasURL**, StringField: boolean
+- **name**, StringField: the user\_screenname
+- **sentiment**, StringField (pos, neg, neu)
+- **neg**, StringField
+- **pos**, StringField
+- **tags**, TextField: all #tags
+- **mention**, TextField: all @mentions
+- **content**, TextField: the tweet content
+- **geo**, GeoPointField: taken from latitude and longitude
 
 Depending on the data sources you use, you could change and adapt these fields.
 
