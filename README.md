@@ -1,10 +1,13 @@
 # SocialOcean
 SocialOcean enables users to explore geo-tagged social media data.
-In the context of my Master Thesis, it is a tailored to Echo Chamber detection.
+In the context of my Master Thesis, it is tailored to Echo Chamber detection.
 Depending on the pre-processed features, it can be adapted for other purposes.
 The tool utilizes a Lucene index and a corresponding Postgres database.
 A script to create the Lucene index is included.
-This repository is an Eclipse RCP project. So it possible to add further plugins.
+This repository is an Eclipse RCP project. So it possibles plugin-creation.
+
+![SocialOcean Tool Interface](./tool.png)
+
 
 The initial idea and a prototype was presented at the EuroVis2017.
 A demonstration video, a poster and a short paper can be downloaded at: [http://socialocean.dbvis.de/eurovis2017/](http://socialocean.dbvis.de/eurovis2017/)
@@ -91,6 +94,9 @@ and yields the following indexed Lucene fields:
 - **geo**, GeoPointField: taken from latitude and longitude
 
 Depending on the data sources you use, you could change and adapt these fields.
+
+
+## Workflow
 
 
 ## Further Reading
