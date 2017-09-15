@@ -4,7 +4,7 @@ In the context of my Master Thesis, it is tailored to Echo Chamber detection.
 Depending on the pre-processed features, it can be adapted for other purposes.
 The tool utilizes a Lucene index and a corresponding Postgres database.
 A script to create the Lucene index is included.
-This repository is an Eclipse RCP project. So it possibles plugin-creation.
+This repository is an Eclipse RCP project. So it enables plugin-creation.
 
 ![SocialOcean Tool Interface](./tool.png)
 
