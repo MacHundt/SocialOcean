@@ -12,7 +12,7 @@ A demonstration video, a poster and a short paper can be downloaded at: [http://
 
 ## Installation
 
-###Downloads
+### Downloads
 
 - You will need a **Eclipse RCP** Version to run this project as an eclipse application:  
 [http://www.eclipse.org/downloads/packages/eclipse-rcp-and-rap-developers/neon3](http://www.eclipse.org/downloads/packages/eclipse-rcp-and-rap-developers/neon3)  
@@ -25,7 +25,7 @@ or from eclipse itself, see [**here**](http://wiki.eclipse.org/Eclipse4/RCP).
 
 - **Clone** this git reporsitory and import the project into Eclipse.
 
-###Setup
+### Setup
 
 Depending on the system that you use, you may have to adapt the configuration of the target **platform**.
 But first try to change the settings at:
