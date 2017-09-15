@@ -58,7 +58,7 @@ public class TopSelectionPart {
 //			"isRetweet", "mention", "sentiment", "tags", "user_id", "user_name"};
 	
 	// The details should be present in the Lucene Index!
-	public String[] detailsToShow = {"category", "content", "hasURL", "has@", "type", "neg", "pos", "mention", "sentiment", "tags", "name"};
+	public String[] detailsToShow = {"category", "content", "hasURL", "has@", "type", "neg", "pos", "mention", "sentiment", "tags", "name", "day"};
 	private DefaultTableModel detailsDataModel;
 	private int resultColumns = 3;
 	

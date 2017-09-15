@@ -283,6 +283,8 @@ public class IndexTweets {
 //					String date_str = DateTools.dateToString(dt, Resolution.SECOND);
 					doc.add(new StringField("date", ""+utc_time , Field.Store.YES ));
 					
+					doc.add(new StringField("day", dt.getDayOfWeek().toString().toLowerCase(), Field.Store.YES));
+					
 				} else {
 					continue;
 				}
