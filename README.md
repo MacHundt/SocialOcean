@@ -62,9 +62,9 @@ The first two (1) und (2) scripts need the following database fields:
 The indexing scripts (3) in the current form needs the following database fields:
 
 	tweet_id, 			long
-	tweet_creationdate,	String, timestamp of the form "yyyy-dd-MM hh:mm:ss", example: "2013-08-01 01:15:00"
-	tweet_content,		String
-	relationship,		String (Tweet, Followed)
+	tweet_creationdate,		String, timestamp of the form "yyyy-dd-MM hh:mm:ss", example: "2013-08-01 01:15:00"
+	tweet_content,			String
+	relationship,			String (Tweet, Followed)
 	latitude,			double
 	longitude, 			double
 	hasurl, 			boolean
