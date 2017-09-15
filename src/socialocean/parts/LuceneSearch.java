@@ -43,7 +43,6 @@ public class LuceneSearch {
 	
 	private Text text;
 //	private String luceneIndex = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/lucene_index";
-	private String luceneIndex = "";
 	
 	@Inject ECommandService commandService;
 	@Inject EHandlerService service;
@@ -166,7 +165,7 @@ public class LuceneSearch {
                     return;
                 Map<String, String> parameters = new HashMap<String, String>();
                 parameters.put("QueryString", query);
-                parameters.put("indexpath", luceneIndex);
+                parameters.put("indexpath", l.getLucenIndexPath());
                 
                 String type = "";
                 if (btnAdd.getSelection())
@@ -256,6 +255,8 @@ public class LuceneSearch {
 	@PreDestroy
 	public void preDestroy() {
 		
+		Lucene l = Lucene.INSTANCE;
+		String luceneIndex = l.getLucenIndexPath();
 		String tempPath = luceneIndex.substring(0, luceneIndex.lastIndexOf("/")+1);
 		
 		System.out.println("Clean up the temp folder ...");
