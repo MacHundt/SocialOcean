@@ -262,6 +262,11 @@ public enum Lucene {
 		this.querySearcher = querySearcher;
 		querySearcher.initQuerySearcher(searcher, analyzer);
 	}
+	
+	
+	public String getLucenIndexPath() {
+		return luceneIndex;
+	}
 
 	public void printToConsole(String msg) {
 		while (!Console.isInitialized) {
@@ -1696,7 +1701,7 @@ public enum Lucene {
 			URL url = null;
 			try {
 			  url = new URL("platform:/plugin/"
-			    + "BostonCase/"
+			    + "SocialOcean/"
 			    + "stopwords/stopwords.txt");
 
 			    } catch (MalformedURLException e1) {
