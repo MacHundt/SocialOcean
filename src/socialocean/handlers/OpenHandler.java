@@ -22,7 +22,7 @@ public class OpenHandler {
 		// FileDialog dialog = new FileDialog(shell);
 
 		DirectoryDialog dialog = new DirectoryDialog(shell);
-		dialog.setFilterPath("/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data"); // Windows
+		dialog.setFilterPath("/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/"); // Windows
 																										// specific
 
 		dialog.setText("Select path to the Lucene Index");

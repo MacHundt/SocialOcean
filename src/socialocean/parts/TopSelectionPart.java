@@ -58,7 +58,7 @@ public class TopSelectionPart {
 //			"isRetweet", "mention", "sentiment", "tags", "user_id", "user_name"};
 	
 	// The details should be present in the Lucene Index!
-	public String[] detailsToShow = {"category", "content", "hasURL", "has@", "type", "neg", "pos", "mention", "sentiment", "tags", "name", "day"};
+	public String[] detailsToShow = {"category", "content", "hasURL", "has@", "type", "neg", "pos", "mention", "sentiment", "source", "tags", "name", "day"};
 	private DefaultTableModel detailsDataModel;
 	private int resultColumns = 3;
 	
@@ -201,39 +201,41 @@ public class TopSelectionPart {
 				}
 				
 				// Query
-				ScoreDoc[] result = null;
-				Query q = null;
+//				ScoreDoc[] result = null;
+//				Query q = null;
 				try {
-					q = l.getParser().parse(query);
-					result = l.query(q, l.getQeryType(), true, true);
+					Query q = l.getParser().parse(query);
+					ScoreDoc[] result = l.query(q, l.getQeryType(), true, true);
+					
+					TimeLineCreatorThread lilt = new TimeLineCreatorThread(l) {
+						@Override
+						public void execute() {
+							l.changeTimeLine(TimeBin.HOURS);
+//						l.changeTimeLine(TimeBin.MINUTES);
+						}
+					};
+					lilt.start();
+					
+					GraphCreatorThread graphThread = new GraphCreatorThread(l) {
+						
+						@Override
+						public void execute() {
+							l.createGraphView(result);
+						}
+					};
+					graphThread.start();
+					
+					// Show in MAP  --> Clear LIST = remove all Markers
+					l.showInMap(result, true);
+					l.changeHistogramm(result);
+					
+					
+//				l.createGraphML_Mention(result, true);
+//				l.createGraphML_Retweet(result, true);
+					
 				} catch (ParseException e1) {
 					e1.printStackTrace();
 				}
-				TimeLineCreatorThread lilt = new TimeLineCreatorThread(l) {
-					@Override
-					public void execute() {
-						l.changeTimeLine(TimeBin.HOURS);
-//						l.changeTimeLine(TimeBin.MINUTES);
-					}
-				};
-				lilt.start();
-				
-				GraphCreatorThread graphThread = new GraphCreatorThread(l) {
-					
-					@Override
-					public void execute() {
-						l.createGraphView();
-					}
-				};
-				graphThread.start();
-				
-				// Show in MAP  --> Clear LIST = remove all Markers
-				l.showInMap(result, true);
-				l.changeHistogramm(result);
-				
-				
-//				l.createGraphML_Mention(result, true);
-//				l.createGraphML_Retweet(result, true);
 			}
 		});
 		

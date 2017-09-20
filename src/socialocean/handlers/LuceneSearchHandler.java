@@ -38,7 +38,6 @@ public class LuceneSearchHandler {
 		}
 
 		Lucene l = Lucene.INSTANCE;
-		ScoreDoc[] result = null;
 		while (!l.isInitialized) {
 			continue;
 		}
@@ -49,7 +48,6 @@ public class LuceneSearchHandler {
 //			result = l.ADDGeoQuery(42.2279, 42.3969, -71.1908, -70.9235);
 //		}
 		
-		Query q = null;
 		
 //		// Get Time Range TEST
 //		if (query.equals("time")) {
@@ -60,38 +58,39 @@ public class LuceneSearchHandler {
 		
 		// GET QUERY
 			try {
-				q = l.getParser().parse(query);
-				result = l.query(q, type, true, true);
+				Query q = l.getParser().parse(query);
+				ScoreDoc[] result = l.query(q, type, true, true);
+				
+				TimeLineCreatorThread lilt = new TimeLineCreatorThread(l) {
+					@Override
+					public void execute() {
+						l.changeTimeLine(TimeBin.HOURS);
+//						l.changeTimeLine(TimeBin.MINUTES);
+					}
+				};
+				lilt.start();
+				
+				GraphCreatorThread graphThread = new GraphCreatorThread(l) {
+					
+					@Override
+					public void execute() {
+						l.createGraphView(result);
+					}
+				};
+				graphThread.start();
+				
+				l.showInMap(result, true);
+				l.changeHistogramm(result);
+				
+//				l.createGraphML_Mention(result, true);
+//				l.createGraphML_Retweet(result, true);
+				
 			} catch (ParseException e) {
 				System.out.println("Could not parse the Query: " + query);
 				e.printStackTrace();
 				return;
 			}
 //		}
-		
-		TimeLineCreatorThread lilt = new TimeLineCreatorThread(l) {
-			@Override
-			public void execute() {
-				l.changeTimeLine(TimeBin.HOURS);
-//				l.changeTimeLine(TimeBin.MINUTES);
-			}
-		};
-		lilt.start();
-		
-		GraphCreatorThread graphThread = new GraphCreatorThread(l) {
-			
-			@Override
-			public void execute() {
-				l.createGraphView();
-			}
-		};
-		graphThread.start();
-		
-		l.showInMap(result, true);
-		l.changeHistogramm(result);
-		
-//		l.createGraphML_Mention(result, true);
-//		l.createGraphML_Retweet(result, true);
 		
 	}
 	

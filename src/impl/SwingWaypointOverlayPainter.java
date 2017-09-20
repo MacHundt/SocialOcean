@@ -22,6 +22,7 @@ public class SwingWaypointOverlayPainter extends WaypointPainter<SwingWaypoint> 
             Rectangle rectangle = jxMapViewer.getViewportBounds();
             int buttonX = (int)(point.getX() - rectangle.getX());
             int buttonY = (int)(point.getY() - rectangle.getY());
+            
             JButton button = swingWaypoint.getButton();
             button.setLocation(buttonX - button.getWidth() / 2, buttonY - button.getHeight() / 2);
         }

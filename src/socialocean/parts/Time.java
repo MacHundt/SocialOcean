@@ -140,7 +140,6 @@ public class Time {
 				
 				// TimeSearch From low to up!
 				Lucene l = Lucene.INSTANCE;
-				ScoreDoc[] result = null;
 				while (!l.isInitialized) {
 					return;
 				}
@@ -153,7 +152,7 @@ public class Time {
 				
 //				result = l.searchTimeRange(low.longValue(), up.longValue(), true, true);
 				if (l.getLastResult() != null && zoom) {
-					result = l.searchTimeRange(low.longValue(),  up.longValue(), true,  true);
+					ScoreDoc[]  result = l.searchTimeRange(low.longValue(),  up.longValue(), true,  true);
 					l.showInMap(result, true);
 					l.changeHistogramm(result);
 					
@@ -161,7 +160,7 @@ public class Time {
 						
 						@Override
 						public void execute() {
-							l.createGraphView();
+							l.createGraphView(result);
 						}
 					};
 					graphThread.start();

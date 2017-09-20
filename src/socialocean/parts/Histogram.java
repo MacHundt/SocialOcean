@@ -239,45 +239,46 @@ public class Histogram {
 					return;
 				}
 				String query = "category:"+cat;
-				ScoreDoc[] result = null;
 				try {
 					Query q = l.getParser().parse(query);
-					result = l.query(q, type, true, true);
+					ScoreDoc[] result = l.query(q, type, true, true);
+					if (result == null)
+						return;
+					
+					TimeLineCreatorThread lilt = new TimeLineCreatorThread(l) {
+						@Override
+						public void execute() {
+							l.changeTimeLine(TimeBin.HOURS);
+//							l.changeTimeLine(TimeBin.MINUTES);
+						}
+					};
+					lilt.start();
+					
+					GraphCreatorThread graphThread = new GraphCreatorThread(l) {
+						
+						@Override
+						public void execute() {
+							l.createGraphView(result);
+						}
+					};
+					graphThread.start();
+					
+					// Show in MAP  --> Clear LIST = remove all Markers
+					l.showInMap(result, true);
+					l.changeHistogramm(result);
+					
+//					l.createGraphML_Mention(result, true);
+					
 				} catch (ParseException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				
-				if (result == null)
-					return;
 				
 //				Color c1 = new Color(event.display, 50, 50, 200);		// selection color
 //				gc.setBackground(c1);
 //				gc.drawRectangle(barRec.x,barRec.y , barRec.width, barRec.height);
 				
-				TimeLineCreatorThread lilt = new TimeLineCreatorThread(l) {
-					@Override
-					public void execute() {
-						l.changeTimeLine(TimeBin.HOURS);
-//						l.changeTimeLine(TimeBin.MINUTES);
-					}
-				};
-				lilt.start();
-				
-				GraphCreatorThread graphThread = new GraphCreatorThread(l) {
-					
-					@Override
-					public void execute() {
-						l.createGraphView();
-					}
-				};
-				graphThread.start();
-				
-				// Show in MAP  --> Clear LIST = remove all Markers
-				l.showInMap(result, true);
-				l.changeHistogramm(result);
-				
-//				l.createGraphML_Mention(result, true);
 			}
 			
 		}

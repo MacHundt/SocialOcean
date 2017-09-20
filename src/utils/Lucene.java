@@ -988,7 +988,7 @@ public enum Lucene {
 	}
 
 	public void createTimeLine(TimeBin binsize) {
-
+		
 		// From Start Date to StopDate .. make bins and plot
 		LocalDateTime dt_temp = dt_min;
 		ArrayList<TimeLineHelper> tl_data = new ArrayList<>();
@@ -1190,13 +1190,11 @@ public enum Lucene {
 	
 	/**
 	 * This methods creates a graph based on the resultset 
+	 * @param result 
 	 * @param result
 	 */
-	public void createGraphView() {
-		ScoreDoc[] result = last_result;
-		
+	public void createGraphView(ScoreDoc[] result) {
 		GraphPanelCreator3.createGraph(result, searcher, withMention, withFollows);
-		
 	}
 	
 	
@@ -1288,14 +1286,14 @@ public enum Lucene {
 		if (result != null) {
 			if (clearList)
 				MapPanelCreator.clearWayPoints(clearList);
-
-			if (result.length > 17000) {
-
-				// Cluster -- Do something: -- LEVEL of Detail <---> Zoom
-				// Or only show those that I see on the Display
-				System.out.println("( to many )");
-				return;
-			}
+			
+//			if (result.length > 17000) {
+//
+//				// Cluster -- Do something: -- LEVEL of Detail <---> Zoom
+//				// Or only show those that I see on the Display
+//				System.out.println("( to many )");
+//				return;
+//			}
 
 			// Connection c = DBManager.getConnection();
 			// try {
@@ -1382,7 +1380,8 @@ public enum Lucene {
 				}
 			}
 
-			MapPanelCreator.showWayPointsOnMap();
+			MapPanelCreator.dataChanged();
+//			MapPanelCreator.showWayPointsOnMap();
 		}
 
 	}
@@ -1412,6 +1411,7 @@ public enum Lucene {
 					
 				MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, senti, lat, lon));
 			}
+			
 			MapPanelCreator.showWayPointsOnMap();
 		}
 	}
@@ -1558,7 +1558,7 @@ public enum Lucene {
 			
 			@Override
 			public void execute() {
-				createGraphView();
+				createGraphView(lastResult);
 			}
 		};
 		graphThread.start();
@@ -1650,8 +1650,8 @@ public enum Lucene {
 		String tempPath = ind.substring(0, ind.lastIndexOf("/")+1);
 		
 		if (!tempPath.endsWith("temp/")) {
-			tempPath +="temp";
-			File theDir = new File(tempPath+"temp");
+			tempPath +="temp/";
+			File theDir = new File(tempPath);
 
 			// if the directory does not exist, create it
 			if (!theDir.exists()) {
@@ -1674,7 +1674,7 @@ public enum Lucene {
 		
 		
 		
-		File newIndex = new File(tempPath+"/"+name);
+		File newIndex = new File(tempPath+""+name);
 		if (!newIndex.exists()) {
 		    System.out.println("creating directory: " + newIndex.getName());
 		    boolean result = false;

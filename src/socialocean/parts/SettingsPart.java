@@ -39,7 +39,8 @@ public class SettingsPart {
 				
 				Lucene l = Lucene.INSTANCE;
 				l.setWithMentions(mentions.getSelection());
-				l.createGraphView();
+				l.createGraphView(l.getLastResult());
+//				l.showInMap(l.getLastResult(), true);
 			}
 			
 			@Override
@@ -58,7 +59,8 @@ public class SettingsPart {
 				
 				Lucene l = Lucene.INSTANCE;
 				l.setWithFollows(follows.getSelection());
-				l.createGraphView();
+				l.createGraphView(l.getLastResult());
+//				l.showInMap(l.getLastResult(), true);
 			}
 			
 			

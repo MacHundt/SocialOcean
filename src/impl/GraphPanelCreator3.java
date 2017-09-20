@@ -939,6 +939,8 @@ public class GraphPanelCreator3 {
 					graph.insertEdge(parent, null, edge, nodeNames.get(name), nodeNames.get(target),
 							"FollowEdge"
 							
+					
+							
 					// +
 					// "exitX=0.5;exitY=1;exitPerimeter=1;entryX=0;entryY=0;entryPerimeter=1;"
 					);

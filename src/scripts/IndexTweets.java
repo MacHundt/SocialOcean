@@ -35,13 +35,13 @@ public class IndexTweets {
 	private static int Fetchsize = 10000;
 	
 //	private static String TWEETDATA = "tweetdata";
-//	private static String TWEETDATA = "bb_tweets";
-	private static String TWEETDATA = "nodexl_my2k_tweets";
+	private static String TWEETDATA = "bb_tweets";
+//	private static String TWEETDATA = "nodexl_my2k_tweets";
 //	private static String USERS = "users";
-//	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/lucene_index_tweets/";
-	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/lucene_index_nodexl/";
+//	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index_tweets/";
+	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index/";
 
-	private static boolean LOCAL = true;
+	private static boolean LOCAL = false;
 	
 	// index all tweets from DB
 	public static void main(String[] args) {
@@ -74,37 +74,40 @@ public class IndexTweets {
 			Statement stmt = c.createStatement();
 			stmt.setFetchSize(Fetchsize);
 			
-//			String query = "Select "
-//					+ "tweet_id, "
-//					+ "tweet_creationdate, "
-//					+ "tweet_content,"
-//					+ "tweet_replytostatus,"
-//					+ "latitude, "
-//					+ "longitude, "
-//					+ "tweet_source, "
-//					+ "hasurl, "
-//					+ "user_id, "
-//					+ "user_screenname, "
-//					+ "positive, "
-//					+ "negative, "
-//					+ "category, "
-//					+ "sentiment "
-//					+ "from "+TWEETDATA;
-			
 			String query = "Select "
 					+ "tweet_id, "
 					+ "tweet_creationdate, "
 					+ "tweet_content, "
 					+ "relationship, "
+					+ "tweet_replytostatus,"
 					+ "latitude, "
 					+ "longitude, "
+					+ "tweet_source, "
 					+ "hasurl, "
-					+ "source, "
+					+ "user_id, "
+					+ "user_screenname, "
+					+ "tweet_source, "
 					+ "positive, "
 					+ "negative, "
 					+ "category, "
 					+ "sentiment "
 					+ "from "+TWEETDATA;
+			
+			// NODEXL Gallery
+//			String query = "Select "
+//					+ "tweet_id, "
+//					+ "tweet_creationdate, "
+//					+ "tweet_content, "
+//					+ "relationship, "
+//					+ "latitude, "
+//					+ "longitude, "
+//					+ "hasurl, "
+//					+ "source, "
+//					+ "positive, "
+//					+ "negative, "
+//					+ "category, "
+//					+ "sentiment "
+//					+ "from "+TWEETDATA;
 			
 			  
 			ResultSet rs = stmt.executeQuery(query);
@@ -114,32 +117,21 @@ public class IndexTweets {
 			int doc_counter = 0;
 			int counter = 0;
 			int stat = 1;
-//			int topX = 1;
+			int topX = 3;
 			while (rs.next()) {
 				counter++;
-//				Tweet t = new Tweet(rs.getString(1));
-//				t.setTweet_creationdate(rs.getString(2));
-//				t.setTweet_content(rs.getString(3));
-//				t.setTweet_replytostatus(rs.getLong(4));
-//				t.setLatitude(rs.getDouble(5));
-//				t.setLongitude(rs.getDouble(6));
-//				t.setTweet_source(rs.getString(7));
-//				t.setHasurl(rs.getBoolean(8));
-//				t.setUser_id(rs.getLong(9));
-//				t.setUserScreenName(rs.getString(10));
-//				t.setPositive(rs.getInt(11));
-//				t.setNegative(rs.getInt(12));
-//				t.setCategory((rs.getString(13) != null) ? rs.getString(13) : "Other");
-//				t.setSentiment((rs.getString(14) != null) ? rs.getString(14) : "neu");
 				
 				Tweet t = new Tweet(rs.getString("tweet_id"));
 				t.setTweet_creationdate(rs.getString("tweet_creationdate"));
 				t.setTweet_content(rs.getString("tweet_content"));
 				t.setRelationship(rs.getString("relationship"));
+				t.setTweet_replytostatus(rs.getLong("tweet_replytostatus"));   // bb_tweets
 				t.setLatitude(rs.getDouble("latitude"));
 				t.setLongitude(rs.getDouble("longitude"));
 				t.setHasurl(rs.getBoolean("hasurl"));
-				t.setUserScreenName(rs.getString("source"));
+				t.setUser_id(rs.getLong("user_id"));
+				t.setUserScreenName(rs.getString("user_screenname")); 
+				t.setTweet_source(rs.getString("tweet_source"));
 				t.setPositive(rs.getInt("positive"));
 				t.setNegative(rs.getInt("negative"));
 				t.setCategory((rs.getString("category") != null) ? rs.getString(11) : "other");
@@ -155,8 +147,8 @@ public class IndexTweets {
 					if (doc_counter % 100 == 0) {
 						System.out.println(". >>"+ Fetchsize*100*stat+" tweets processed");
 						stat++;
-//						if (topX-- == 0)
-//							break;
+						if (topX-- == 0)
+							break;
 					}				
 					else {
 						System.out.print(".");
@@ -201,6 +193,8 @@ public class IndexTweets {
 			
 //			doc.add(new StringField("isRetweet", (t.getTweet_replytostatus() > 0) ? "true" : "false", Field.Store.NO));
 			doc.add(new StringField("relationship", t.getRelationship(), Field.Store.YES));
+			
+			doc.add(new StringField("source", t.getTweet_source(), Field.Store.YES));
 			
 			// User_ScreenName
 			doc.add(new StringField("name", t.getUserScreenName(), Field.Store.YES));

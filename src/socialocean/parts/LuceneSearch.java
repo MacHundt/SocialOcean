@@ -224,6 +224,8 @@ public class LuceneSearch {
 				System.out.println("Re-Index");
 				l.printToConsole("Re-Index");
 				l.reindexLastResult(name);
+				l.clearMap();
+				l.clearGraph();	
 			}
 		});
 		
@@ -257,10 +259,18 @@ public class LuceneSearch {
 		
 		Lucene l = Lucene.INSTANCE;
 		String luceneIndex = l.getLucenIndexPath();
+		
+		if (luceneIndex == null)
+			return;
+		
 		String tempPath = luceneIndex.substring(0, luceneIndex.lastIndexOf("/")+1);
 		
 		System.out.println("Clean up the temp folder ...");
-		File newIndex = new File(tempPath+"/temp");
+		// is already in temp folder .. if not check if we are now in the root folder
+		if (!tempPath.endsWith("temp/")) {
+			tempPath += "temp/";
+		}
+		File newIndex = new File(tempPath);
 		
 		if (newIndex.exists() && newIndex.isDirectory()) {
 			// remove all files in dir
