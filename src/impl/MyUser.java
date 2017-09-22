@@ -3,15 +3,11 @@ package impl;
 
 public class MyUser {
 	
-	/**
-	 *  
-	 */
-	private static final long serialVersionUID = -2707712944901661771L;
-
 	private String id;
 	private String name;
 	private String language = "";
 	private double cred_score = 0.5;
+	private String toString = "";
 	
 	
 	public MyUser(String id, String screenName) {
@@ -28,9 +24,14 @@ public class MyUser {
 	}
 	
 	
+	public void setNameVisible() {
+		toString = name;
+	}
+	
+	
 
 	@Override
 	public String toString() {
-		return name;
+		return toString;
 	}
 }

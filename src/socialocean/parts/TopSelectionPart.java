@@ -36,6 +36,7 @@ import org.eclipse.swt.widgets.Composite;
 
 import impl.GraphCreatorThread;
 import impl.TimeLineCreatorThread;
+import socialocean.model.Result;
 import utils.Lucene;
 import utils.Lucene.TimeBin;
 import utils.Swing_SWT;
@@ -205,13 +206,13 @@ public class TopSelectionPart {
 //				Query q = null;
 				try {
 					Query q = l.getParser().parse(query);
-					ScoreDoc[] result = l.query(q, l.getQeryType(), true, true);
-					
+					Result result = l.query(q, l.getQeryType(), true, true);
+					ScoreDoc[] data = result.getData();
 					TimeLineCreatorThread lilt = new TimeLineCreatorThread(l) {
 						@Override
 						public void execute() {
-							l.changeTimeLine(TimeBin.HOURS);
-//						l.changeTimeLine(TimeBin.MINUTES);
+							result.setTimeCounter(l.createTimeBins(TimeBin.HOURS, data));
+							l.showInTimeLine(result.getTimeCounter());
 						}
 					};
 					lilt.start();
@@ -220,14 +221,15 @@ public class TopSelectionPart {
 						
 						@Override
 						public void execute() {
-							l.createGraphView(result);
+//							l.createGraphView(data);
+							l.createSimpleGraphView(data);
 						}
 					};
 					graphThread.start();
 					
 					// Show in MAP  --> Clear LIST = remove all Markers
-					l.showInMap(result, true);
-					l.changeHistogramm(result);
+					l.createMapMarkers(data, true);
+					l.changeHistogramm(result.getHistoCounter());
 					
 					
 //				l.createGraphML_Mention(result, true);

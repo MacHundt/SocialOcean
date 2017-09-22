@@ -14,7 +14,7 @@ public abstract class LuceneIndexLoaderThread extends Thread {
 		this.changeTime = changeTime;
 	}
 	
-	public abstract void execute();
+	public abstract void execute() throws Exception;
 
 	
 	public final void run() {
@@ -30,9 +30,9 @@ public abstract class LuceneIndexLoaderThread extends Thread {
 			if (changeTime)
 				l.createTimeLine(Lucene.TimeBin.HOURS);
 
-		} catch (Throwable t) {
-			t.printStackTrace();
-			System.out.println(" Could not execute()");
+		} catch (Throwable e) {
+			System.err.println(l.getLucenIndexPath() + " >>>> is no Lucene Index folder");
+			
 			// app.showStatus(t.getMessage());
 		}
 

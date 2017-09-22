@@ -4,11 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.GridLayout;
-import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
@@ -17,7 +14,6 @@ import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Observable;
@@ -25,7 +21,6 @@ import java.util.Observer;
 import java.util.Set;
 
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -36,9 +31,6 @@ import org.apache.lucene.search.ScoreDoc;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.OSMTileFactoryInfo;
 import org.jxmapviewer.VirtualEarthTileFactoryInfo;
-import org.jxmapviewer.input.CenterMapListener;
-import org.jxmapviewer.input.PanMouseInputListener;
-import org.jxmapviewer.input.ZoomMouseWheelListenerCursor;
 import org.jxmapviewer.painter.CompoundPainter;
 import org.jxmapviewer.painter.Painter;
 import org.jxmapviewer.viewer.AbstractTileFactory;
@@ -48,7 +40,10 @@ import org.jxmapviewer.viewer.TileFactory;
 import org.jxmapviewer.viewer.TileFactoryInfo;
 import org.jxmapviewer.viewer.WaypointPainter;
 
+import com.vividsolutions.jts.geom.Coordinate;
+
 import socialocean.controller.MapController;
+import socialocean.model.Result;
 import socialocean.painter.GlyphPainter;
 import socialocean.painter.GridPainter;
 import socialocean.parts.MapMenuPanel;
@@ -62,6 +57,8 @@ public class MapPanelCreator {
 	private static JXMapViewer mapViewer = null;
 	private static int max = 19;
 	public static int zoom = 16;
+	
+	private static int tileThreads = 4;
 
 	private static MapController mapCon;
 	private static MapMenuPanel menu;
@@ -167,41 +164,50 @@ public class MapPanelCreator {
 		}
 
 		public void drawGrid() {
-			painters.removeIf(
-					p -> p instanceof GlyphPainter || p instanceof GridPainter || p instanceof WaypointPainter);
+			if (GraphPanelCreator3.SELECTED) {
+				painters.removeIf(
+					p -> p instanceof GlyphPainter || p instanceof GridPainter);
+				showWayPointsOnMap();
+				return;
+			}
+			else 
+				painters.removeIf(
+						p -> p instanceof GlyphPainter || p instanceof GridPainter || p instanceof WaypointPainter);
 
 			System.out.println("ZOOM >> " + map.getZoom());
 
-			 if (map.getZoom() < 14 && swingWaypointPainter != null ) {
-				 swingWaypointPainter.setWaypoints(waypoints);
+			if (map.getZoom() < 14 && swingWaypointPainter != null) {
+				swingWaypointPainter.setWaypoints(waypoints);
 
-					for (SwingWaypoint p : waypoints) {
+				for (SwingWaypoint p : waypoints) {
 
-						Rectangle viewport = mapViewer.getViewportBounds();
-						Point2D point = mapViewer.getTileFactory().geoToPixel(p.getPosition(), mapViewer.getZoom());
+					Rectangle viewport = mapViewer.getViewportBounds();
+					Point2D point = mapViewer.getTileFactory().geoToPixel(p.getPosition(), mapViewer.getZoom());
 
-						int buttonX = (int) (point.getX() - viewport.getX());
-						int buttonY = (int) (point.getY() - viewport.getY());
+					int buttonX = (int) (point.getX() - viewport.getX());
+					int buttonY = (int) (point.getY() - viewport.getY());
 
-						if (buttonY <= 0 || buttonX <= 0 || buttonY > viewport.getHeight() || buttonX > viewport.getWidth())
-							continue;
-						
-						mapViewer.add(p.getButton());
+					if (buttonY <= 0 || buttonX <= 0 || buttonY > viewport.getHeight() || buttonX > viewport.getWidth())
+						continue;
 
-						// if (p instanceof TweetWayPoint)
-						// mapViewer.add(((TweetWayPoint)p).getButton());
-					}
-			 }
-			 else {
-				 mapViewer.removeAll();
-			 }
-			 
-			GridPainter gp = new GridPainter(mapCon);
-			GlyphPainter glp = new GlyphPainter(mapCon);
-			painters.add(gp);
-			painters.add(glp);
+					mapViewer.add(p.getButton());
+
+					// if (p instanceof TweetWayPoint)
+					// mapViewer.add(((TweetWayPoint)p).getButton());
+					
+				}
+			} else {
+				mapViewer.removeAll();
+			}
+			
+			if (Lucene.SHOWHeatmap) {
+				GridPainter gp = new GridPainter(mapCon);
+				GlyphPainter glp = new GlyphPainter(mapCon);
+				painters.add(gp);
+				painters.add(glp);
+			}
+			
 			painters.add(swingWaypointPainter);
-
 			CompoundPainter<JXMapViewer> painter = new CompoundPainter<JXMapViewer>(painters);
 			map.setOverlayPainter(painter);
 			map.revalidate();
@@ -275,7 +281,7 @@ public class MapPanelCreator {
 
 			// faster Tile loading
 			for (TileFactory tf : factories)
-				((AbstractTileFactory) tf).setThreadPoolSize(8);
+				((AbstractTileFactory) tf).setThreadPoolSize(tileThreads);
 
 			// Setup JXMapViewer
 			mapViewer = new JXMapViewer();
@@ -288,11 +294,49 @@ public class MapPanelCreator {
 			mapViewer.setZoom(zoom);
 			mapViewer.setAddressLocation(boston);
 
+			JPanel panel = new JPanel();
+			JLabel label = new JLabel("Select a TileFactory ");
+
+			String[] tfLabels = new String[factories.size()];
+			for (int i = 0; i < factories.size(); i++) {
+				tfLabels[i] = factories.get(i).getInfo().getName();
+			}
+
+			final JComboBox combo = new JComboBox(tfLabels);
+			combo.addItemListener(new ItemListener() {
+				@Override
+				public void itemStateChanged(ItemEvent e) {
+					TileFactory factory = factories.get(combo.getSelectedIndex());
+					mapViewer.setTileFactory(factory);
+					// System.out.println(factory.getInfo().getName());
+				}
+			});
+
+			panel.setLayout(new GridLayout());
+			panel.add(label);
+			panel.add(combo);
+
+			mapPanel = new MapViewer(mapViewer);
+
+			// mapPanel.add(south, BorderLayout.SOUTH);
+			mapPanel.add(mapViewer, BorderLayout.CENTER);
+			mapPanel.add(panel, BorderLayout.NORTH);
+
+			mapCon = new MapController(mapViewer);
+			menu = new MapMenuPanel(mapCon);
+			mapPanel.add(menu, BorderLayout.SOUTH);
+			
+			menu.setVisible(Lucene.SHOWHeatmap);
+			
+
+			// AddObserver
+			mapCon.addObserver(mapPanel);
+			mapViewer.addMouseWheelListener(new MyZoomMouseWheelListener(mapViewer, mapCon));
+			mapViewer.addMouseListener(new MyCenterMapListener(mapViewer, mapCon));
 			// Add interactions
-			MouseInputListener mia = new PanMouseInputListener(mapViewer);
+			MouseInputListener mia = new MyPanMouseListener(mapViewer, mapCon);
 			mapViewer.addMouseListener(mia);
 			mapViewer.addMouseMotionListener(mia);
-			mapViewer.addMouseListener(new CenterMapListener(mapViewer));
 
 			mapViewer.addMouseListener(new MouseListener() {
 
@@ -354,27 +398,30 @@ public class MapPanelCreator {
 						System.out.println(
 								">>> BBOX for Lucene(" + minLat + " " + maxLat + " , " + minLong + " " + maxLong + ")");
 
-						ScoreDoc[] result = l.ADDGeoQuery(minLat, maxLat, minLong, maxLong);
+						Result result = l.ADDGeoQuery(minLat, maxLat, minLong, maxLong);
+						ScoreDoc[] data = result.getData();
 						TimeLineCreatorThread lilt = new TimeLineCreatorThread(l) {
 							@Override
 							public void execute() {
-								l.changeTimeLine(TimeBin.HOURS);
+								result.setTimeCounter(l.createTimeBins(TimeBin.HOURS, data));
+								l.showInTimeLine(result.getTimeCounter());
 								// l.changeTimeLine(TimeBin.MINUTES);
 							}
 						};
 						lilt.start();
-
+						
 						GraphCreatorThread graphThread = new GraphCreatorThread(l) {
 
 							@Override
 							public void execute() {
-								l.createGraphView(result);
+//								l.createGraphView(data);
+								l.createSimpleGraphView(data);
 							}
 						};
 						graphThread.start();
 
-						l.showInMap(result, true);
-						l.changeHistogramm(result);
+						l.createMapMarkers(data, true);
+						l.changeHistogramm(result.getHistoCounter());
 
 						// l.createGraphML_Mention(result, true);
 						// l.createGraphML_Retweet(result, true);
@@ -455,56 +502,18 @@ public class MapPanelCreator {
 					}
 				}
 			});
-
-			// PropertyChangeListener changed = new PropertyChangeListener() {
-			//
-			// @Override
-			// public void propertyChange(PropertyChangeEvent evt) {
-			// // TODO Auto-generated method stub
-			//
-			// }
-			// };
-			// mapViewer.addPropertyChangeListener(listener);
-
-			JPanel panel = new JPanel();
-			JLabel label = new JLabel("Select a TileFactory ");
-
-			String[] tfLabels = new String[factories.size()];
-			for (int i = 0; i < factories.size(); i++) {
-				tfLabels[i] = factories.get(i).getInfo().getName();
-			}
-
-			final JComboBox combo = new JComboBox(tfLabels);
-			combo.addItemListener(new ItemListener() {
-				@Override
-				public void itemStateChanged(ItemEvent e) {
-					TileFactory factory = factories.get(combo.getSelectedIndex());
-					mapViewer.setTileFactory(factory);
-					// System.out.println(factory.getInfo().getName());
-				}
-			});
-
-			panel.setLayout(new GridLayout());
-			panel.add(label);
-			panel.add(combo);
-
-			mapPanel = new MapViewer(mapViewer);
-
-			// mapPanel.add(south, BorderLayout.SOUTH);
-			mapPanel.add(mapViewer, BorderLayout.CENTER);
-			mapPanel.add(panel, BorderLayout.NORTH);
-
-			mapCon = new MapController(mapViewer);
-			menu = new MapMenuPanel(mapCon);
-			mapPanel.add(menu, BorderLayout.SOUTH);
-
-			// AddObserver
-			mapCon.addObserver(mapPanel);
-			mapViewer.addMouseWheelListener(new MyZoomMouseWheelListener(mapViewer, mapCon));
-
+			
 			return mapPanel;
 		}
 	}
+	
+	
+	public static void showHeatmapMenu() {
+		menu.setVisible(Lucene.SHOWHeatmap);
+		mapPanel.revalidate();
+	}
+	
+	
 
 	public static TweetWayPoint createTweetWayPoint(String label, String type, double lat, double lon) {
 
@@ -603,6 +612,7 @@ public class MapPanelCreator {
 					int buttonX = (int) (point.getX() - viewport.getX());
 					int buttonY = (int) (point.getY() - viewport.getY());
 
+					// SHOW only viewport
 					if (buttonY <= 0 || buttonX <= 0 || buttonY > viewport.getHeight() || buttonX > viewport.getWidth())
 						continue;
 					
@@ -649,5 +659,16 @@ public class MapPanelCreator {
 
 	public static void dataChanged() {
 		mapCon.dataChanged();
+	}
+	
+	
+	public static void centerMapGeoPoint(Coordinate src) {
+		
+//		mapViewer.zoomToBestFit(waypoints, null);
+		
+		GeoPosition g = new GeoPosition(src.y, src.x);
+		Point2D gp = mapViewer.getTileFactory().geoToPixel(g, mapViewer.getZoom());
+		mapViewer.setCenter(gp);
+		mapViewer.repaint();
 	}
 }

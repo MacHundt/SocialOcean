@@ -21,6 +21,7 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
 import socialocean.model.MapGridRectangle;
+import socialocean.model.Result;
 import utils.GeoToCartesianTransformation;
 import utils.Lucene;
 
@@ -48,7 +49,7 @@ public class MapController extends Observable {
 		// Check the cells that contain data (the others can be skipped)
 		
 		Lucene l = Lucene.INSTANCE;
-		ScoreDoc[] result = l.getLastResult();
+		Result result = l.getLastResult();
 
 		// Assign relevant wineyards and to their gridcells wrt all zoomlvls
 		ShapeWriter sw = new ShapeWriter(new GeoToCartesianTransformation(map));
@@ -60,7 +61,7 @@ public class MapController extends Observable {
 		
 		IndexSearcher searcher = l.getIndexSearcher();
 
-		for (ScoreDoc entry : result) {
+		for (ScoreDoc entry : result.getData()) {
 			
 			int docID = entry.doc;
 			try {

@@ -59,22 +59,20 @@ public class TweetWayPoint  extends SwingWaypoint {
 				String table = DBManager.getTweetdataTable();
 				
 //				String query = "select t.\"tweetScreenName\", t.\"tweetContent\", t.creationdate, t.sentiment, t.category, t.\"containsUrl\"  from "+table+" as t where t.tweetid = "+text;
-				String query = "select t.source, t.target, t.relationship, t.tweet_content, t.tweet_creationdate, t.sentiment, t.category, t.hasurl  from "+table+" as t where t.tweet_id = "+text;
+				String query = "select t.user_screenname, t.relationship, t.tweet_content, t.tweet_creationdate, t.sentiment, t.category, t.hasurl  from "+table+" as t where t.tweet_id = "+text;
 
 				ResultSet rs = stmt.executeQuery(query);
 				while (rs.next()) {
-					String scName = rs.getString("source");
-					String target = rs.getString("target");
+					String scName = rs.getString("user_screenname");
 					String relationship = rs.getString("relationship");
 					String content = rs.getString("tweet_content");
 					String date = rs.getString("tweet_creationdate");
-//					int sentiment = rs.getInt(4);
 					String sentiment = rs.getString("sentiment");
 					String category = rs.getString("category");
 					boolean hasUrl = rs.getBoolean("hasurl");
 					
 					if (relationship.equals("Followed")) {
-						details += "\n"+scName+" follows "+target;
+						details += "\n"+scName+" follows ";
 						break;
 					}
 					

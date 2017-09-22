@@ -35,11 +35,11 @@ public class IndexTweets {
 	private static int Fetchsize = 10000;
 	
 //	private static String TWEETDATA = "tweetdata";
-	private static String TWEETDATA = "bb_tweets";
-//	private static String TWEETDATA = "nodexl_my2k_tweets";
+//	private static String TWEETDATA = "bb_tweets";
+	private static String TWEETDATA = "nodexl_my2k_tweets";
 //	private static String USERS = "users";
-//	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index_tweets/";
-	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index/";
+	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index_nodexl/";
+//	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index/";
 
 	private static boolean LOCAL = false;
 	
@@ -79,35 +79,17 @@ public class IndexTweets {
 					+ "tweet_creationdate, "
 					+ "tweet_content, "
 					+ "relationship, "
-					+ "tweet_replytostatus,"
 					+ "latitude, "
 					+ "longitude, "
-					+ "tweet_source, "
 					+ "hasurl, "
-					+ "user_id, "
+//					+ "user_id, "				// bb_tweets -- more unique than screen_name
 					+ "user_screenname, "
-					+ "tweet_source, "
+//					+ "tweet_source, "			// bb_tweets
 					+ "positive, "
 					+ "negative, "
 					+ "category, "
 					+ "sentiment "
 					+ "from "+TWEETDATA;
-			
-			// NODEXL Gallery
-//			String query = "Select "
-//					+ "tweet_id, "
-//					+ "tweet_creationdate, "
-//					+ "tweet_content, "
-//					+ "relationship, "
-//					+ "latitude, "
-//					+ "longitude, "
-//					+ "hasurl, "
-//					+ "source, "
-//					+ "positive, "
-//					+ "negative, "
-//					+ "category, "
-//					+ "sentiment "
-//					+ "from "+TWEETDATA;
 			
 			  
 			ResultSet rs = stmt.executeQuery(query);
@@ -117,7 +99,7 @@ public class IndexTweets {
 			int doc_counter = 0;
 			int counter = 0;
 			int stat = 1;
-			int topX = 3;
+//			int topX = 0;
 			while (rs.next()) {
 				counter++;
 				
@@ -125,17 +107,16 @@ public class IndexTweets {
 				t.setTweet_creationdate(rs.getString("tweet_creationdate"));
 				t.setTweet_content(rs.getString("tweet_content"));
 				t.setRelationship(rs.getString("relationship"));
-				t.setTweet_replytostatus(rs.getLong("tweet_replytostatus"));   // bb_tweets
 				t.setLatitude(rs.getDouble("latitude"));
 				t.setLongitude(rs.getDouble("longitude"));
 				t.setHasurl(rs.getBoolean("hasurl"));
-				t.setUser_id(rs.getLong("user_id"));
-				t.setUserScreenName(rs.getString("user_screenname")); 
-				t.setTweet_source(rs.getString("tweet_source"));
+//				t.setUser_id(rs.getLong("user_id"));								// bb_tweets
+				t.setUserScreenName(rs.getString("user_screenname")); 			
+//				t.setTweet_source(rs.getString("tweet_source"));					// bb_tweets
 				t.setPositive(rs.getInt("positive"));
 				t.setNegative(rs.getInt("negative"));
-				t.setCategory((rs.getString("category") != null) ? rs.getString(11) : "other");
-				t.setSentiment((rs.getString("sentiment") != null) ? rs.getString(12) : "neu");
+				t.setCategory((rs.getString("category") != null) ? rs.getString("category") : "other");
+				t.setSentiment((rs.getString("sentiment") != null) ? rs.getString("sentiment") : "neu");
 				
 				tweets.add(t);
 				
@@ -147,8 +128,8 @@ public class IndexTweets {
 					if (doc_counter % 100 == 0) {
 						System.out.println(". >>"+ Fetchsize*100*stat+" tweets processed");
 						stat++;
-						if (topX-- == 0)
-							break;
+//						if (topX-- == 0)
+//							break;
 					}				
 					else {
 						System.out.print(".");
@@ -277,7 +258,8 @@ public class IndexTweets {
 //					String date_str = DateTools.dateToString(dt, Resolution.SECOND);
 					doc.add(new StringField("date", ""+utc_time , Field.Store.YES ));
 					
-					doc.add(new StringField("day", dt.getDayOfWeek().toString().toLowerCase(), Field.Store.YES));
+					String dayString = dt.getDayOfWeek().toString().toLowerCase();
+					doc.add(new StringField("day", dayString, Field.Store.YES));
 					
 				} else {
 					continue;

@@ -13,8 +13,8 @@ import utils.DBManager;
 
 public class AddCategoryScript {
 	
-//	private static String tweet_table = "bb_tweets";
-	private static String tweet_table = "nodexl_ohsen_tweets";
+	private static String tweet_table = "bb_tweets";
+//	private static String tweet_table = "nodexl_ohsen_tweets";
 	
 	private static int fetchsize = 10000;
 	private static TopicClassification classifier;
@@ -22,7 +22,7 @@ public class AddCategoryScript {
 	static ResultSet rs = null;
 	static ArrayList<Tuple<Long, String>> list = null;
 	
-	private static boolean LOCAL = true;
+	private static boolean LOCAL = false;
 	private static boolean RCP = false;
 	
 	public static void main(String[] args) {

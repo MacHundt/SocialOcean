@@ -20,13 +20,10 @@ import utils.Swing_SWT;
 
 public class MapPart {
 	
-//	private MapWidget mapvis;
-	
 	private Composite mapComposite;
 	private EmbeddedSwingComposite esc;		//Embedded Swing Component
 	private JApplet rootContainer;
 	
-	private int max = 19;
 	
 	@Inject
 	public MapPart() {

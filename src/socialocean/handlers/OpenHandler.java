@@ -6,7 +6,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import javax.annotation.Resource;
+import javax.inject.Inject;
+
 import org.eclipse.e4.core.di.annotations.Execute;
+import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Shell;
 
@@ -16,27 +20,29 @@ import utils.DBManager;
 import utils.Lucene;
 
 public class OpenHandler {
-
+	
 	@Execute
 	public void execute(Shell shell) {
 		// FileDialog dialog = new FileDialog(shell);
-
+		
+		
 		DirectoryDialog dialog = new DirectoryDialog(shell);
-		dialog.setFilterPath("/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/"); // Windows
+		String initialPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/";
+		dialog.setFilterPath(initialPath); // Windows
 																										// specific
 
 		dialog.setText("Select path to the Lucene Index");
 		dialog.open();
 
 		String lucenIndex = dialog.getFilterPath();
-		System.out.println(lucenIndex);
+		System.out.println("IndexPath: "+lucenIndex);
 
 		LuceneQuerySearcher lqs = LuceneQuerySearcher.INSTANCE;
 		Lucene l = Lucene.INSTANCE;
-		if (!lucenIndex.isEmpty()) {
+		if (!lucenIndex.isEmpty() ) {
 			LuceneIndexLoaderThread lilt = new LuceneIndexLoaderThread(l, true, true) {
 				@Override
-				public void execute() {
+				public void execute() throws Exception {
 					System.out.println("Loading Lucene Index ...");
 					l.initLucene(lucenIndex, lqs);
 				}
@@ -92,13 +98,16 @@ public class OpenHandler {
 			l.clearQueryHistroy();
 			
 		} catch (IOException e1) {
-			e1.printStackTrace();
+//			e1.printStackTrace();
+			System.err.println(lucenIndex +" >>>> has no settings.propertyies file");
+			return;
 		} finally {
 			if (input != null) {
 				try {
 					input.close();
 				} catch (IOException e) {
-					e.printStackTrace();
+//					e.printStackTrace();
+					return;
 				}
 			}
 		}

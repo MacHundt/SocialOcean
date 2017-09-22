@@ -81,7 +81,7 @@ and yields the following indexed Lucene fields:
 
 - **type**, StringField: what data type are you indexing. Here we use "twitter".
 - **id**, StringField: we store the individual tweet\_id
-- **relationship**
+- **relationship**, StringField: what kind of link
 - **category**, StringField
 - **hasURL**, StringField: boolean
 - **name**, StringField: the user\_screenname

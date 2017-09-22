@@ -20,6 +20,8 @@ import org.eclipse.e4.core.commands.ECommandService;
 import org.eclipse.e4.core.commands.EHandlerService;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
+import org.eclipse.e4.ui.workbench.modeling.EPartService;
+import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
@@ -46,6 +48,8 @@ public class LuceneSearch {
 	
 	@Inject ECommandService commandService;
 	@Inject EHandlerService service;
+	@Inject EPartService partService;
+	
 	
 	@Inject
 	public LuceneSearch() {
@@ -89,6 +93,11 @@ public class LuceneSearch {
 		
 		
 //		## BUILD GUI
+		partService.showPart("socialocean.part.timeline", PartState.CREATE);
+		partService.showPart("socialocean.part.timeline", PartState.ACTIVATE  );
+		partService.showPart("socialocean.part.timeline", PartState.VISIBLE );
+		partService.showPart("socialocean.part.settings", PartState.CREATE);
+		partService.showPart("socialocean.part.queryhistory", PartState.CREATE);
 		
 		Lucene l = Lucene.INSTANCE;
 		parent.setLayout(new GridLayout(9, false));

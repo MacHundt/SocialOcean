@@ -2,7 +2,6 @@ package utils;
 
 import java.awt.Color;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -25,7 +24,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
-import javax.swing.table.DefaultTableModel;
+import javax.inject.Inject;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -37,7 +36,6 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -50,10 +48,10 @@ import org.apache.lucene.spatial.geopoint.search.GeoPointInBBoxQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.jface.dialogs.InputDialog;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.e4.ui.workbench.modeling.EPartService;
+import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
+
+import com.vividsolutions.jts.geom.Coordinate;
 
 import impl.GraphCreatorThread;
 import impl.GraphML_Helper;
@@ -64,6 +62,7 @@ import impl.MapPanelCreator;
 import impl.MyEdge;
 import impl.TimeLineCreatorThread;
 import interfaces.ILuceneQuerySearcher;
+import socialocean.model.Result;
 import socialocean.parts.CategoriesPart;
 import socialocean.parts.Console;
 import socialocean.parts.Histogram;
@@ -116,14 +115,15 @@ public enum Lucene {
 	public boolean hasStopTime = false;
 	private ArrayList<TimeLineHelper> completeDataTime = new ArrayList<>();
 
-	private ScoreDoc[] last_result = null;
+//	private ScoreDoc[] last_result = null;
+	private Result last_result = null;
 	private String last_query = "";
 	private String query_type = "";
 
 	private MultiFieldQueryParser mq = null;
 	
 	private static int reIndexCount = 0;
-
+	
 	public static enum TimeBin {
 		SECONDS, MINUTES, HOURS, DAYS
 	}
@@ -156,111 +156,105 @@ public enum Lucene {
 	public boolean isInitialized = false;
 	private boolean changedTimeSeries;
 	private boolean withMention = true;
-	private boolean withFollows = true;
+	private boolean withFollows = false;
 	private String luceneIndex;
 	private long user_minDate;
 	private long user_maxDate;
 	
-	public void initLucene( String index, ILuceneQuerySearcher querySearcher) {
-		
+	public static boolean SHOWHeatmap = false;
+	
+	public void initLucene(String index, ILuceneQuerySearcher querySearcher) throws Exception {
+
 		luceneIndex = index;
 		
-		try {
-			
-			// ### JSch ###
-//			JSch jsch = new JSch();
-//			Session session = jsch.getSession("socialocean", "charon01.inf.uni-konstanz.de", 2212);
-//			// username and password will be given via UserInfo interface.
-//			session.setPassword(pass);
-//			session.connect(); 		// throws exception
-//
-//			Channel channel = session.openChannel("sftp");
-//			channel.connect();
-//			ChannelSftp c = (ChannelSftp) channel;
-//			
-//			String h = c.getHome();
-			
-			
+		// ### JSch ###
+		// JSch jsch = new JSch();
+		// Session session = jsch.getSession("socialocean",
+		// "charon01.inf.uni-konstanz.de", 2212);
+		// // username and password will be given via UserInfo interface.
+		// session.setPassword(pass);
+		// session.connect(); // throws exception
+		//
+		// Channel channel = session.openChannel("sftp");
+		// channel.connect();
+		// ChannelSftp c = (ChannelSftp) channel;
+		//
+		// String h = c.getHome();
 
-			// ### commons-vfs2 ###
-			// FileSystemOptions fsOptions = new FileSystemOptions();
-			// SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(fsOptions,
-			// "no");
-			// FileSystemManager fsManager = VFS.getManager();
-			//// sftp://socialocean@charon01.inf.uni-konstanz.de:2212/public/LuceneIndex/lucene_index
-			// String uri = "sftp://socialocean@charon01.inf.uni-konstanz.de:2212/public/LuceneIndex/lucene_index";
-//			FileObject fo = fsManager.resolveFile(uri, fsOptions);
-			
-//			URL url = new URL ("ftp://socialocean:"+pass+"@charon01.inf.uni-konstanz.de/LuceneIndex/lucene_index");
-//			URLConnection urlc = url.openConnection();
-//			InputStream is = urlc.getInputStream();
-//			BufferedInputStream bis = new BufferedInputStream(is);
-//			String path = urlc.getURL().getPath();
-//			URI path2 = url.toURI();
-//			reader = DirectoryReader.open(FSDirectory.open(Paths.get(path2)));
-			
-			
-//			### commons-net  -- doesn't work
-//			FTPSClient client = new FTPSClient();
-//			
-//			client.connect("charon01.inf.uni-konstanz.de", 2212);
-//			client.login("socialocean", pass);
-//			
-//			if (client.isConnected()) {
-//                // Obtain a list of filenames in the current working
-//                // directory. When no file found an empty array will
-//                // be returned.
-//                String[] names = client.listNames();
-//                for (String name : names) {
-//                    System.out.println("Name = " + name);
-//                }
-//                
-//                FTPFile[] ftpDirs = client.listDirectories();
-//                FTPFile[] ftpFiles = client.listFiles();
-//                for (FTPFile ftpFile : ftpFiles) {
-//                    // Check if FTPFile is a regular file
-//                    if (ftpFile.getType() == FTPFile.FILE_TYPE) {
-//                        System.out.println("FTPFile: " + ftpFile.getName() +
-//                                "; " + FileUtils.byteCountToDisplaySize(
-//                                ftpFile.getSize()));
-//                    }
-//                }
-//            }
-//            client.logout();
-			
-			reader = DirectoryReader.open(FSDirectory.open(Paths.get(luceneIndex)));
-			idxInfo = new IndexInfo(reader, luceneIndex);
-			fn = idxInfo.getFieldNames();
-			numTerms = idxInfo.getNumTerms();
-			termCounts = idxInfo.getFieldTermCounts();
-			idxFields = fn.toArray(new String[fn.size()]);
-			if (fn.size() == 0) {
-				System.out.println("Empty index.");
-				// showStatus("Empty index."); --> print on Console ..
-			}
+		// ### commons-vfs2 ###
+		// FileSystemOptions fsOptions = new FileSystemOptions();
+		// SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(fsOptions,
+		// "no");
+		// FileSystemManager fsManager = VFS.getManager();
+		//// sftp://socialocean@charon01.inf.uni-konstanz.de:2212/public/LuceneIndex/lucene_index
+		// String uri =
+		// "sftp://socialocean@charon01.inf.uni-konstanz.de:2212/public/LuceneIndex/lucene_index";
+		// FileObject fo = fsManager.resolveFile(uri, fsOptions);
 
-			mq = new MultiFieldQueryParser(idxFields, analyzer);
-			mq.setDefaultOperator(mq.AND_OPERATOR);
-			isInitialized = true;
+		// URL url = new URL
+		// ("ftp://socialocean:"+pass+"@charon01.inf.uni-konstanz.de/LuceneIndex/lucene_index");
+		// URLConnection urlc = url.openConnection();
+		// InputStream is = urlc.getInputStream();
+		// BufferedInputStream bis = new BufferedInputStream(is);
+		// String path = urlc.getURL().getPath();
+		// URI path2 = url.toURI();
+		// reader = DirectoryReader.open(FSDirectory.open(Paths.get(path2)));
 
-			// pre_statement_min = con.prepareStatement("Select creationdate
-			// from tweetdata order by creationdate ASC Limit 1");
-			// pre_statement_max = con.prepareStatement("Select creationdate
-			// from tweetdata order by creationdate DESC Limit 1");
+		// ### commons-net -- doesn't work
+		// FTPSClient client = new FTPSClient();
+		//
+		// client.connect("charon01.inf.uni-konstanz.de", 2212);
+		// client.login("socialocean", pass);
+		//
+		// if (client.isConnected()) {
+		// // Obtain a list of filenames in the current working
+		// // directory. When no file found an empty array will
+		// // be returned.
+		// String[] names = client.listNames();
+		// for (String name : names) {
+		// System.out.println("Name = " + name);
+		// }
+		//
+		// FTPFile[] ftpDirs = client.listDirectories();
+		// FTPFile[] ftpFiles = client.listFiles();
+		// for (FTPFile ftpFile : ftpFiles) {
+		// // Check if FTPFile is a regular file
+		// if (ftpFile.getType() == FTPFile.FILE_TYPE) {
+		// System.out.println("FTPFile: " + ftpFile.getName() +
+		// "; " + FileUtils.byteCountToDisplaySize(
+		// ftpFile.getSize()));
+		// }
+		// }
+		// }
+		// client.logout();
 
-		} catch (IOException e) {
-			System.out.println("Could not create LuceneSearcher, path to index not found " + luceneIndex);
-			e.printStackTrace();
-			return;
-		} catch (Exception e) {
-			e.printStackTrace();
+		reader = DirectoryReader.open(FSDirectory.open(Paths.get(luceneIndex)));
+		idxInfo = new IndexInfo(reader, luceneIndex);
+		fn = idxInfo.getFieldNames();
+		numTerms = idxInfo.getNumTerms();
+		termCounts = idxInfo.getFieldTermCounts();
+		idxFields = fn.toArray(new String[fn.size()]);
+		if (fn.size() == 0) {
+			System.out.println("Empty index.");
+			// showStatus("Empty index."); --> print on Console ..
 		}
+
+		mq = new MultiFieldQueryParser(idxFields, analyzer);
+		mq.setDefaultOperator(mq.AND_OPERATOR);
+		isInitialized = true;
+
+		// pre_statement_min = con.prepareStatement("Select creationdate
+		// from tweetdata order by creationdate ASC Limit 1");
+		// pre_statement_max = con.prepareStatement("Select creationdate
+		// from tweetdata order by creationdate DESC Limit 1");
+
 		searcher = new IndexSearcher(reader);
 		analyzer = new StandardAnalyzer();
 		parser = new QueryParser(field, analyzer);
 		parser.setDateResolution(dateResolution);
 		this.querySearcher = querySearcher;
 		querySearcher.initQuerySearcher(searcher, analyzer);
+
 	}
 	
 	
@@ -424,9 +418,9 @@ public enum Lucene {
 	 * @param print
 	 * @return result ScoreDoc[]
 	 */
-	public ScoreDoc[] query(Query query, String type, boolean print, boolean addToQueryHistory) {
+	public Result query( Query query, String type, boolean print, boolean addToQueryHistory) {
 		serialCounter++;
-		ScoreDoc[] result = null;
+		ScoreDoc[] queryResult = null;
 
 		// ADD
 		try {
@@ -441,8 +435,8 @@ public enum Lucene {
 					// DisjunctionMaxQuery union = new
 					// DisjunctionMaxQuery(last_two, 0);
 					// result = querySearcher.searchAll(union);
-					result = querySearcher.searchAll(query);
-					result = mergeScoreDocs(result);
+					queryResult = querySearcher.searchAll(query);
+					queryResult = mergeScoreDocs(queryResult);
 				}
 				// Time Selection
 				else if (query.toString().startsWith("date")) {
@@ -452,7 +446,7 @@ public enum Lucene {
 				else {
 					newQuery = query.toString() + " OR (" + last_query + ")";
 					query = parser.parse(newQuery);
-					result = querySearcher.searchAll(query);
+					queryResult = querySearcher.searchAll(query);
 				}
 
 			}
@@ -468,9 +462,9 @@ public enum Lucene {
 					// manually when fields overlap!
 					// -- AND
 
-					result = querySearcher.searchAll(query);
-					if (result.length < 100000 || last_result.length < 100000)
-						result = cutScoreDocs(result);
+					queryResult = querySearcher.searchAll(query);
+					if (queryResult.length < 100000 || last_result.size() < 100000)
+						queryResult = cutScoreDocs(queryResult);
 
 					// String[] fields = getFieldsFromQueries()
 					// String[] usedFields = {"tags", "geo"};
@@ -502,7 +496,7 @@ public enum Lucene {
 					newQuery = "(" + query.toString() + ")" + " AND (" + last_query + ")";
 					query = parser.parse(newQuery);
 					last_query = query.toString();
-					result = querySearcher.searchAll(query);
+					queryResult = querySearcher.searchAll(query);
 				}
 
 				// System.out.println("FUSE: \nLastQuery: "+
@@ -520,9 +514,9 @@ public enum Lucene {
 			else {
 				last_query = query.toString();
 				if (query.toString().startsWith("date")) {
-					result = timeRangeFilter(query);
+					queryResult = timeRangeFilter(query);
 				} else {
-					result = querySearcher.searchAll(query);
+					queryResult = querySearcher.searchAll(query);
 				}
 			}
 
@@ -530,11 +524,13 @@ public enum Lucene {
 			e.printStackTrace();
 		}
 
-		if (print && result != null) {
-			System.out.println("(" + serialCounter + ") " + query.toString() + " #:" + result.length);
-			printToConsole("(" + serialCounter + ") " + query.toString() + " #:" + result.length);
+		if (print && queryResult != null) {
+			System.out.println("(" + serialCounter + ") " + query.toString() + " #:" + queryResult.length);
+			printToConsole("(" + serialCounter + ") " + query.toString() + " #:" + queryResult.length);
 		}
-
+		
+		Result result = new Result(queryResult, searcher);
+		
 		if (QueryHistory.isInitialized && addToQueryHistory) {
 			QueryHistory history = QueryHistory.getInstance();
 			if (type.length() > 2) {
@@ -548,6 +544,7 @@ public enum Lucene {
 		
 		if (addToQueryHistory)
 			last_result = result;
+		
 		return result;
 	}
 
@@ -565,7 +562,7 @@ public enum Lucene {
 		
 		ArrayList<ScoreDoc> result = new ArrayList<>();
 		
-		for (ScoreDoc doc : last_result	) {
+		for (ScoreDoc doc : last_result.getData()	) {
 			try {
 				Document d = reader.document(doc.doc);
 				long date = Long.parseLong(d.getField("date").stringValue());
@@ -632,7 +629,7 @@ public enum Lucene {
 		// NAIV --> selection / filter Find x in y
 
 		ArrayList<ScoreDoc> finding = new ArrayList<>();
-		for (ScoreDoc x : last_result) {
+		for (ScoreDoc x : last_result.getData()) {
 			for (ScoreDoc y : result) {
 				if (x.doc == y.doc) {
 					finding.add(x);
@@ -654,9 +651,9 @@ public enum Lucene {
 		if (last_result == null)
 			return result;
 
-		ScoreDoc[] new_result = new ScoreDoc[last_result.length + result.length];
+		ScoreDoc[] new_result = new ScoreDoc[last_result.size() + result.length];
 		int i = 0;
-		for (ScoreDoc doc : last_result) {
+		for (ScoreDoc doc : last_result.getData()) {
 			new_result[i++] = doc;
 		}
 		for (ScoreDoc doc : result) {
@@ -703,10 +700,10 @@ public enum Lucene {
 	}
 
 	// Geo Filter
-	public ScoreDoc[] ADDGeoQuery(double minLat, double maxLat, double minLong, double maxLong) {
+	public Result ADDGeoQuery(double minLat, double maxLat, double minLong, double maxLong) {
 		@SuppressWarnings("deprecation")
 		Query query = new GeoPointInBBoxQuery(geoField, minLat, maxLat, minLong, maxLong);
-		ScoreDoc[] geoFilter = query(query, getQeryType(), true, true);
+		Result geoFilter = query(query, getQeryType(), true, true);
 
 //		addnewQueryResult(geoFilter, query);
 
@@ -714,8 +711,8 @@ public enum Lucene {
 	}
 
 	// Time Filter
-	public ScoreDoc[] searchTimeRange(long from, long to, boolean print, boolean queryhistory) {
-		ScoreDoc[] result;
+	public Result searchTimeRange(long from, long to, boolean print, boolean queryhistory) {
+		Result result;
 		try {
 			Query query = parser.parse("date:[" + from + " TO " + to + "]");
 			result = query(query, "", print, queryhistory);
@@ -727,7 +724,7 @@ public enum Lucene {
 		return null;
 	}
 
-	public ScoreDoc[] getLastResult() {
+	public Result getLastResult() {
 		return last_result;
 	}
 
@@ -758,9 +755,9 @@ public enum Lucene {
 		private int maxChars = 20;
 		private int serial;
 		private Query query;
-		private ScoreDoc[] result;
+		private Result result;
 
-		public QueryResult(Query query, ScoreDoc[] result, int serial) {
+		public QueryResult(Query query, Result result, int serial) {
 			this.serial = serial;
 			this.query = query;
 			this.result = result;
@@ -779,7 +776,7 @@ public enum Lucene {
 		// for a tooltip
 		@Override
 		public String toString() {
-			return "(" + serial + ") " + query.toString() + " #:" + result.length;
+			return "(" + serial + ") " + query.toString() + " #:" + result.size();
 		}
 
 	}
@@ -805,73 +802,14 @@ public enum Lucene {
 		
 	}
 
-	public void changeHistogramm(ScoreDoc[] data) {
+	public void changeHistogramm(HashMap<String, HistogramEntry> histoCounter) {
 
 		if (!Histogram.isInitialized & !CategoriesPart.isInitialized)
 			return;
-
 		Histogram histogram = Histogram.getInstance();
-//		CategoriesPart categories = CategoriesPart.getInstance();
-//		HashMap<String, Integer> counter = new HashMap<>();
-		HashMap<String, HistogramEntry> counter = new HashMap<>();
-
-
-		for (ScoreDoc doc : data) {
-			Document document = null;
-			try {
-				document = searcher.doc(doc.doc);
-			} catch (IOException e) {
-				continue;
-			}
-			String field = "";
-			double sentiment = 0.0;
-
-			if ((document.getField("category")) == null)
-				continue;
-
-			field = (document.getField("category")).stringValue();
-			field = field.replace(" & ", "_").toLowerCase();
-//			String sentiment_str = (document.getField("sentiment")).stringValue();
-//			if (sentiment_str.equals("positive"))
-//				sentiment = 1.0;
-//			else if (sentiment_str.equals("negative")) 
-//				sentiment = -1.0;
-//			else 
-//				sentiment = 0;
-			
-			String sentiment_str = (document.getField("sentiment")).stringValue();
-			if (sentiment_str.equals("pos"))
-				sentiment = 1.0;
-			else if (sentiment_str.equals("neg")) 
-				sentiment = -1.0;
-			else 
-				sentiment = 0;
-
-			if (counter.containsKey(field)) {
-				HistogramEntry category = counter.get(field);
-				category.count();
-				category.addSentiment(sentiment);
-			} else {
-				HistogramEntry category = new HistogramEntry(field);
-				category.count();
-				category.addSentiment(sentiment);
-				counter.put(field, category);
-			}
-		}
-
-//		int size = counter.keySet().size();
-//		Object[][] resulTable = new Object[size][2];
-//		int i = 0;
-//		for (String key : counter.keySet()) {
-//			resulTable[i][0] = key;
-//			resulTable[i][1] = counter.get(key);
-//			i++;
-//		}
 		
-		histogram.changeDataSet(counter);
+		histogram.changeDataSet(histoCounter);
 		
-//		histogram.chnageDataSet(resulTable);
-//		categories.chnageDataSet(resulTable);
 	}
 	
 
@@ -1012,8 +950,8 @@ public enum Lucene {
 				break;
 			}
 			long utc_plus = dt_plus.toEpochSecond(ZoneOffset.UTC);
-			ScoreDoc[] rs = searchTimeRange(temp_utc, utc_plus, false, false);
-			tl_data.add(new TimeLineHelper(dt_temp, rs.length));
+			Result rs = searchTimeRange(temp_utc, utc_plus, false, false);
+			tl_data.add(new TimeLineHelper(dt_temp, rs.size()));
 
 			dt_temp = dt_plus;
 			temp_utc = utc_plus;
@@ -1021,7 +959,7 @@ public enum Lucene {
 
 		Time time = Time.getInstance();
 		completeDataTime = tl_data;
-		if (!changedTimeSeries)
+		if (!changedTimeSeries && time !=null)
 			time.changeDataSet(tl_data);
 
 	}
@@ -1030,7 +968,7 @@ public enum Lucene {
 	
 	
 
-	public void changeTimeLine(TimeBin binsize) {
+	public ArrayList<TimeLineHelper> createTimeBins(TimeBin binsize, ScoreDoc[] result) {
 
 		ArrayList<TimeLineHelper> tl_data = new ArrayList<>();
 
@@ -1041,13 +979,13 @@ public enum Lucene {
 		long minDate = Long.MAX_VALUE;
 		long maxDate = Long.MIN_VALUE;
 		
-		if (last_result.length == 0) {
+		if (result.length == 0) {
 			System.out.println(">>>> Result is empty");
-			return;
+			return tl_data;
 		}
 
 		// get min-max values
-		for (ScoreDoc doc : last_result) {
+		for (ScoreDoc doc : result) {
 
 			int docID = doc.doc;
 			Document document;
@@ -1135,7 +1073,7 @@ public enum Lucene {
 		
 		
 		// ADD To Bins
-		for (ScoreDoc doc : last_result) {
+		for (ScoreDoc doc : result) {
 			
 			int docID = doc.doc;
 			Document document;
@@ -1158,11 +1096,16 @@ public enum Lucene {
 //			buckets.put(key, randomVal);
 			tl_data.add(new TimeLineHelper(longTOLocalDateTime(key), buckets.get(key)));
 		}
-
+		
+		return tl_data;
+	}
+	
+	
+	public void showInTimeLine(ArrayList<TimeLineHelper> timeCounter) {
 		Time time = Time.getInstance();
-		time.changeDataSet(tl_data);
+		if (time != null)
+			time.changeDataSet(timeCounter);
 		changedTimeSeries = true;
-
 	}
 
 	
@@ -1188,13 +1131,18 @@ public enum Lucene {
 	}
 	
 	
-	/**
-	 * This methods creates a graph based on the resultset 
-	 * @param result 
-	 * @param result
-	 */
-	public void createGraphView(ScoreDoc[] result) {
-		GraphPanelCreator3.createGraph(result, searcher, withMention, withFollows);
+//	/**
+//	 * This methods creates a graph based on the resultset 
+//	 * @param result 
+//	 * @param result
+//	 */
+//	public void createGraphView(ScoreDoc[] result) {
+//		GraphPanelCreator3.createGraph(result, searcher, withMention, withFollows);
+//	}
+	
+	
+	public void createSimpleGraphView(ScoreDoc[] result) {
+		GraphPanelCreator3.createSimpleGraph(result, searcher, withMention, withFollows);
 	}
 	
 	
@@ -1275,13 +1223,13 @@ public enum Lucene {
 	 * 
 	 * @param result
 	 * @param clearList
-	 *            booean
 	 */
 	public void createGraphML_Domain(ScoreDoc[] result, boolean clearList) {
 
 	}
 
-	public void showInMap(ScoreDoc[] result, boolean clearList) {
+	
+	public void createMapMarkers(ScoreDoc[] result, boolean clearList) {
 		// Show on Map
 		if (result != null) {
 			if (clearList)
@@ -1397,12 +1345,25 @@ public enum Lucene {
 			if (clearMap)
 				MapPanelCreator.clearWayPoints(clearMap);
 			
+			double minlat = Double.MAX_VALUE;
+			double maxlat = -Double.MIN_VALUE;
+			double minlong = Double.MAX_VALUE;
+			double maxlong = -Double.MIN_VALUE;
+			
 			for (MyEdge edge : edges) {
 				String id = edge.getId();
 //				double sentiment = edge.getSentiment();
 				String senti = edge.getSentiment();
 				double lat = edge.getLatitude();
 				double lon = edge.getLongitude();
+				
+				if (lat != 0.0 && lon != 0.0) {
+					minlat = Math.min(minlat, lat);
+					maxlat = Math.max(maxlat, lat);
+					minlong = Math.min(minlong, lon);
+					maxlong = Math.max(maxlong, lon);
+				}
+				
 //				String senti = "neutral";
 //				if (sentiment > 0)
 //					senti = "positive";
@@ -1411,6 +1372,8 @@ public enum Lucene {
 					
 				MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, senti, lat, lon));
 			}
+			
+			MapPanelCreator.centerMapGeoPoint(new Coordinate( (minlong+maxlong)/2, (minlat+maxlat)/2 ));
 			
 			MapPanelCreator.showWayPointsOnMap();
 		}
@@ -1512,7 +1475,8 @@ public enum Lucene {
 		}
 
 		Time time = Time.getInstance();
-		time.changeDataSet(tl_data);
+		if (time != null)
+			time.changeDataSet(tl_data);
 		changedTimeSeries = true;
 
 	}
@@ -1550,15 +1514,17 @@ public enum Lucene {
 		currentPointer = Math.max(currentPointer-1, 0);
 		System.out.println("Last Query: "+queryResults.get(currentPointer).toString());
 
-		ScoreDoc[] lastResult = queryResults.get(currentPointer).result;
-		showInMap(lastResult, true);
-		changeHistogramm(lastResult);
+		Result lastResult = queryResults.get(currentPointer).result;
+		ScoreDoc[] data = lastResult.getData();
+		createMapMarkers(data, true);
+		changeHistogramm(lastResult.getHistoCounter());
 		
 		GraphCreatorThread graphThread = new GraphCreatorThread(this) {
 			
 			@Override
 			public void execute() {
-				createGraphView(lastResult);
+//				createGraphView(data);
+				createSimpleGraphView(data);
 			}
 		};
 		graphThread.start();
@@ -1576,16 +1542,18 @@ public enum Lucene {
 		TimeLineCreatorThread lilt = new TimeLineCreatorThread(this) {
 			@Override
 			public void execute() {
-				changeTimeLine(TimeBin.HOURS);
+				Lucene l = Lucene.INSTANCE;
 //				changeTimeLine(TimeBin.MINUTES);
+				last_result.setTimeCounter(createTimeBins(TimeBin.HOURS, last_result.getData()));
+				l.showInTimeLine(last_result.getTimeCounter());
 			}
 		};
 		lilt.start();
-		printToConsole("<< back: "+ last_query + "#:"+ lastResult.length);
+		printToConsole("<< back: "+ last_query + "#:"+ lastResult.size());
 
 	}
 
-	public void addnewQueryResult(ScoreDoc[] result, Query query) {
+	public void addnewQueryResult(Result result, Query query) {
 //		System.out.println("CurrentPointer: "+currentPointer + " results:size(): "+queryResults.size());
 		
 		// remove from current to last
@@ -1601,7 +1569,8 @@ public enum Lucene {
 	
 	public void resetTimeLine() {
 		Time time = Time.getInstance();
-		time.changeDataSet(completeDataTime);
+		if (time != null)
+			time.changeDataSet(completeDataTime);
 	}
 
 	
@@ -1716,7 +1685,7 @@ public enum Lucene {
 			
 			IndexWriter writer = new IndexWriter(dir, iwc);
 			
-			for (ScoreDoc doc : last_result) {
+			for (ScoreDoc doc : last_result.getData()) {
 				Document document = null;
 				try {
 					document = searcher.doc(doc.doc);
@@ -1750,7 +1719,7 @@ public enum Lucene {
 		LuceneQuerySearcher lqs = LuceneQuerySearcher.INSTANCE;
 		LuceneIndexLoaderThread lilt = new LuceneIndexLoaderThread(this, false, false) {
 			@Override
-			public void execute() {
+			public void execute() throws Exception {
 				System.out.println("Loading Lucene Index ...");
 				initLucene( newIndex.getAbsolutePath(), lqs);
 			}
@@ -1787,6 +1756,7 @@ public enum Lucene {
 	public void clearGraph() {
 		GraphPanelCreator3.clearGraph();		
 	}
+
 
 
 }

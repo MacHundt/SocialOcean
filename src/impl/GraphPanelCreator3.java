@@ -14,7 +14,6 @@ import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.temporal.TemporalField;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -34,7 +33,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.spatial.geopoint.document.GeoPointField;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 
@@ -54,6 +52,7 @@ import com.mxgraph.view.mxEdgeStyle;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxStylesheet;
 
+import socialocean.model.Result;
 import socialocean.parts.Histogram;
 import utils.DBManager;
 import utils.Lucene;
@@ -73,7 +72,12 @@ public class GraphPanelCreator3 {
 	static boolean ASC = true;
 	static boolean DESC = false;
 	
+	private static ArrayList<MyEdge> edges = new ArrayList<>();
+	public static boolean SELECTED = false;
+	
+	
 	public static JPanel getGraphPanel() {
+		
 		
 		if (graphPanel != null) {
 			return graphPanel;
@@ -86,6 +90,7 @@ public class GraphPanelCreator3 {
 //			graph.setMaximumGraphBounds(new mxRectangle(0, 0, 800, 600));
 			parent = graph.getDefaultParent();
 			
+			
 			stylesheet = graph.getStylesheet();
 			// defaultEdge: endArrow=classic, shape=connector, fontColor=#446299, strokeColor=#6482B9, align=center, verticalAlign=middle
 			followStyle = new Hashtable<String, Object>();
@@ -96,6 +101,7 @@ public class GraphPanelCreator3 {
 			followStyle.put(mxConstants.STYLE_ENDARROW, mxConstants.ARROW_CLASSIC );
 			followStyle.put(mxConstants.STYLE_VERTICAL_ALIGN, mxConstants.ALIGN_MIDDLE );
 			followStyle.put(mxConstants.STYLE_FONTCOLOR, "#774400");
+			followStyle.put(mxConstants.STYLE_STROKEWIDTH, 1.5);
 			stylesheet.putCellStyle("FollowEdge", followStyle);
 			
 //			graphComponent = new mxGraphComponent(graph);
@@ -132,7 +138,8 @@ public class GraphPanelCreator3 {
 //								}
 //							}
 //						}
-						ArrayList<MyEdge> edges = new ArrayList<>();
+						SELECTED = true;
+						edges = new ArrayList<>();
 						for (int i = 0; i<selected; i++	) {
 							Object cell = graph.getSelectionCells()[i];
 							if(cell instanceof mxCell) {
@@ -142,15 +149,16 @@ public class GraphPanelCreator3 {
 							}
 						}
 						
-						System.out.println("Changed !! >> "+selected);
+//						System.out.println("Changed !! >> "+selected);
 						l.showSelectionInMap(edges, true);
 						l.showSelectionInHistogramm(edges);
 					}
 					// show all again
 					else if (selected == 0){
-						ScoreDoc[] lastResult = l.getLastResult();
-						l.showInMap(lastResult, true);
-						l.changeHistogramm(lastResult);
+						SELECTED = false;
+						Result lastResult = l.getLastResult();
+						l.createMapMarkers(lastResult.getData(), true);
+						l.changeHistogramm(lastResult.getHistoCounter());
 					}
 				}
 				
@@ -277,7 +285,230 @@ public class GraphPanelCreator3 {
 	}
 	
 	
-	public static <T> void createGraph(ScoreDoc[] result, IndexSearcher searcher, boolean withMentions, boolean withFollows) {
+	
+	public static void createSimpleGraph(ScoreDoc[] result, IndexSearcher searcher, boolean withMention, boolean withFollows) {
+		// CLEAR UP
+		Object[] remove = graph.getChildVertices(parent);
+		graph.removeCells(remove, true);
+
+		HashMap<String, Object> nodeNames = new HashMap<>(); // screenName -> id
+		HashMap<String, Object> sources = new HashMap<>();
+		HashMap<String, Integer> edgesMap = new HashMap<>();
+		int nodesCounter = 0;
+		Lucene l = Lucene.INSTANCE;
+
+		try {
+			
+			Connection c = DBManager.getConnection();
+			String table = DBManager.getTweetdataTable();
+			String userTable = DBManager.getUserTable();
+			Statement stmt = c.createStatement();
+			
+			for (ScoreDoc doc : result) {
+				int docID = doc.doc;
+				Document document;
+				document = searcher.doc(docID);
+
+				String type = (document.getField("type")).stringValue();
+				String id = (document.getField("id")).stringValue();
+				long hashgeo = (document.getField("geo")).numericValue().longValue();
+				double lat = GeoPointField.decodeLatitude(hashgeo);
+				double lon = GeoPointField.decodeLongitude(hashgeo);
+				boolean hasGeo = false;
+				if (lat != 0.0 || lon != 0.0) {
+					hasGeo = true;
+				}
+				String screenName = ""; 	// (document.getField("name")).stringValue();
+				String content = "";
+				// double sentiment = 0;
+				String posStrength = ""; // (document.getField("pos")).stringValue();
+				String negStrength = ""; // (document.getField("neg")).stringValue();
+				int pos = 0; 			// (posStrength.isEmpty()) ? 0 : Integer.parseInt((document.getField("pos")).stringValue());
+				int neg = 0; 			// (negStrength.isEmpty()) ? 0 : Integer.parseInt((document.getField("neg")).stringValue());
+				String sentiment = "neu"; // (document.getField("sentiment")).stringValue();
+//				sentiment = (sentiment.isEmpty()) ? "neu" : sentiment;
+				String category = "other"; // (document.getField("category")).stringValue();
+//				category = (category.isEmpty()) ? "other" : category;
+
+//				boolean hasUrl = Boolean.getBoolean((document.getField("hasURL")).stringValue());
+				boolean hasUrl = false;
+				// text language should be english
+				// String language = (document.getField("language")).stringValue();
+				// language = (language.isEmpty()) ? "en" : language;
+				
+				
+				String query = "";
+				switch (type) {
+				// get the tweet
+				case "twitter":
+					query = "Select "
+						+ "t.user_screenname, t.tweet_content, t.sentiment, t.positive, t.negative, t.category, t.hasurl, t.relationship "
+						+ " from "+table+" as t where t.tweet_id = "
+						+ Long.parseLong(id);
+					
+					break;
+				case "flickr":
+//					query = "Select t.sentiment from flickrdata as t where t.\"photoID\" = " + Long.parseLong(id);
+					break;
+				}
+				
+				ResultSet rs = stmt.executeQuery(query);
+				
+				String geom = "";
+				boolean isEmpty = true;
+				while (rs.next()) {
+					isEmpty = false;
+					screenName = rs.getString("user_screenname");
+					content = rs.getString("tweet_content");
+					sentiment = rs.getString("sentiment");
+					category = rs.getString("category");
+					category = category.replace(" & ", "_").toLowerCase();
+					hasUrl = rs.getBoolean("hasurl");
+					pos = rs.getInt("positive");
+					neg = rs.getInt("negative");
+				}
+				
+				if (sentiment == null)
+					sentiment = "neu";
+				
+				// GET Colors
+				String colorString = "";
+				if (l.getColorScheme().equals(Lucene.ColorScheme.CATEGORY)) {
+					Color color = Histogram.getCategoryColor(category);
+					colorString = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
+				} else {
+					Color color = new Color(Display.getDefault(), 255, 255, 191);
+					colorString = "#fee08b";
+					if (sentiment.equals("pos")) {
+						color = color = new Color(Display.getDefault(), 26, 152, 80);
+						// colorString = "green";
+						colorString = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
+					} else if (sentiment.equals("neg")) {
+						color = color = new Color(Display.getDefault(), 215, 48, 39);
+						// colorString = "red";
+						colorString = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
+					}
+				}
+
+				String mentionString = (content != null) ? getMentionsFromTweets(content) : "";
+				// continue, no target, no mentions
+				if (mentionString.length() < 2) {
+					continue;
+				}
+
+				// ADD source node
+				Object nodeID = null;
+				if (!nodeNames.containsKey(screenName)) {
+					nodeID = new MyUser("n" + nodesCounter++, screenName);
+					// ...
+
+					nodeID = graph.insertVertex(parent, null, nodeID, 0, 0, 40, 40,
+							"ROUNDED;strokeColor=white;fillColor=white");
+					nodeNames.put(screenName, nodeID);
+					sources.put(screenName, nodeID);
+
+				} else {
+					nodeID = nodeNames.get(screenName);
+				}
+				Object sourceID = nodeID;
+
+				// ADD target nodes
+				String[] mentions = mentionString.split(" ");
+				if (withMention) {
+					for (String target : mentions) {
+
+						if (target.isEmpty())
+							continue;
+
+						target = target.replace(":", "");
+
+						if (!nodeNames.containsKey(target)) {
+							nodeID = new MyUser("n" + nodesCounter++, screenName);
+
+							nodeID = graph.insertVertex(parent, null, nodeID, 0, 0, 40, 40,
+									"ROUNDED;strokeColor=white;fillColor=white");
+							nodeNames.put(target, nodeID);
+
+						} else {
+							nodeID = nodeNames.get(target);
+						}
+
+						Object edge = null;
+						// ADD Edge: source to Target
+						String edgesNames = "" + ((mxCell) sourceID).getId() + "_" + ((mxCell) nodeID).getId();
+						if (edgesMap.containsKey(edgesNames)) {
+							edgesMap.put(edgesNames, edgesMap.get(edgesNames) + 1);
+						} else {
+							edgesMap.put(edgesNames, new Integer(1));
+						}
+
+						edge = new MyEdge(id);
+						((MyEdge) edge).addCategory(category);
+						((MyEdge) edge).addSentiment(sentiment);
+						((MyEdge) edge).addPos(pos);
+						((MyEdge) edge).addNeg(neg);
+						((MyEdge) edge).changeToString(MyEdge.LabelType.SentiStrenth);
+
+						if (hasGeo)
+							((MyEdge) edge).addPoint(lat, lon);
+
+						graph.insertEdge(parent, null, edge, sourceID, nodeID,
+								"edgeStyle=elbowEdgeStyle;elbow=horizontal;" + "strokeWidth=3;"
+										+ "STYLE_PERIMETER_SPACING;" + "strokeColor=" + colorString
+						// +
+						// "exitX=0.5;exitY=1;exitPerimeter=1;entryX=0;entryY=0;entryPerimeter=1;"
+						);
+					}
+				}
+			}
+			
+			stmt.close();
+			c.close();
+			if (withFollows) {
+				addAllFollows(nodeNames, edgesMap);
+			}
+		} catch (IOException | SQLException e) {
+			e.printStackTrace();
+		}
+
+		
+		mxAnalysisGraph anaGraph = new mxAnalysisGraph();
+		anaGraph.setGraph(graph);
+
+		mxGraphStructure struc = new mxGraphStructure();
+		Object[][] cc = struc.getGraphComponents(anaGraph);
+
+		ArrayList<Object[]> filtered = new ArrayList<>();
+		if (cc != null) {
+			for (Object[] o : cc) {
+				if (o != null && o.length >= 4) {
+					filtered.add(o);
+				}
+				// else {
+				// graph.removeCells(o, true);
+				// }
+			}
+
+			// DESC
+			filtered.sort(new Comparator<Object[]>() {
+
+				@Override
+				public int compare(Object[] o1, Object[] o2) {
+					return Integer.compare(o2.length, o1.length);
+				}
+			});
+
+			// Object[] most = filtered.get(0);
+			// filterOutComponents(cc, 2);
+		}
+		morphGraph(graph, graphComponent);
+
+	}
+	
+	
+	
+	
+	public static void createGraph(ScoreDoc[] result, IndexSearcher searcher, boolean withMentions, boolean withFollows) {
 		
 		Object[] remove = graph.getChildVertices(parent);
 		graph.removeCells(remove, true);
@@ -360,7 +591,7 @@ public class GraphPanelCreator3 {
 //							+ Long.parseLong(id);
 					
 					query = "Select "
-							+ "t.source, t.tweet_content, t.sentiment, t.category, t.hasurl, t.relationship, "
+							+ "t.user_screenname, t.tweet_content, t.sentiment, t.category, t.hasurl, t.relationship, "
 							+ "t.user_creationdate, t.friends , "
 							+ "t.followers, t.status_count, t.target from "+table+" as t where t.tweet_id = "
 							+ Long.parseLong(id);
@@ -372,7 +603,7 @@ public class GraphPanelCreator3 {
 				default:
 //					query = "Select t.sentiment from tweetdata as t where t.tweetid = " + Long.parseLong(id);
 					query = "Select "
-							+ "t.source, t.tweet_content, t.sentiment, t.category, t.hasurl, t.relationship, "
+							+ "t.user_screenname, t.tweet_content, t.sentiment, t.category, t.hasurl, t.relationship, "
 							+ "t.user_creationdate, t.friends , "
 							+ "t.followers, t.status_count, t.target from "+table+" as t where t.tweet_id = "
 							+ Long.parseLong(id);
@@ -589,7 +820,9 @@ public class GraphPanelCreator3 {
 
 						// TODO // create an Edge Object for Properties
 						graph.insertEdge(parent, null, edge, sourceID, nodeID,
-								"edgeStyle=elbowEdgeStyle;elbow=horizontal;" + "STYLE_PERIMETER_SPACING;"+"strokeColor="+colorString
+								"edgeStyle=elbowEdgeStyle;elbow=horizontal;"
+								+ "strokeWidth=3;" 
+								+ "STYLE_PERIMETER_SPACING;"+"strokeColor="+colorString
 						// +
 						// "exitX=0.5;exitY=1;exitPerimeter=1;entryX=0;entryY=0;entryPerimeter=1;"
 						);
@@ -776,7 +1009,9 @@ public class GraphPanelCreator3 {
 						
 						
 						graph.insertEdge(parent, null, edge, sourceID, nodeID,
-								"edgeStyle=elbowEdgeStyle;elbow=horizontal;" + "STYLE_PERIMETER_SPACING;"+"strokeColor="+colorString
+								"edgeStyle=elbowEdgeStyle;elbow=horizontal;" 
+										+ "strokeWidth=3;" 
+										+ "STYLE_PERIMETER_SPACING;"+"strokeColor="+colorString
 						// +
 						// "exitX=0.5;exitY=1;exitPerimeter=1;entryX=0;entryY=0;entryPerimeter=1;"
 						);
@@ -785,10 +1020,11 @@ public class GraphPanelCreator3 {
 				}
 			}
 			
+			stmt.close();
+			c.close();
 			// ADD follows
-			
 			if (withFollows)
-				addAllFollows(nodeNames, edgesMap, c, table);
+				addAllFollows(nodeNames, edgesMap);
 			
 			
 		} catch (IOException | SQLException | java.text.ParseException e) {
@@ -887,67 +1123,74 @@ public class GraphPanelCreator3 {
 	}
 	
 	
-	private static void addAllFollows(HashMap<String, Object> nodeNames, HashMap<String, Integer> edgesMap, Connection c, String table) throws SQLException {
-		
-		for (String name : nodeNames.keySet()) {
-			
-			// get all follows
+	private static void addAllFollows(HashMap<String, Object> nodeNames, HashMap<String, Integer> edgesMap) {
+
+		try {
+			Connection c = DBManager.getConnection();
+			String table = DBManager.getTweetdataTable();
 			Statement stmt = c.createStatement();
-			String query = "Select target, tweet_id, latitude, longitude From "+table+" where source = '"+name+"' and relationship = 'Followed'";
-			ResultSet rs = stmt.executeQuery(query);
-			while (rs.next()) {
-				// see if target is in keySet --> true add an edge
-				String target = rs.getString("target");
-				String id = rs.getString("tweet_id");
-				double lon = rs.getDouble("longitude");
-				double lat = rs.getDouble("latitude");
-				boolean hasGeo = false;
-				if (lat != 0.0 || lon != 0.0) {
-					hasGeo = true;
-				}
-				if (nodeNames.keySet().contains(target)) {
-					// add edge
-					Object edge = null;
-					// ADD Edge: source to Target
+			for (String name : nodeNames.keySet()) {
 
-					String edgesNames = "" + ((mxCell)nodeNames.get(name)).getId() + "_" + ((mxCell)nodeNames.get(target)).getId();
-					if (edgesMap.containsKey(edgesNames)) {
-						edgesMap.put(edgesNames, edgesMap.get(edgesNames) + 1);
-					} else {
-						edgesMap.put(edgesNames, new Integer(1));
+				// get all follows
+				String query = "Select target, tweet_id, latitude, longitude From " + table
+						+ " where user_screenname = '" + name + "' and relationship = 'Followed'";
+				ResultSet rs = stmt.executeQuery(query);
+				while (rs.next()) {
+					// see if target is in keySet --> true add an edge
+					String target = rs.getString("target");
+					String id = rs.getString("tweet_id");
+					double lon = rs.getDouble("longitude");
+					double lat = rs.getDouble("latitude");
+					boolean hasGeo = false;
+					if (lat != 0.0 || lon != 0.0) {
+						hasGeo = true;
 					}
+					if (nodeNames.keySet().contains(target)) {
+						// add edge
+						Object edge = null;
+						// ADD Edge: source to Target
 
-					edge = new MyEdge(id);
-					((MyEdge) edge).addCredibility(0);
-					((MyEdge) edge).addCategory("");
-					((MyEdge) edge).addSentiment("neu");
-					((MyEdge) edge).addDate(null);
-					((MyEdge) edge).setRelationsip("Followed");
-					
-					if (hasGeo)
-						((MyEdge) edge).addPoint(lat, lon);
-					
-					
-					mxStylesheet stylesheet = graph.getStylesheet();
-					
-					String co = mxEdgeStyle.EntityRelation.toString();
-					
+						String edgesNames = "" + ((mxCell) nodeNames.get(name)).getId() + "_"
+								+ ((mxCell) nodeNames.get(target)).getId();
+						if (edgesMap.containsKey(edgesNames)) {
+							edgesMap.put(edgesNames, edgesMap.get(edgesNames) + 1);
+						} else {
+							edgesMap.put(edgesNames, new Integer(1));
+						}
 
-					// TODO // create an Edge Object for Properties
-//					graph.insertEdge(parent, null, edge, nodeNames.get(name), nodeNames.get(target),
-//							"edgeStyle=elbowEdgeStyle;elbow=horizontal;"+"STYLE_GRADIENTCOLOR"+"STYLE_DASH_PATTERN"
-					graph.insertEdge(parent, null, edge, nodeNames.get(name), nodeNames.get(target),
-							"FollowEdge"
-							
-					
-							
-					// +
-					// "exitX=0.5;exitY=1;exitPerimeter=1;entryX=0;entryY=0;entryPerimeter=1;"
-					);
+						edge = new MyEdge(id);
+						((MyEdge) edge).addCredibility(0);
+						((MyEdge) edge).addCategory("");
+						((MyEdge) edge).addSentiment("neu");
+						((MyEdge) edge).addDate(null);
+						((MyEdge) edge).setRelationsip("Followed");
+
+						// NO Geo for Follows
+						// if (hasGeo)
+						// ((MyEdge) edge).addPoint(lat, lon);
+
+						mxStylesheet stylesheet = graph.getStylesheet();
+
+						String co = mxEdgeStyle.EntityRelation.toString();
+
+						// TODO // create an Edge Object for Properties
+						// graph.insertEdge(parent, null, edge, nodeNames.get(name),
+						// nodeNames.get(target),
+						// "edgeStyle=elbowEdgeStyle;elbow=horizontal;"+"STYLE_GRADIENTCOLOR"+"STYLE_DASH_PATTERN"
+						graph.insertEdge(parent, null, edge, nodeNames.get(name), nodeNames.get(target), "FollowEdge"
+
+						// +
+						// "exitX=0.5;exitY=1;exitPerimeter=1;entryX=0;entryY=0;entryPerimeter=1;"
+						);
+					}
 				}
 			}
+			stmt.close();
+			c.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
-		
+
 	}
 
 

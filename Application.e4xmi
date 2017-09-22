@@ -19,7 +19,6 @@
               <children xsi:type="basic:Part" xmi:id="_utZO4IosEeauXYmQDjn7lw" elementId="socialocean.part.queryhistory" contributionURI="bundleclass://SocialOcean/socialocean.parts.QueryHistory" label="" iconURI="platform:/plugin/SocialOcean/icons/queryhistory.png" tooltip="Query History" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ"/>
             </children>
             <children xsi:type="basic:PartStack" xmi:id="_n1WZAIosEeauXYmQDjn7lw" elementId="socialocean.partstack.settings" containerData="4000" accessibilityPhrase="settingsPartStack" selectedElement="_M9Y_oBMGEeenmLxjomef8A">
-              <children xsi:type="basic:Part" xmi:id="_4NByEIosEeauXYmQDjn7lw" elementId="socialocean.part.settings" visible="false" contributionURI="bundleclass://SocialOcean/socialocean.parts.SamplePart" label="settings" bindingContexts="_6wlLecgZEeSyMNYR5xypkQ" closeable="true"/>
               <children xsi:type="basic:Part" xmi:id="_M9Y_oBMGEeenmLxjomef8A" elementId="socialocean.part.graph" contributionURI="bundleclass://SocialOcean/socialocean.parts.GraphPart" label="" iconURI="platform:/plugin/SocialOcean/icons/socialgraph_icon.png" tooltip="Mention Graph"/>
             </children>
             <children xsi:type="basic:PartStack" xmi:id="_ngQSwIosEeauXYmQDjn7lw" elementId="socialocean.partstack.map" containerData="4000" selectedElement="_LGak0IorEeauXYmQDjn7lw">
@@ -34,7 +33,6 @@
             <children xsi:type="basic:Part" xmi:id="_t_I9YLOPEeaD75P0e42SYA" elementId="socialocean.part.timeline" contributionURI="bundleclass://SocialOcean/socialocean.parts.Time" label="" iconURI="platform:/plugin/SocialOcean/icons/timeline_icon.png" tooltip="Timeline"/>
           </children>
         </children>
-        <children xsi:type="basic:PartStack" xmi:id="_iCa-YMLSEeaZZbPopcVK-g" elementId="socialocean.partstack.views" visible="false" accessibilityPhrase="views"/>
       </children>
     </children>
     <mainMenu xmi:id="_6wlLicgZEeSyMNYR5xypkQ" elementId="org.eclipse.ui.main.menu">
@@ -42,7 +40,6 @@
         <children xsi:type="menu:HandledMenuItem" xmi:id="_6wlLi8gZEeSyMNYR5xypkQ" elementId="SocialOcean.handleditem.file.open" label="Open" iconURI="platform:/plugin/SocialOcean/icons/open.png" command="_6wlLgMgZEeSyMNYR5xypkQ"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_6wlLjMgZEeSyMNYR5xypkQ" elementId="SocialOcean.handleditem.save" label="Save" iconURI="platform:/plugin/SocialOcean/icons/save_edit.png" command="_6wlLg8gZEeSyMNYR5xypkQ"/>
         <children xsi:type="menu:HandledMenuItem" xmi:id="_6wlLjcgZEeSyMNYR5xypkQ" elementId="SocialOcean.handleditem.quit" label="Quit" iconURI="platform:/plugin/SocialOcean/icons/button-close-icon.png" command="_6wlLfMgZEeSyMNYR5xypkQ"/>
-        <children xsi:type="menu:HandledMenuItem" xmi:id="_mbAakIovEeauXYmQDjn7lw" elementId="bostoncase.handledmenuitem.showsettings" toBeRendered="false" visible="false" label="showSettings" enabled="false" command="_qNf0wIovEeauXYmQDjn7lw"/>
       </children>
       <children xsi:type="menu:Menu" xmi:id="_6wlLjsgZEeSyMNYR5xypkQ" elementId="help" label="Help">
         <children xsi:type="menu:HandledMenuItem" xmi:id="_6wlLj8gZEeSyMNYR5xypkQ" elementId="SocialOcean.handleditem.about" label="About" command="_6wlLhsgZEeSyMNYR5xypkQ"/>
@@ -59,7 +56,6 @@
   <handlers xmi:id="_6wlLgcgZEeSyMNYR5xypkQ" elementId="bostoncase.handler.openCommand" contributionURI="bundleclass://SocialOcean/socialocean.handlers.OpenHandler" command="_6wlLgMgZEeSyMNYR5xypkQ"/>
   <handlers xmi:id="_6wlLhMgZEeSyMNYR5xypkQ" elementId="bostoncase.handler.saveCommand" contributionURI="bundleclass://SocialOcean/socialocean.handlers.SaveHandler" command="_6wlLg8gZEeSyMNYR5xypkQ"/>
   <handlers xmi:id="_6wlLh8gZEeSyMNYR5xypkQ" elementId="bostoncase.handler.aboutCommand" contributionURI="bundleclass://SocialOcean/socialocean.handlers.AboutHandler" command="_6wlLhsgZEeSyMNYR5xypkQ"/>
-  <handlers xmi:id="_F_0sMIowEeauXYmQDjn7lw" elementId="bostoncase.handler.showSettings" contributionURI="bundleclass://SocialOcean/socialocean.handlers.ShowSettingsHandler" command="_qNf0wIovEeauXYmQDjn7lw"/>
   <handlers xmi:id="_AKLDYJw3EeaqBeVOr5nmKw" elementId="bostoncase.handler.lucenesearch" contributionURI="bundleclass://SocialOcean/socialocean.handlers.LuceneSearchHandler" command="_xfTKYJw2EeaqBeVOr5nmKw"/>
   <bindingTables xmi:id="_6wlLfsgZEeSyMNYR5xypkQ" elementId="SocialOcean.bindingtable" bindingContext="_6wlLecgZEeSyMNYR5xypkQ">
     <bindings xmi:id="_6wlLf8gZEeSyMNYR5xypkQ" elementId="SocialOcean.keybinding.m1q" keySequence="M1+Q" command="_6wlLfMgZEeSyMNYR5xypkQ"/>
@@ -75,7 +71,6 @@
   <commands xmi:id="_6wlLgMgZEeSyMNYR5xypkQ" elementId="org.eclipse.ui.file.open" commandName="openCommand"/>
   <commands xmi:id="_6wlLg8gZEeSyMNYR5xypkQ" elementId="org.eclipse.ui.file.save" commandName="saveCommand"/>
   <commands xmi:id="_6wlLhsgZEeSyMNYR5xypkQ" elementId="org.eclipse.ui.help.aboutAction" commandName="aboutCommand"/>
-  <commands xmi:id="_qNf0wIovEeauXYmQDjn7lw" elementId="bostoncase.command.showsettings" commandName="showSettings"/>
   <commands xmi:id="_xfTKYJw2EeaqBeVOr5nmKw" elementId="socialocean.command.lucenesearch" commandName="LuceneSearchCommand">
     <parameters xmi:id="_4PcogJw2EeaqBeVOr5nmKw" elementId="QueryString" name="QueryString"/>
     <parameters xmi:id="_6j8asJw2EeaqBeVOr5nmKw" elementId="type" name="type"/>

@@ -40,6 +40,7 @@ import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.time.TimeSeriesDataItem;
 
 import impl.GraphCreatorThread;
+import socialocean.model.Result;
 import utils.Lucene;
 import utils.TimeLineHelper;
 
@@ -152,15 +153,17 @@ public class Time {
 				
 //				result = l.searchTimeRange(low.longValue(), up.longValue(), true, true);
 				if (l.getLastResult() != null && zoom) {
-					ScoreDoc[]  result = l.searchTimeRange(low.longValue(),  up.longValue(), true,  true);
-					l.showInMap(result, true);
-					l.changeHistogramm(result);
+					Result  result = l.searchTimeRange(low.longValue(),  up.longValue(), true,  true);
+					ScoreDoc[] data = result.getData();
+					l.changeHistogramm(result.getHistoCounter());
 					
+					l.createMapMarkers(data, true);
 					GraphCreatorThread graphThread = new GraphCreatorThread(l) {
 						
 						@Override
 						public void execute() {
-							l.createGraphView(result);
+//							l.createGraphView(result.getData());
+							l.createSimpleGraphView(data);
 						}
 					};
 					graphThread.start();

@@ -12,16 +12,16 @@ import utils.DBManager;
 
 public class AddSentimentScript {
 	
-//	private static String tweet_table = "bb_tweets";
-	private static String tweet_table = "nodexl_my2k_tweets";
+	private static String tweet_table = "bb_tweets";
+//	private static String tweet_table = "nodexl_my2k_tweets";
 	
-	private static int fetchsize = 10000;
+	private static int fetchsize = 3000;
 	private static SentimentClassifier sentClassifier;
 	private static int batchcounter = 0;
 	static ResultSet rs = null;
 	static ArrayList<Tuple<Long, String>> list = null;
 	
-	private static boolean LOCAL = true;
+	private static boolean LOCAL = false;
 	private static boolean RCP = false;
 	
 	public static void main(String[] args) {
@@ -58,6 +58,7 @@ public class AddSentimentScript {
 						System.out.println("-");
 						batchcounter = 0;
 					} else
+						
 						System.out.print("-");
 				}
 			}

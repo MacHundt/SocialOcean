@@ -12,6 +12,7 @@ import org.eclipse.e4.core.di.annotations.Optional;
 
 import impl.GraphCreatorThread;
 import impl.TimeLineCreatorThread;
+import socialocean.model.Result;
 import utils.Lucene;
 import utils.Lucene.TimeBin;
 
@@ -59,12 +60,13 @@ public class LuceneSearchHandler {
 		// GET QUERY
 			try {
 				Query q = l.getParser().parse(query);
-				ScoreDoc[] result = l.query(q, type, true, true);
-				
+				Result result = l.query(q, type, true, true);
+				ScoreDoc[] data = result.getData();
 				TimeLineCreatorThread lilt = new TimeLineCreatorThread(l) {
 					@Override
 					public void execute() {
-						l.changeTimeLine(TimeBin.HOURS);
+						result.setTimeCounter(l.createTimeBins(TimeBin.HOURS, data));
+						l.showInTimeLine(result.getTimeCounter());
 //						l.changeTimeLine(TimeBin.MINUTES);
 					}
 				};
@@ -74,13 +76,14 @@ public class LuceneSearchHandler {
 					
 					@Override
 					public void execute() {
-						l.createGraphView(result);
+//						l.createGraphView(data);
+						l.createSimpleGraphView(data);
 					}
 				};
 				graphThread.start();
 				
-				l.showInMap(result, true);
-				l.changeHistogramm(result);
+				l.createMapMarkers(data, true);
+				l.changeHistogramm(result.getHistoCounter());
 				
 //				l.createGraphML_Mention(result, true);
 //				l.createGraphML_Retweet(result, true);

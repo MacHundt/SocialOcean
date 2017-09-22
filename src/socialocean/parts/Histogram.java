@@ -30,6 +30,7 @@ import org.swtchart.LineStyle;
 
 import impl.GraphCreatorThread;
 import impl.TimeLineCreatorThread;
+import socialocean.model.Result;
 import utils.HistogramEntry;
 import utils.Lucene;
 import utils.Lucene.TimeBin;
@@ -241,14 +242,16 @@ public class Histogram {
 				String query = "category:"+cat;
 				try {
 					Query q = l.getParser().parse(query);
-					ScoreDoc[] result = l.query(q, type, true, true);
-					if (result == null)
+					Result result = l.query(q, type, true, true);
+					ScoreDoc[] data = result.getData();
+					if (data == null)
 						return;
 					
 					TimeLineCreatorThread lilt = new TimeLineCreatorThread(l) {
 						@Override
 						public void execute() {
-							l.changeTimeLine(TimeBin.HOURS);
+							result.setTimeCounter(l.createTimeBins(TimeBin.HOURS, data));
+							l.showInTimeLine(result.getTimeCounter());
 //							l.changeTimeLine(TimeBin.MINUTES);
 						}
 					};
@@ -258,14 +261,15 @@ public class Histogram {
 						
 						@Override
 						public void execute() {
-							l.createGraphView(result);
+//							l.createGraphView(data);
+							l.createSimpleGraphView(data);
 						}
 					};
 					graphThread.start();
 					
 					// Show in MAP  --> Clear LIST = remove all Markers
-					l.showInMap(result, true);
-					l.changeHistogramm(result);
+					l.createMapMarkers(data, true);
+					l.changeHistogramm(result.getHistoCounter());
 					
 //					l.createGraphML_Mention(result, true);
 					
