@@ -481,12 +481,12 @@ public class GraphPanelCreator3 {
 		ArrayList<Object[]> filtered = new ArrayList<>();
 		if (cc != null) {
 			for (Object[] o : cc) {
-				if (o != null && o.length >= 4) {
+				if (o != null && o.length >= 2) {
 					filtered.add(o);
 				}
-				// else {
-				// graph.removeCells(o, true);
-				// }
+				 else {
+				 graph.removeCells(o, true);
+				 }
 			}
 
 			// DESC

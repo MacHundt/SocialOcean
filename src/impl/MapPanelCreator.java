@@ -414,8 +414,8 @@ public class MapPanelCreator {
 
 							@Override
 							public void execute() {
-//								l.createGraphView(data);
-								l.createSimpleGraphView(data);
+								l.createGraphView(data);
+//								l.createSimpleGraphView(data);
 							}
 						};
 						graphThread.start();

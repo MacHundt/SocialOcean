@@ -162,8 +162,8 @@ public class Time {
 						
 						@Override
 						public void execute() {
-//							l.createGraphView(result.getData());
-							l.createSimpleGraphView(data);
+							l.createGraphView(result.getData());
+//							l.createSimpleGraphView(data);
 						}
 					};
 					graphThread.start();

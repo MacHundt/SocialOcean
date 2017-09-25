@@ -59,7 +59,7 @@ public class TopSelectionPart {
 //			"isRetweet", "mention", "sentiment", "tags", "user_id", "user_name"};
 	
 	// The details should be present in the Lucene Index!
-	public String[] detailsToShow = {"category", "content", "hasURL", "has@", "type", "neg", "pos", "mention", "sentiment", "source", "tags", "name", "day"};
+	public String[] detailsToShow = {"category", "content", "hasURL", "has@", "type", "neg", "source", "pos", "mention", "sentiment", "source", "tags", "name", "day"};
 	private DefaultTableModel detailsDataModel;
 	private int resultColumns = 3;
 	
@@ -221,8 +221,8 @@ public class TopSelectionPart {
 						
 						@Override
 						public void execute() {
-//							l.createGraphView(data);
-							l.createSimpleGraphView(data);
+							l.createGraphView(data);
+//							l.createSimpleGraphView(data);
 						}
 					};
 					graphThread.start();

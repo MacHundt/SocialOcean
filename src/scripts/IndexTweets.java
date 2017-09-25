@@ -35,11 +35,11 @@ public class IndexTweets {
 	private static int Fetchsize = 10000;
 	
 //	private static String TWEETDATA = "tweetdata";
-//	private static String TWEETDATA = "bb_tweets";
-	private static String TWEETDATA = "nodexl_my2k_tweets";
+	private static String TWEETDATA = "bb_tweets";
+//	private static String TWEETDATA = "nodexl_my2k_tweets";
 //	private static String USERS = "users";
-	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index_nodexl/";
-//	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index/";
+//	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index_nodexl/";
+	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index/";
 
 	private static boolean LOCAL = false;
 	
@@ -84,7 +84,7 @@ public class IndexTweets {
 					+ "hasurl, "
 //					+ "user_id, "				// bb_tweets -- more unique than screen_name
 					+ "user_screenname, "
-//					+ "tweet_source, "			// bb_tweets
+					+ "tweet_source, "			// bb_tweets
 					+ "positive, "
 					+ "negative, "
 					+ "category, "
@@ -99,7 +99,7 @@ public class IndexTweets {
 			int doc_counter = 0;
 			int counter = 0;
 			int stat = 1;
-//			int topX = 0;
+//			int topX = 3;
 			while (rs.next()) {
 				counter++;
 				
@@ -112,7 +112,7 @@ public class IndexTweets {
 				t.setHasurl(rs.getBoolean("hasurl"));
 //				t.setUser_id(rs.getLong("user_id"));								// bb_tweets
 				t.setUserScreenName(rs.getString("user_screenname")); 			
-//				t.setTweet_source(rs.getString("tweet_source"));					// bb_tweets
+				t.setTweet_source(rs.getString("tweet_source"));					// bb_tweets
 				t.setPositive(rs.getInt("positive"));
 				t.setNegative(rs.getInt("negative"));
 				t.setCategory((rs.getString("category") != null) ? rs.getString("category") : "other");

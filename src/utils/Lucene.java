@@ -1131,19 +1131,16 @@ public enum Lucene {
 	}
 	
 	
-//	/**
-//	 * This methods creates a graph based on the resultset 
-//	 * @param result 
-//	 * @param result
-//	 */
-//	public void createGraphView(ScoreDoc[] result) {
+	/**
+	 * This methods creates a graph based on the resultset 
+	 * @param result 
+	 * @param result
+	 */
+	public void createGraphView(ScoreDoc[] result) {
 //		GraphPanelCreator3.createGraph(result, searcher, withMention, withFollows);
-//	}
-	
-	
-	public void createSimpleGraphView(ScoreDoc[] result) {
 		GraphPanelCreator3.createSimpleGraph(result, searcher, withMention, withFollows);
 	}
+	
 	
 	
 	public void changeEdgeColor() {
@@ -1523,8 +1520,8 @@ public enum Lucene {
 			
 			@Override
 			public void execute() {
-//				createGraphView(data);
-				createSimpleGraphView(data);
+				createGraphView(data);
+//				createSimpleGraphView(data);
 			}
 		};
 		graphThread.start();
@@ -1534,7 +1531,6 @@ public enum Lucene {
 			QueryHistory history = QueryHistory.getInstance();
 			history.removeLastQuery();
 		}
-		
 		
 		Time time = Time.getInstance();
 		last_result = lastResult;

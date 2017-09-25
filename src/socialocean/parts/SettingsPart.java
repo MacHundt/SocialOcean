@@ -46,10 +46,10 @@ public class SettingsPart {
 				
 				Lucene l = Lucene.INSTANCE;
 				l.setWithMentions(mentions.getSelection());
-//				l.createGraphView(l.getLastResult().getData());
 				Result result = l.getLastResult();
 				if (result != null) {
-					l.createSimpleGraphView(result.getData());
+					l.createGraphView(l.getLastResult().getData());
+//					l.createSimpleGraphView(result.getData());
 					l.createMapMarkers(result.getData(), true);
 				}
 			}
@@ -73,10 +73,10 @@ public class SettingsPart {
 				
 				Lucene l = Lucene.INSTANCE;
 				l.setWithFollows(follows.getSelection());
-//				l.createGraphView(l.getLastResult().getData());
 				Result result = l.getLastResult();
 				if (result != null) {
-					l.createSimpleGraphView(result.getData());
+					l.createGraphView(l.getLastResult().getData());
+//					l.createSimpleGraphView(result.getData());
 					l.createMapMarkers(result.getData(), true);
 				}
 			}
@@ -154,7 +154,9 @@ public class SettingsPart {
 				Lucene l = Lucene.INSTANCE;
 				Lucene.SHOWHeatmap = heatmap.getSelection();
 				MapPanelCreator.showHeatmapMenu();
-				l.createMapMarkers(l.getLastResult().getData(), true);
+				Result r = l.getLastResult();
+				if (r != null)
+					l.createMapMarkers(l.getLastResult().getData(), true);
 			}
 			
 			
