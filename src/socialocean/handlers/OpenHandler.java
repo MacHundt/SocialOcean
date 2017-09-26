@@ -92,7 +92,7 @@ public class OpenHandler {
 			l.iniUserMinMaxCreationDate(usermin, usermax);
 			
 			System.out.println("Get MinMax Dates ... DONE");
-			l.printToConsole("Get MinMax-Date ... DONE");
+			l.printlnToConsole("Get MinMax-Date ... DONE");
 			l.clearGraph();
 			l.clearMap();
 			l.clearQueryHistroy();

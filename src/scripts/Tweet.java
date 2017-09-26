@@ -19,6 +19,7 @@ public class Tweet {
 	 private String category = "";
 	 
 	 private String relationship = "";
+	 private String language = "en";
 	 
 	 // ...
 	 
@@ -118,6 +119,14 @@ public class Tweet {
 	}
 	public String getTweet_id() {
 		return tweet_id;
+	}
+
+	public String getLanguage() {
+		return language;
+	}
+
+	public void setLanguage(String language) {
+		this.language = language;
 	}
 
 }

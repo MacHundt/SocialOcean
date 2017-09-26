@@ -42,7 +42,7 @@ public class LuceneSearchHandler {
 		while (!l.isInitialized) {
 			continue;
 		}
-		l.printToConsole("Query: "+type+" - '"+query+"'");
+		l.printlnToConsole("Query: "+type+" - '"+query+"'");
 		System.out.println("Query: "+type+" - '"+query+"'");
 //		// GEO Test
 //		if (query.equals("geo")) {

@@ -59,7 +59,23 @@ public class TopSelectionPart {
 //			"isRetweet", "mention", "sentiment", "tags", "user_id", "user_name"};
 	
 	// The details should be present in the Lucene Index!
-	public String[] detailsToShow = {"category", "content", "hasURL", "has@", "type", "neg", "source", "pos", "mention", "sentiment", "source", "tags", "name", "day"};
+	public String[] detailsToShow = {""
+			+ "category", 
+			"content", 
+			"hasURL", 
+			"has@", 
+			"type", 
+			"neg", 
+			"source", 				// bb_tweets
+			"pos", 
+			"mention", 
+			"sentiment", 
+			"source", 
+			"tags", 
+			"name", 
+			"user_language", 
+			"day"
+			};
 	private DefaultTableModel detailsDataModel;
 	private int resultColumns = 3;
 	
@@ -166,7 +182,7 @@ public class TopSelectionPart {
 				currentSelectedField = (String) detailsDataModel.getValueAt(detail.convertRowIndexToModel(selected), colIndexName);
 				if (currentSelectedField != null && !currentSelectedField.isEmpty()) {
 					System.out.println("Get top "+ topX +" from field "+currentSelectedField);
-					l.printToConsole("Get top "+ topX +" from field "+currentSelectedField);
+					l.printlnToConsole("Get top "+ topX +" from field "+currentSelectedField);
 					TermStats[] result = l.searchTopXOfField(currentSelectedField, topX);
 					
 					Object[][] resulTable = new Object[result.length][resultColumns];
@@ -195,7 +211,7 @@ public class TopSelectionPart {
 				// get Selected Items from result Table
 				String query = currentSelectedField+":"+results.getModel().getValueAt(results.getSelectedRow(), resultColumns-1 );
 				System.out.println("Show "+results.getModel().getValueAt(results.getSelectedRow(), resultColumns-1));
-				l.printToConsole("Show "+results.getModel().getValueAt(results.getSelectedRow(), resultColumns-1));
+				l.printlnToConsole("Show "+results.getModel().getValueAt(results.getSelectedRow(), resultColumns-1));
 				
 				if (query.isEmpty()) {
 					return;

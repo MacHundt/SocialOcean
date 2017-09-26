@@ -23,7 +23,7 @@ public class Console {
 	
 	@PostConstruct
 	public void postConstruct(Composite parent) {
-		console = new StyledText(parent, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.H_SCROLL);
+		console = new StyledText(parent, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.H_SCROLL | SWT.BOTTOM );
 		console.setDoubleClickEnabled(false);
 //		console.setScrollBars( false);
 		console.setEditable(false);
@@ -48,12 +48,30 @@ public class Console {
 //	}
 	
 	
-	public void outputConsole(String output) {
+	public void outputConsoleln(String output) {
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
 				try {
 					console.setText(console.getText()+"\n"
 							+ output);
+					console.setTopIndex(console.getLineCount() - 1);
+					console.update();
+				} catch (Throwable t) {
+					t.printStackTrace();
+					System.out.println(" Could not print to Console");
+					// app.showStatus(t.getMessage());
+				}
+			}
+		});
+	}
+	
+	public void outputConsole(String output) {
+		Display.getDefault().syncExec(new Runnable() {
+			public void run() {
+				try {
+					console.setText(console.getText()+""
+							+ output);
+					console.setTopIndex(console.getLineCount() - 1);
 					console.update();
 				} catch (Throwable t) {
 					t.printStackTrace();

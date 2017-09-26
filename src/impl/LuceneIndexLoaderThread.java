@@ -22,7 +22,7 @@ public abstract class LuceneIndexLoaderThread extends Thread {
 		try {
 			execute();
 			System.out.println("Done");
-			l.printToConsole("Loading Lucene Index ... DONE");
+			l.printlnToConsole("Loading Lucene Index ... DONE");
 			
 			l.printStatistics();
 			if (changeHisto)

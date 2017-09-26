@@ -16,7 +16,7 @@ import utils.Lucene;
 			try {
 				execute();
 				System.out.println("Changed Timeline ... DONE");
-				l.printToConsole("TimeLine ... DONE");
+				l.printlnToConsole("TimeLine ... DONE");
 				
 			} catch (Throwable t) {
 				t.printStackTrace();

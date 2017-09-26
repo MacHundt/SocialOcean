@@ -85,6 +85,7 @@ public class IndexTweets {
 //					+ "user_id, "				// bb_tweets -- more unique than screen_name
 					+ "user_screenname, "
 					+ "tweet_source, "			// bb_tweets
+					+ "user_language, "				// bb_tweets
 					+ "positive, "
 					+ "negative, "
 					+ "category, "
@@ -99,7 +100,7 @@ public class IndexTweets {
 			int doc_counter = 0;
 			int counter = 0;
 			int stat = 1;
-//			int topX = 3;
+			int topX = 3;
 			while (rs.next()) {
 				counter++;
 				
@@ -110,9 +111,10 @@ public class IndexTweets {
 				t.setLatitude(rs.getDouble("latitude"));
 				t.setLongitude(rs.getDouble("longitude"));
 				t.setHasurl(rs.getBoolean("hasurl"));
-//				t.setUser_id(rs.getLong("user_id"));								// bb_tweets
 				t.setUserScreenName(rs.getString("user_screenname")); 			
+//				t.setUser_id(rs.getLong("user_id"));								// bb_tweets
 				t.setTweet_source(rs.getString("tweet_source"));					// bb_tweets
+				t.setLanguage(rs.getString("user_language"));					// bb_tweets  // text is english, but the user can select his profile language
 				t.setPositive(rs.getInt("positive"));
 				t.setNegative(rs.getInt("negative"));
 				t.setCategory((rs.getString("category") != null) ? rs.getString("category") : "other");
@@ -128,8 +130,8 @@ public class IndexTweets {
 					if (doc_counter % 100 == 0) {
 						System.out.println(". >>"+ Fetchsize*100*stat+" tweets processed");
 						stat++;
-//						if (topX-- == 0)
-//							break;
+						if (topX-- == 0)
+							break;
 					}				
 					else {
 						System.out.print(".");
@@ -179,6 +181,9 @@ public class IndexTweets {
 			
 			// User_ScreenName
 			doc.add(new StringField("name", t.getUserScreenName(), Field.Store.YES));
+			
+			// User_Language
+			doc.add(new StringField("user_language", t.getLanguage(), Field.Store.YES));
 			
 			
 			// # tags

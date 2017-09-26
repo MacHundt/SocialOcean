@@ -18,7 +18,7 @@ public abstract class MentionGraphCreatorThread extends Thread {
 		try {
 			execute();
 			System.out.println("Done");
-			l.printToConsole("MentionGraph ... DONE");
+			l.printlnToConsole("MentionGraph ... DONE");
 			
 		} catch (Throwable t) {
 			t.printStackTrace();

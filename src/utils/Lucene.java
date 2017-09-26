@@ -8,10 +8,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -22,7 +20,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
@@ -31,8 +28,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.DateTools.Resolution;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
@@ -56,10 +51,9 @@ import com.vividsolutions.jts.geom.Coordinate;
 import impl.GraphCreatorThread;
 import impl.GraphML_Helper;
 import impl.GraphPanelCreator3;
-import impl.LuceneIndexLoaderThread;
-import impl.LuceneQuerySearcher;
 import impl.MapPanelCreator;
 import impl.MyEdge;
+import impl.ReIndexingThread;
 import impl.TimeLineCreatorThread;
 import interfaces.ILuceneQuerySearcher;
 import socialocean.model.Result;
@@ -262,12 +256,22 @@ public enum Lucene {
 		return luceneIndex;
 	}
 
+	
 	public void printToConsole(String msg) {
 		while (!Console.isInitialized) {
 			continue;
 		}
 		Console c = Console.getInstance();
 		c.outputConsole(msg);
+	}
+	
+	
+	public void printlnToConsole(String msg) {
+		while (!Console.isInitialized) {
+			continue;
+		}
+		Console c = Console.getInstance();
+		c.outputConsoleln(msg);
 	}
 
 	public void clearQueryHistroy() {
@@ -526,7 +530,7 @@ public enum Lucene {
 
 		if (print && queryResult != null) {
 			System.out.println("(" + serialCounter + ") " + query.toString() + " #:" + queryResult.length);
-			printToConsole("(" + serialCounter + ") " + query.toString() + " #:" + queryResult.length);
+			printlnToConsole("(" + serialCounter + ") " + query.toString() + " #:" + queryResult.length);
 		}
 		
 		Result result = new Result(queryResult, searcher);
@@ -1546,7 +1550,7 @@ public enum Lucene {
 			}
 		};
 		lilt.start();
-		printToConsole("<< back: "+ last_query + "#:"+ lastResult.size());
+		printlnToConsole("<< back: "+ last_query + "#:"+ lastResult.size());
 
 	}
 
@@ -1621,7 +1625,7 @@ public enum Lucene {
 
 			// if the directory does not exist, create it
 			if (!theDir.exists()) {
-			    System.out.println("creating directory: " + theDir.getName());
+			    System.out.println("\tcreating directory: " + theDir.getName());
 			    boolean result = false;
 
 			    try{
@@ -1632,17 +1636,15 @@ public enum Lucene {
 			        //handle it
 			    }        
 			    if(result) {    
-			        System.out.println("DIR created");  
+			        System.out.println("\tDIR created");  
 			    }
 			}
 		}
 		
 		
-		
-		
 		File newIndex = new File(tempPath+""+name);
 		if (!newIndex.exists()) {
-		    System.out.println("creating directory: " + newIndex.getName());
+		    System.out.println("\tcreating directory: " + newIndex.getName());
 		    boolean result = false;
 
 		    try{
@@ -1653,11 +1655,12 @@ public enum Lucene {
 		        //handle it
 		    }        
 		    if(result) {    
-		        System.out.println("DIR created");  
+		        System.out.println("\tDIR created");  
 		    }
 		}
 		
-		System.out.println("Indexing to directory '" + newIndex + "'...");
+		System.out.println("\tcreated directory '" + newIndex + "' ... DONE");
+		printlnToConsole("\tcreated directory '"+newIndex+"' ... DONE");
 		
 		try {
 			Directory dir = FSDirectory.open(Paths.get(newIndex.getAbsolutePath()));
@@ -1682,73 +1685,49 @@ public enum Lucene {
 			
 			IndexWriter writer = new IndexWriter(dir, iwc);
 			
-			for (ScoreDoc doc : last_result.getData()) {
-				Document document = null;
-				try {
-					document = searcher.doc(doc.doc);
-					
-					// get content .. add content
-					// fulltext
-					String id = document.get("id");
-					String content = getContent(id);
-					content = content.replaceAll("\"", "");
-					TextField content_field = new TextField("content", content, Field.Store.NO);
-					document.add(content_field);
-					
-				} catch (IOException e) {
-					continue;
-				}
-				writer.addDocument(document);
-			}
+//			final Progress progress = new Progress("Progress");
+//			progress.fill(parent);
 			
-			writer.close();
+			Connection c = DBManager.getConnection();
+			Statement stmt = c.createStatement();
+		
+			ReIndexingThread indexer = new ReIndexingThread(this, last_result.getData(), c, stmt, writer, 
+					true, newIndex.getAbsolutePath());
+			indexer.start();
 			
-		} catch (IOException e1) {
+		} catch (IOException | SQLException e1 ) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		
-		
-		// TODO store mapping (index to foldername
-		// re-init Lucene with new created Lucene Index
-		// Add a dialog, to enable to open LuceneIndex files
-		
-		LuceneQuerySearcher lqs = LuceneQuerySearcher.INSTANCE;
-		LuceneIndexLoaderThread lilt = new LuceneIndexLoaderThread(this, false, false) {
-			@Override
-			public void execute() throws Exception {
-				System.out.println("Loading Lucene Index ...");
-				initLucene( newIndex.getAbsolutePath(), lqs);
-			}
-		};
-		lilt.start();
-		
 	}
 	
 	
-	private String getContent(String tweetid) {
-		String content = "";
-		Connection c = DBManager.getConnection();
-    	try {
-			Statement stmt = c.createStatement();
-			String table = DBManager.getTweetdataTable();
-			
-//			String query = "select t.\"tweetScreenName\", t.\"tweetContent\", t.creationdate, t.sentiment, t.category, t.\"containsUrl\"  from "+table+" as t where t.tweetid = "+text;
-			String query = "select t.tweet_content from "+table+" as t where t.tweet_id = "+tweetid;
-			ResultSet rs = stmt.executeQuery(query);
-			while (rs.next()) {
-				content = rs.getString("tweet_content");
-			}
-			
-			stmt.close();
-			c.close();
-		} catch (SQLException e1) {
-			e1.printStackTrace();
-		}
-    	
-    	
-    	return content;
-	}
+//	private String getContent(String tweetid) {
+//		String content = "";
+//		Connection c = DBManager.getConnection();
+//    		try {
+//			Statement stmt = c.createStatement();
+//			String table = DBManager.getTweetdataTable();
+//			
+////			String query = "select t.\"tweetScreenName\", t.\"tweetContent\", t.creationdate, t.sentiment, t.category, t.\"containsUrl\"  from "+table+" as t where t.tweetid = "+text;
+//			String query = "select t.tweet_content from "+table+" as t where t.tweet_id = "+tweetid;
+//			ResultSet rs = stmt.executeQuery(query);
+//			while (rs.next()) {
+//				content = rs.getString("tweet_content");
+//			}
+//			
+//			stmt.close();
+//			c.close();
+//		} catch (SQLException e1) {
+//			e1.printStackTrace();
+//		}
+//    	
+//    	return content;
+//	}
+	
+	
+	
 
 	public void clearGraph() {
 		GraphPanelCreator3.clearGraph();		

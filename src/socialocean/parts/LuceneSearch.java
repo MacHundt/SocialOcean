@@ -34,6 +34,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Text;
 
 import socialocean.handlers.LuceneSearchHandler;
@@ -229,10 +230,20 @@ public class LuceneSearch {
 				
 				String name = input.getValue();
 				
+				input.close();
+				
 				// TODO Graph
 				// Clear all Results, Map, Graph
-				System.out.println("Re-Index");
-				l.printToConsole("Re-Index");
+				System.out.println("Re-Index:");
+				l.printlnToConsole("Re-Index:");
+				
+//				ProgressBar progress = new ProgressBar(parent.getShell(), SWT.SMOOTH);
+//				progress.setVisible(true);
+//				progress.setEnabled(true);
+				
+//				Progress progress = new Progress("Pro");
+//				progress.fill(parent);
+				
 				l.reindexLastResult(name);
 				l.clearMap();
 				l.clearGraph();	
@@ -252,7 +263,7 @@ public class LuceneSearch {
 				// TODO Graph
 				// Clear all Results, Map, Graph
 				System.out.println("CLEAR");
-				l.printToConsole("CLEAR");
+				l.printlnToConsole("CLEAR");
 				l.clearQueryHistroy();
 				l.clearMap();
 				l.showCatHisto();

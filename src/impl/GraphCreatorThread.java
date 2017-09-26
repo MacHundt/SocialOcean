@@ -18,7 +18,7 @@ public abstract class GraphCreatorThread extends Thread{
 		try {
 			execute();
 			System.out.println("Graph created ... DONE");
-			l.printToConsole("Graph created ... DONE");
+			l.printlnToConsole("Graph created ... DONE");
 			
 		} catch (Throwable t) {
 			t.printStackTrace();
