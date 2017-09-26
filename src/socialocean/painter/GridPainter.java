@@ -45,6 +45,7 @@ public class GridPainter implements Painter<JXMapViewer> {
 
 		g.setColor(Color.GREEN);
 		g.setStroke(new BasicStroke(1));
+		
 
 		int zoom = map.getZoom();
 		Map<MapGridRectangle, List<Document>> cells = mapCon.getGridCells(zoom);
@@ -62,6 +63,7 @@ public class GridPainter implements Painter<JXMapViewer> {
 
 			g.setColor(Color.GREEN);
 			g.draw(r);
+			
 		}
 
 		g.dispose();

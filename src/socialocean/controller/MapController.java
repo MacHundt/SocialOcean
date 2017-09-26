@@ -1,6 +1,10 @@
 package socialocean.controller;
 
+import java.awt.Color;
+import java.awt.Point;
 import java.awt.Shape;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -92,7 +96,6 @@ public class MapController extends Observable {
 				int cellY = (int) (centerY / cellSize);
 	
 				MapGridRectangle cell = new MapGridRectangle(cellX * cellSize, cellY * cellSize, cellSize, cellSize);
-	
 				if (!cells.containsKey(cell)) {
 					cells.put(cell, new ArrayList<>());
 				}
@@ -103,6 +106,37 @@ public class MapController extends Observable {
 			}
 			
 		}
+		
+		// Set Color of cell
+		double maxDocs = Math.log((double) result.getData().length);
+		double stepsize = maxDocs / 5;
+		for (MapGridRectangle key : cells.keySet()) {
+			double cellN = Math.log(cells.get(key).size());
+			int bucket = (int) Math.ceil(cellN / stepsize);
+			int a = 15;
+			switch (bucket) {
+			case 1:
+				a = 51;
+				break;
+			case 2:
+				a = 102;
+				break;
+			case 3:
+				a = 153;
+				break;
+			case 4:
+				a = 204;
+				break;
+			case 5:
+				a = 255;
+				break;
+
+			default:
+				break;
+			}
+			key.setBackgroundColor(new Color(0, 0, 255, a));
+		}
+		
 		System.out.println("Number of Cells: " + cells.size());
 		System.out.println("Cellsize: " + cellSize);
 		cellsToYard.put(zoomLvl, cells);

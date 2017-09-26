@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -19,12 +20,12 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
-
-import javax.inject.Inject;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -48,8 +49,7 @@ import org.apache.lucene.spatial.geopoint.search.GeoPointInBBoxQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.e4.ui.workbench.modeling.EPartService;
-import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
+import org.jxmapviewer.viewer.GeoPosition;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
@@ -1138,9 +1138,13 @@ public enum Lucene {
 	 */
 	public void createGraphView(ScoreDoc[] result) {
 //		GraphPanelCreator3.createGraph(result, searcher, withMention, withFollows);
-		GraphPanelCreator3.createSimpleGraph(result, searcher, withMention, withFollows);
+//		GraphPanelCreator3.createSimpleGraph(result, searcher, withMention, withFollows);
 	}
 	
+	
+//	public void createSimpleGraphView(ScoreDoc[] result) {
+//		GraphPanelCreator3.createSimpleGraph(result, searcher, withMention, withFollows);
+//	}
 	
 	
 	public void changeEdgeColor() {
@@ -1342,10 +1346,7 @@ public enum Lucene {
 			if (clearMap)
 				MapPanelCreator.clearWayPoints(clearMap);
 			
-			double minlat = Double.MAX_VALUE;
-			double maxlat = -Double.MIN_VALUE;
-			double minlong = Double.MAX_VALUE;
-			double maxlong = -Double.MIN_VALUE;
+			HashSet<GeoPosition> points = new HashSet<>();
 			
 			for (MyEdge edge : edges) {
 				String id = edge.getId();
@@ -1354,11 +1355,11 @@ public enum Lucene {
 				double lat = edge.getLatitude();
 				double lon = edge.getLongitude();
 				
-				if (lat != 0.0 && lon != 0.0) {
-					minlat = Math.min(minlat, lat);
-					maxlat = Math.max(maxlat, lat);
-					minlong = Math.min(minlong, lon);
-					maxlong = Math.max(maxlong, lon);
+				if (lat !=0.0 || lon != 0.0) {
+					Coordinate c = new Coordinate(lat, lon);
+					GeoPosition g = new GeoPosition(c.x, c.y);
+					points.add(g);
+					MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, senti, lat, lon));
 				}
 				
 //				String senti = "neutral";
@@ -1367,11 +1368,10 @@ public enum Lucene {
 //				else if (sentiment < 0)
 //					senti = "negative";
 					
-				MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, senti, lat, lon));
+				
 			}
 			
-			MapPanelCreator.centerMapGeoPoint(new Coordinate( (minlong+maxlong)/2, (minlat+maxlat)/2 ));
-			
+			MapPanelCreator.zoomToBestFit(points);
 			MapPanelCreator.showWayPointsOnMap();
 		}
 	}
@@ -1531,6 +1531,7 @@ public enum Lucene {
 			QueryHistory history = QueryHistory.getInstance();
 			history.removeLastQuery();
 		}
+		
 		
 		Time time = Time.getInstance();
 		last_result = lastResult;

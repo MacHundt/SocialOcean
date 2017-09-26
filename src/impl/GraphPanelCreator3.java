@@ -298,10 +298,9 @@ public class GraphPanelCreator3 {
 		Lucene l = Lucene.INSTANCE;
 
 		try {
-			
 			Connection c = DBManager.getConnection();
 			String table = DBManager.getTweetdataTable();
-			String userTable = DBManager.getUserTable();
+//			String userTable = DBManager.getUserTable();
 			Statement stmt = c.createStatement();
 			
 			for (ScoreDoc doc : result) {
@@ -358,14 +357,23 @@ public class GraphPanelCreator3 {
 				boolean isEmpty = true;
 				while (rs.next()) {
 					isEmpty = false;
-					screenName = rs.getString("user_screenname");
-					content = rs.getString("tweet_content");
-					sentiment = rs.getString("sentiment");
-					category = rs.getString("category");
+//					screenName = rs.getString("user_screenname");
+//					content = rs.getString("tweet_content");
+//					sentiment = rs.getString("sentiment");
+//					category = rs.getString("category");
+//					category = category.replace(" & ", "_").toLowerCase();
+//					hasUrl = rs.getBoolean("hasurl");
+//					pos = rs.getInt("positive");
+//					neg = rs.getInt("negative");
+					
+					screenName = rs.getString(1);
+					content = rs.getString(2);
+					sentiment = rs.getString(3);
+					pos = rs.getInt(4);
+					neg = rs.getInt(5);
+					category = rs.getString(6);
 					category = category.replace(" & ", "_").toLowerCase();
-					hasUrl = rs.getBoolean("hasurl");
-					pos = rs.getInt("positive");
-					neg = rs.getInt("negative");
+					hasUrl = rs.getBoolean(7);
 				}
 				
 				if (sentiment == null)
@@ -481,7 +489,7 @@ public class GraphPanelCreator3 {
 		ArrayList<Object[]> filtered = new ArrayList<>();
 		if (cc != null) {
 			for (Object[] o : cc) {
-				if (o != null && o.length >= 2) {
+				if (o != null && o.length >= 3) {
 					filtered.add(o);
 				}
 				 else {

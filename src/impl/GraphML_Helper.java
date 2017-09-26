@@ -124,9 +124,9 @@ public class GraphML_Helper {
 				// get the tweet
 				case "twitter":
 					query = "Select "
-							+ "t.\"tweetScreenName\", t.\"tweetContent\", t.sentiment, t.category, t.\"containsUrl\", t.replytousername, "
-							+ "t.userlistedcount, t.\"userCreationdate\", t.\"userFriendscount\" , "
-							+ "t.\"userFollowers\", t.\"userStatusCount\"  from "+table+" as t where t.tweetid = "
+							+ "t.user_screenname, t.tweet_content, t.sentiment, t.category, t.hasurl, t.tweet_replytousername, "
+							+ "t.userlistedcount, t.user_creationdate, t.user_friendscount , "
+							+ "t.user_followerscount, t.user_statusescount  from "+table+" as t where t.tweet_id = "
 							+ Long.parseLong(id);
 					break;
 				case "flickr":

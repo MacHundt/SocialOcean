@@ -8,6 +8,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -16,6 +17,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
@@ -27,6 +29,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
 
+import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.OSMTileFactoryInfo;
@@ -43,6 +46,7 @@ import org.jxmapviewer.viewer.WaypointPainter;
 import com.vividsolutions.jts.geom.Coordinate;
 
 import socialocean.controller.MapController;
+import socialocean.model.MapGridRectangle;
 import socialocean.model.Result;
 import socialocean.painter.GlyphPainter;
 import socialocean.painter.GridPainter;
@@ -202,9 +206,9 @@ public class MapPanelCreator {
 			
 			if (Lucene.SHOWHeatmap) {
 				GridPainter gp = new GridPainter(mapCon);
-				GlyphPainter glp = new GlyphPainter(mapCon);
+//				GlyphPainter glp = new GlyphPainter(mapCon);
 				painters.add(gp);
-				painters.add(glp);
+//				painters.add(glp);
 			}
 			
 			painters.add(swingWaypointPainter);
@@ -458,9 +462,27 @@ public class MapPanelCreator {
 
 				@Override
 				public void mouseClicked(MouseEvent e) {
+					// clicked in Cell?
+//					Point p = e.getPoint();
+					Point p = mapViewer.getMousePosition();
+					int zooml = mapViewer.getZoom();
+					Map<MapGridRectangle, List<Document>> cells = mapCon.getGridCells(mapViewer.getZoom());
+					if (cells == null) {
+						return;
+					}
+					for (MapGridRectangle rec : cells.keySet()) {
+						if (rec.contains(e.getX(), e.getY())) {
+							System.out.println(cells.get(rec).size());
+							// TODO
+							
+							break;
+						}
+					}
 				}
 			});
 
+			
+			
 			mapViewer.addMouseMotionListener(new MouseMotionListener() {
 
 				@Override
@@ -662,9 +684,13 @@ public class MapPanelCreator {
 	}
 	
 	
+	public static void zoomToBestFit(Set<GeoPosition> points) {
+		mapViewer.zoomToBestFit(points , 1);
+//		mapViewer.repaint();
+	}
+	
+	
 	public static void centerMapGeoPoint(Coordinate src) {
-		
-//		mapViewer.zoomToBestFit(waypoints, null);
 		
 		GeoPosition g = new GeoPosition(src.y, src.x);
 		Point2D gp = mapViewer.getTileFactory().geoToPixel(g, mapViewer.getZoom());

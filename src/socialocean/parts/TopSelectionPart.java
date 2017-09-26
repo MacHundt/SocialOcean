@@ -232,7 +232,7 @@ public class TopSelectionPart {
 					l.changeHistogramm(result.getHistoCounter());
 					
 					
-//				l.createGraphML_Mention(result, true);
+//					l.createGraphML_Mention(data, true);
 //				l.createGraphML_Retweet(result, true);
 					
 				} catch (ParseException e1) {
