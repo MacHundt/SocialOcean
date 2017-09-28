@@ -48,6 +48,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import socialocean.controller.MapController;
 import socialocean.model.MapGridRectangle;
 import socialocean.model.Result;
+import socialocean.painter.CountryPainter;
 import socialocean.painter.GlyphPainter;
 import socialocean.painter.GridPainter;
 import socialocean.parts.MapMenuPanel;
@@ -170,13 +171,14 @@ public class MapPanelCreator {
 		public void drawGrid() {
 			if (GraphPanelCreator3.SELECTED) {
 				painters.removeIf(
-					p -> p instanceof GlyphPainter || p instanceof GridPainter);
+					p -> p instanceof GlyphPainter || p instanceof GridPainter || p instanceof CountryPainter);
 				showWayPointsOnMap();
 				return;
 			}
 			else 
 				painters.removeIf(
-						p -> p instanceof GlyphPainter || p instanceof GridPainter || p instanceof WaypointPainter);
+						p -> p instanceof GlyphPainter || p instanceof GridPainter || p instanceof WaypointPainter
+						|| p instanceof CountryPainter);
 
 			System.out.println("ZOOM >> " + map.getZoom());
 
@@ -209,6 +211,9 @@ public class MapPanelCreator {
 //				GlyphPainter glp = new GlyphPainter(mapCon);
 				painters.add(gp);
 //				painters.add(glp);
+			} else {
+				CountryPainter cp = new CountryPainter(mapCon);
+				painters.add(cp);
 			}
 			
 			painters.add(swingWaypointPainter);

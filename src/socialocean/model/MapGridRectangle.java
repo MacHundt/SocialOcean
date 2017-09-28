@@ -24,4 +24,5 @@ public class MapGridRectangle extends Rectangle {
 		this.backgroundColor = backgroundcColor;
 	}
 
+
 }
