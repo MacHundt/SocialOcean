@@ -51,6 +51,7 @@ import socialocean.model.Result;
 import socialocean.painter.CountryPainter;
 import socialocean.painter.GlyphPainter;
 import socialocean.painter.GridPainter;
+import socialocean.parts.Console;
 import socialocean.parts.MapMenuPanel;
 import utils.FilesUtil;
 import utils.Lucene;
@@ -60,12 +61,12 @@ public class MapPanelCreator {
 
 	private static MapViewer mapPanel = null;
 	private static JXMapViewer mapViewer = null;
-	private static int max = 19;
+	public static int maxZoom = 19;
 	public static int zoom = 16;
 	
 	private static int tileThreads = 4;
 
-	private static MapController mapCon;
+	public static MapController mapCon;
 	private static MapMenuPanel menu;
 
 	private static Set<SwingWaypoint> waypoints = new HashSet<>();
@@ -211,7 +212,7 @@ public class MapPanelCreator {
 //				GlyphPainter glp = new GlyphPainter(mapCon);
 				painters.add(gp);
 //				painters.add(glp);
-			} else {
+			} else if (Lucene.INITCountires && !Lucene.SHOWHeatmap){
 				CountryPainter cp = new CountryPainter(mapCon);
 				painters.add(cp);
 			}
@@ -238,26 +239,26 @@ public class MapPanelCreator {
 
 			TileFactoryInfo googlemaps = new TileFactoryInfo("" + "GoogleMaps", 2, // min
 					18, // max allowed zoom level
-					max, // max zoom level
+					maxZoom, // max zoom level
 					256, // tile size (must be square!!)
 					true, true, // x/y orientation is normal
 					"http://mt" + (int) (Math.random() * 3 + 0.5) + ".google.com/vt/v=w2.106&hl=de", // baseURL
 					"x", "y", "z") {
 				public String getTileUrl(int x, int y, int zoom) {
-					zoom = max - zoom;
+					zoom = maxZoom - zoom;
 					return this.baseURL + "&x=" + x + "&y=" + y + "&z=" + zoom;
 				}
 			};
 
 			TileFactoryInfo stamen = new TileFactoryInfo("" + "Stamen B/W", 2, // min
 					18, // max allowed zoom level
-					max, // max zoom level
+					maxZoom, // max zoom level
 					256, // tile size (must be square!!)
 					true, true, // x/y orientation is normal
 					"http://tile.stamen.com/toner", // baseURL
 					"x", "y", "z") {
 				public String getTileUrl(int x, int y, int zoom) {
-					zoom = max - zoom;
+					zoom = maxZoom - zoom;
 					String url = this.baseURL + "/" + zoom + "/" + x + "/" + y + ".png";
 					// http://tile.stamen.com/toner/{z}/{x}/{y}.png
 					return url;
@@ -431,6 +432,7 @@ public class MapPanelCreator {
 
 						l.createMapMarkers(data, true);
 						l.changeHistogramm(result.getHistoCounter());
+						l.initCountriesMap();
 
 						// l.createGraphML_Mention(result, true);
 						// l.createGraphML_Retweet(result, true);

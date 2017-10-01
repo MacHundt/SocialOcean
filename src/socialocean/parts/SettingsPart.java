@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -15,6 +16,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Label;
 
 import impl.MapPanelCreator;
@@ -144,13 +146,22 @@ public class SettingsPart {
 		Button heatmap = new Button(parent, SWT.CHECK);
 		heatmap.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		heatmap.setText("Heatmap");
-		heatmap.setSelection(false);
+		heatmap.setSelection(Lucene.SHOWHeatmap);
 		heatmap.addSelectionListener(new SelectionListener() {
 			
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
-				System.out.println(heatmap.getText() + " is turned to: "+heatmap.getSelection());
 				
+				if (heatmap.getSelection() == false) {
+					if (!Lucene.INITCountires) {
+						heatmap.setSelection(true);
+						Lucene l = Lucene.INSTANCE;
+						l.printlnToConsole(">> Countries not yet ready ... ");
+						return;
+					}
+				}
+				
+				System.out.println(heatmap.getText() + " is turned to: "+heatmap.getSelection());
 				Lucene l = Lucene.INSTANCE;
 				Lucene.SHOWHeatmap = heatmap.getSelection();
 				MapPanelCreator.showHeatmapMenu();

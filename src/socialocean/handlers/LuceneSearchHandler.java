@@ -84,6 +84,7 @@ public class LuceneSearchHandler {
 				
 				l.createMapMarkers(data, true);
 				l.changeHistogramm(result.getHistoCounter());
+				l.initCountriesMap();
 				
 //				l.createGraphML_Mention(result, true);
 //				l.createGraphML_Retweet(result, true);

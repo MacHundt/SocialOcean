@@ -109,3 +109,4 @@ buildNumber.properties
 hs_err_pid*
 #/libs/
 /schema/
+/docs/

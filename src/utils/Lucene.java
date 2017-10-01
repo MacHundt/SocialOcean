@@ -56,6 +56,7 @@ import impl.MyEdge;
 import impl.ReIndexingThread;
 import impl.TimeLineCreatorThread;
 import interfaces.ILuceneQuerySearcher;
+import socialocean.controller.MapController;
 import socialocean.model.Result;
 import socialocean.parts.CategoriesPart;
 import socialocean.parts.Console;
@@ -95,7 +96,6 @@ public enum Lucene {
 	
 	private ColorScheme colorScheme = ColorScheme.SENTIMENT;
 
-	private Connection con = null;
 
 	// START TIME
 	// private PreparedStatement pre_statement_min;
@@ -155,7 +155,9 @@ public enum Lucene {
 	private long user_minDate;
 	private long user_maxDate;
 	
-	public static boolean SHOWHeatmap = false;
+	public static boolean SHOWHeatmap = true;
+	public static boolean DATACHANGED = false;
+	public static boolean INITCountires = false;
 	
 	public void initLucene(String index, ILuceneQuerySearcher querySearcher) throws Exception {
 
@@ -1731,6 +1733,20 @@ public enum Lucene {
 
 	public void clearGraph() {
 		GraphPanelCreator3.clearGraph();		
+	}
+	
+	
+	public void initCountriesMap() {
+		DATACHANGED = true;
+		Thread initCountries = new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				MapPanelCreator.mapCon.getCountries(16);
+			}
+		}, "InitCountries");
+		initCountries.start();
+		
 	}
 
 

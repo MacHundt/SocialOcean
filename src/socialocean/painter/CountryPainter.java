@@ -19,6 +19,7 @@ import com.vividsolutions.jts.geom.Polygon;
 import socialocean.controller.MapController;
 import socialocean.model.MapCountries;
 import utils.GeoToCartesianTransformation;
+import utils.Lucene;
 
 public class CountryPainter implements Painter<JXMapViewer> {
 	

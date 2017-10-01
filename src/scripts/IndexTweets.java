@@ -282,8 +282,11 @@ public class IndexTweets {
 				no_geo++;
 			}
 
-			GeoPointField geo = new GeoPointField("geo", lati, longi, GeoPointField.Store.YES);
-			doc.add(geo);
+			// TODO geo tweet location --> Get Country (ID oder name) of admin0 .. and admin1
+			if (lati != 0 || longi != 0) {
+				GeoPointField geo = new GeoPointField("geo", lati, longi, GeoPointField.Store.YES);
+				doc.add(geo);
+			}
 			
 
 			if (writer.getConfig().getOpenMode() == OpenMode.CREATE) {

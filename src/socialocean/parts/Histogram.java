@@ -270,6 +270,7 @@ public class Histogram {
 					// Show in MAP  --> Clear LIST = remove all Markers
 					l.createMapMarkers(data, true);
 					l.changeHistogramm(result.getHistoCounter());
+					l.initCountriesMap();
 					
 //					l.createGraphML_Mention(result, true);
 					
