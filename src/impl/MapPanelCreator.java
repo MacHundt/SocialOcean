@@ -207,15 +207,16 @@ public class MapPanelCreator {
 				mapViewer.removeAll();
 			}
 			
+			if (Lucene.INITCountries && Lucene.SHOWCountries){
+				CountryPainter cp = new CountryPainter(mapCon);
+				painters.add(cp);
+			}
 			if (Lucene.SHOWHeatmap) {
 				GridPainter gp = new GridPainter(mapCon);
 //				GlyphPainter glp = new GlyphPainter(mapCon);
 				painters.add(gp);
 //				painters.add(glp);
-			} else if (Lucene.INITCountires && !Lucene.SHOWHeatmap){
-				CountryPainter cp = new CountryPainter(mapCon);
-				painters.add(cp);
-			}
+			} 
 			
 			painters.add(swingWaypointPainter);
 			CompoundPainter<JXMapViewer> painter = new CompoundPainter<JXMapViewer>(painters);
@@ -299,7 +300,7 @@ public class MapPanelCreator {
 
 			// GeoPosition frankfurt = new GeoPosition(50.11, 8.68);
 			GeoPosition boston = new GeoPosition(42.367391, -71.065063);
-
+			
 			// Set the focus
 			mapViewer.setZoom(zoom);
 			mapViewer.setAddressLocation(boston);
@@ -683,7 +684,11 @@ public class MapPanelCreator {
 		if (clearList)
 			waypoints.clear();
 		mapViewer.removeAll();
+		
+//		mapViewer.setZoom(16);
 		mapViewer.repaint();
+		mapViewer.updateUI();
+		mapViewer.revalidate();
 	}
 
 	public static void dataChanged() {
@@ -703,5 +708,9 @@ public class MapPanelCreator {
 		Point2D gp = mapViewer.getTileFactory().geoToPixel(g, mapViewer.getZoom());
 		mapViewer.setCenter(gp);
 		mapViewer.repaint();
+	}
+	
+	public static int getZoomLevel() {
+		return mapViewer.getZoom();
 	}
 }

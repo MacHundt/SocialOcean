@@ -9,6 +9,11 @@ public class TEST {
 		System.out.println(java.lang.Runtime.getRuntime().totalMemory());
 		System.out.println(java.lang.Runtime.getRuntime().availableProcessors());
 		
+		
+		String s = "Nuku'alofa";
+		String query = "Select user_id, user_timezone from test where user_timezone = '" + s +"'";
+		
+		
 		String name = "??? Hugo Arnold ?* ";
 		name = name.replaceAll("[^ a-zA-Z']", "");
 		

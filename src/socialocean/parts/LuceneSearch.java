@@ -101,6 +101,7 @@ public class LuceneSearch {
 		partService.showPart("socialocean.part.queryhistory", PartState.CREATE);
 //		MPart part = partService.createPart("socialocean.partdescriptor.sample");
 		
+		
 		Lucene l = Lucene.INSTANCE;
 		parent.setLayout(new GridLayout(9, false));
 		

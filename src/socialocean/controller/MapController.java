@@ -15,9 +15,11 @@ import java.util.Map;
 import java.util.Observable;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.spatial.geopoint.document.GeoPointField;
+import org.eclipse.swt.widgets.Display;
 import org.jxmapviewer.JXMapViewer;
 
 import com.vividsolutions.jts.awt.ShapeWriter;
@@ -32,6 +34,7 @@ import impl.MapPanelCreator;
 import socialocean.model.MapCountries;
 import socialocean.model.MapGridRectangle;
 import socialocean.model.Result;
+import socialocean.parts.SettingsPart;
 import utils.DBManager;
 import utils.GeoToCartesianTransformation;
 import utils.Lucene;
@@ -66,7 +69,14 @@ public class MapController extends Observable {
 
 		Lucene l = Lucene.INSTANCE;
 		Result result = l.getLastResult();
-		Lucene.INITCountires = false;
+		Lucene.INITCountries = false;
+		Display.getDefault().asyncExec(new Runnable() {
+		    public void run() {
+//		    	SettingsPart.selectCountries(false);
+		    	SettingsPart.enableCountries(false);
+		    }
+		});
+		
 		// ShapeWriter sw = new ShapeWriter(new GeoToCartesianTransformation(map));
 
 		Map<MapCountries, List<Document>> countries = new HashMap<>();
@@ -90,6 +100,12 @@ public class MapController extends Observable {
 				Document document = searcher.doc(docID);
 
 				// System.out.println(document.getField("id").stringValue());
+				
+				// no geo
+				IndexableField f = document.getField("geo");
+				if (f == null)
+					continue;
+				
 				long hashgeo = (document.getField("geo")).numericValue().longValue();
 				double lat = GeoPointField.decodeLatitude(hashgeo);
 				double lon = GeoPointField.decodeLongitude(hashgeo);
@@ -123,7 +139,7 @@ public class MapController extends Observable {
 				}
 
 				// States
-				String[] admin1 = { "Australia", "Brazil", "Canada", "United States of America" };
+				String[] admin1 = { "Australia", "Brazil", "Canada", "United States of America", "United States" };
 				boolean isInAdmin1 = false;
 				for (String country : admin1) {
 					if (country.equals(admin)) {
@@ -131,8 +147,10 @@ public class MapController extends Observable {
 						break;
 					}
 				}
+				
 				String stateName = admin;
 				Geometry stateGeom = geometry;
+//				Geometry stateGeom = null;
 				if (isInAdmin1) {
 					geometryMap = getCountryProvinceGeometry(lat, lon, c);
 					for (String s : geometryMap.keySet())
@@ -155,6 +173,9 @@ public class MapController extends Observable {
 				countries.get(country).add(document);
 				
 				// States
+				if (stateGeom == null) {
+					continue;
+				}
 				Polygon[] polygonsState = new Polygon[stateGeom.getNumGeometries()];
 				for (int i = 0; i < stateGeom.getNumGeometries(); i++) {
 					polygonsState[i] = (Polygon) stateGeom.getGeometryN(i);
@@ -258,12 +279,20 @@ public class MapController extends Observable {
 		for (int i = 16; i < MapPanelCreator.maxZoom; ++i) {
 			countriesToYard.put(i, countries);
 		}
+		
 		for (int i = 12; i < 16; ++i) {
 			countriesToYard.put(i, states);
 		}
 		
 		Lucene.DATACHANGED = false;
-		Lucene.INITCountires = true;
+		Lucene.INITCountries = true;
+		
+		Display.getDefault().asyncExec(new Runnable() {
+		    public void run() {
+//		     	SettingsPart.selectCountries(true);
+		     	SettingsPart.enableCountries(true);
+		    }
+		});
 		
 		l.printlnToConsole(">> Countries ready");
 		System.out.println("Countries ready");
@@ -306,9 +335,16 @@ public class MapController extends Observable {
 		String name = "";
 		try {
 			Statement stmt = c.createStatement();
-			String query = "Select name, ST_astext(geom) " + "from countries_admin1 "
-					+ "where ST_Contains(geom, ST_SetSRID(St_Point(" + lon + ", " + lat + "), 4326)) Limit 1";
+//			String query = "Select name, ST_astext(geom) " + "from countries_admin1 "
+//					+ "where ST_Contains(geom, ST_SetSRID(St_Point(" + lon + ", " + lat + "), 4326)) Limit 1";
 
+			String query = "Select t.name_1, St_astext(admin1.geom) from countries_admin1 as admin1, ( "
+					+ "Select name_1 from countries_all "
+					+ "where St_Contains(geom, St_setSrid(St_Point("+lon+","+lat+"), 4326)) "
+							+ ") as t "
+					+ "where t.name_1 = admin1.name"
+			+ "";
+			
 			ResultSet rs = stmt.executeQuery(query);
 			while (rs.next()) {
 				name = rs.getString(1);
@@ -330,9 +366,15 @@ public class MapController extends Observable {
 		String name = "";
 		try {
 			Statement stmt = c.createStatement();
-			String query = "Select admin, ST_astext(geom) " + "from countries_admin0 "
-					+ "where ST_Contains(geom, ST_SetSRID(St_Point(" + lon + ", " + lat + "), 4326)) Limit 1";
+//			String query = "Select admin, ST_astext(geom) " + "from countries_admin0 "
+//					+ "where ST_Contains(geom, ST_SetSRID(St_Point(" + lon + ", " + lat + "), 4326)) Limit 1";
 
+			String query = "Select admin0.name, St_astext(admin0.geom) from countries_admin0 as admin0, ( "
+					+ "Select name_0 from countries_all "
+					+ "where St_Contains(geom, St_setSrid(St_Point("+lon+","+lat+"),4326)) "
+							+ ") as t "
+					+ "where t.name_0 = admin0.name"
+			+ "";
 			ResultSet rs = stmt.executeQuery(query);
 			while (rs.next()) {
 				name = rs.getString(1);
@@ -378,8 +420,12 @@ public class MapController extends Observable {
 			int docID = entry.doc;
 			try {
 				Document document = searcher.doc(docID);
+				
+				// no geo
+				IndexableField f = document.getField("geo");
+				if (f == null)
+					continue;
 
-				// System.out.println(document.getField("id").stringValue());
 				long hashgeo = (document.getField("geo")).numericValue().longValue();
 				double lat = GeoPointField.decodeLatitude(hashgeo);
 				double lon = GeoPointField.decodeLongitude(hashgeo);
@@ -488,5 +534,9 @@ public class MapController extends Observable {
 
 	public void resetGridCells() {
 		this.cellsToYard.clear();
+	}
+
+	public void clearCountries() {
+		this.countriesToYard.clear();
 	}
 }

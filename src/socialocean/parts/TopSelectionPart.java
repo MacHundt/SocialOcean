@@ -33,6 +33,7 @@ import org.eclipse.e4.ui.di.Persist;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 
 import impl.GraphCreatorThread;
 import impl.TimeLineCreatorThread;
@@ -73,6 +74,7 @@ public class TopSelectionPart {
 			"source", 
 			"tags", 
 			"name", 
+			"country",				// test .. takes long
 			"user_language", 
 			"day"
 			};
@@ -244,10 +246,9 @@ public class TopSelectionPart {
 					graphThread.start();
 					
 					// Show in MAP  --> Clear LIST = remove all Markers
+					l.initCountriesMap();
 					l.createMapMarkers(data, true);
 					l.changeHistogramm(result.getHistoCounter());
-					l.initCountriesMap();
-					
 					
 //					l.createGraphML_Mention(data, true);
 //				l.createGraphML_Retweet(result, true);

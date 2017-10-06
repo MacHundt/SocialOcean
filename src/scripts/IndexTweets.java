@@ -33,6 +33,7 @@ import utils.DBManager;
 public class IndexTweets {
 	
 	private static int Fetchsize = 10000;
+	private static String countryTable = "countries_all";
 	
 //	private static String TWEETDATA = "tweetdata";
 	private static String TWEETDATA = "bb_tweets";
@@ -48,7 +49,6 @@ public class IndexTweets {
 		
 		Connection c = DBManager.getConnection(LOCAL, false);
 		boolean create = true;	// create new Index
-		
 		Date start = new Date();
 		System.out.println("Indexing to directory '" + indexPath + "'...");
 
@@ -100,7 +100,7 @@ public class IndexTweets {
 			int doc_counter = 0;
 			int counter = 0;
 			int stat = 1;
-			int topX = 3;
+			int topX = 0;
 			while (rs.next()) {
 				counter++;
 				
@@ -156,7 +156,7 @@ public class IndexTweets {
 	}
 	
 	
-	private static void indexTweets(IndexWriter writer, ArrayList<Tweet> tweets, int doc_counter) {
+	private static void indexTweets(IndexWriter writer, ArrayList<Tweet> tweets, int doc_counter) throws SQLException {
 
 		Document doc = new Document();
 		long counterLines = 0;
@@ -167,6 +167,10 @@ public class IndexTweets {
 		double longi = 0;
 		double lati = 0;
 		String category = "";
+		
+		Connection countryCon = DBManager.getConnection(LOCAL, false);
+		Statement stmt = countryCon.createStatement();
+		
 		for (Tweet t : tweets) {
 			doc.clear();
 			// type
@@ -175,15 +179,25 @@ public class IndexTweets {
 			
 			
 //			doc.add(new StringField("isRetweet", (t.getTweet_replytostatus() > 0) ? "true" : "false", Field.Store.NO));
-			doc.add(new StringField("relationship", t.getRelationship(), Field.Store.YES));
+			doc.add(new StringField("relationship", t.getRelationship().toLowerCase(), Field.Store.YES));
 			
-			doc.add(new StringField("source", t.getTweet_source(), Field.Store.YES));
+			
+			String source = t.getTweet_source().toLowerCase();
+			// last char is '/'  --> remove
+			if (source.endsWith("/")) {
+				source = source.substring(0, source.length()-1);
+			}
+			int indexOfLastSlash = source.lastIndexOf("/");
+			if (indexOfLastSlash != -1) {
+				source = source.substring(indexOfLastSlash+1);
+			}
+			doc.add(new StringField("source", source, Field.Store.YES));
 			
 			// User_ScreenName
-			doc.add(new StringField("name", t.getUserScreenName(), Field.Store.YES));
+			doc.add(new StringField("name", t.getUserScreenName().toLowerCase(), Field.Store.YES));
 			
 			// User_Language
-			doc.add(new StringField("user_language", t.getLanguage(), Field.Store.YES));
+			doc.add(new StringField("user_language", t.getLanguage().toLowerCase(), Field.Store.YES));
 			
 			
 			// # tags
@@ -286,6 +300,10 @@ public class IndexTweets {
 			if (lati != 0 || longi != 0) {
 				GeoPointField geo = new GeoPointField("geo", lati, longi, GeoPointField.Store.YES);
 				doc.add(geo);
+				
+				// add Country
+				String country = getCountry(lati, longi, stmt).replaceAll(" ", "_").toLowerCase();
+				doc.add(new StringField("country", country, Field.Store.YES));
 			}
 			
 
@@ -310,10 +328,25 @@ public class IndexTweets {
 				// doc);
 			}
 		}
+		stmt.close();
+		countryCon.close();
 
 	}
 	
 	
+	private static String getCountry(double lati, double longi, Statement stmt) throws SQLException {
+		String country = "";
+		String query = "Select name_0 from countries_all " + 
+				"where St_Contains(geom, St_setSrid(St_Point("+longi+","+lati+"),4326))";
+		ResultSet rs = stmt.executeQuery(query);
+		while (rs.next()) {
+			country = rs.getString(1);
+		}
+	
+		return country;
+	}
+
+
 	private static String getTagsFromTweets(String text_content) {
 		String output = "";
 		for (String token : text_content.split(" ")) {

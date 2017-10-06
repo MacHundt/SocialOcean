@@ -27,6 +27,7 @@ public class SettingsPart {
 	
 	Button follows;
 	Button mentions;
+	private static Button countries;
 	
 	@Inject
 	public SettingsPart() {
@@ -144,7 +145,7 @@ public class SettingsPart {
 		});
 		
 		Button heatmap = new Button(parent, SWT.CHECK);
-		heatmap.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		heatmap.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
 		heatmap.setText("Heatmap");
 		heatmap.setSelection(Lucene.SHOWHeatmap);
 		heatmap.addSelectionListener(new SelectionListener() {
@@ -152,14 +153,14 @@ public class SettingsPart {
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
 				
-				if (heatmap.getSelection() == false) {
-					if (!Lucene.INITCountires) {
-						heatmap.setSelection(true);
-						Lucene l = Lucene.INSTANCE;
-						l.printlnToConsole(">> Countries not yet ready ... ");
-						return;
-					}
-				}
+//				if (heatmap.getSelection() == false) {
+//					if (!Lucene.INITCountries) {
+//						heatmap.setSelection(true);
+//						Lucene l = Lucene.INSTANCE;
+//						l.printlnToConsole(">> Countries not yet ready ... ");
+//						return;
+//					}
+//				}
 				
 				System.out.println(heatmap.getText() + " is turned to: "+heatmap.getSelection());
 				Lucene l = Lucene.INSTANCE;
@@ -176,6 +177,49 @@ public class SettingsPart {
 			}
 		});
 		
+		
+		countries = new Button(parent, SWT.CHECK);
+		countries.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		countries.setText("Countries");
+		countries.setSelection(Lucene.SHOWCountries);
+		countries.setEnabled(Lucene.SHOWCountries);
+		countries.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent arg0) {
+				
+//				if (countries.getSelection() == false) {
+//					if (!Lucene.INITCountries) {
+//						countries.setEnabled(false);
+//						Lucene l = Lucene.INSTANCE;
+//						l.printlnToConsole(">> Countries not yet ready ... ");
+//						return;
+//					}
+//				}
+				
+				System.out.println(countries.getText() + " is turned to: "+countries.getSelection());
+				Lucene l = Lucene.INSTANCE;
+				Lucene.SHOWCountries = countries.getSelection();
+				Result r = l.getLastResult();
+				if (r != null)
+					l.createMapMarkers(l.getLastResult().getData(), true);
+			}
+			
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent arg0) {
+			}
+		});
+		
+	}
+	
+	public static void selectCountries(boolean b) {
+		countries.setSelection(b);
+	}
+	
+	
+	public static void enableCountries(boolean b) {
+		countries.setEnabled(b);
 	}
 	
 	

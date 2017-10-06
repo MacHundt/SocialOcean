@@ -15,7 +15,6 @@ public class TwitterTimeZoneMapping {
 
 	private static int fetchsize = 1000;
 	private static int batchcounter = 0;
-	private static ResultSet rs = null;
 	private static HashMap<String, String> TimezoneMapping = new HashMap<>();
 
 	private static boolean LOCAL = false;
@@ -33,9 +32,11 @@ public class TwitterTimeZoneMapping {
 			// Go through mapping:
 			for (String twTimezone : TimezoneMapping.keySet()) {
 				System.out.println("\n" + twTimezone + " => " + TimezoneMapping.get(twTimezone));
-
-				String query = "Select user_id, user_timezone from " + table + " where user_timezone = '" + twTimezone
-						+ "'";
+				
+				// E --> Escape the string within ' '
+				twTimezone = twTimezone.replace("'", "\\'");
+				String query = "Select user_id, user_timezone from " + table + " where user_timezone = "
+						+ "E'" + twTimezone	+ "'";
 				String updateQuery = "Update " + table + " set user_timezone = '";
 				c.setAutoCommit(false);
 				Statement st = c.createStatement();
@@ -43,13 +44,22 @@ public class TwitterTimeZoneMapping {
 
 				updateCon.setAutoCommit(false);
 				Statement update = updateCon.createStatement();
-
-				rs = st.executeQuery(query);
+				ResultSet rs = null;
+				try {
+					rs = st.executeQuery(query);
+				} catch (Exception e) {
+					System.out.println("FEHLER >>>>"+query);
+					
+					continue;
+				}
 				int counter = 0;
 				while (rs.next()) {
 					counter++;
 					long id = Long.parseLong(rs.getString(1));
 					String timezone = TimezoneMapping.get(rs.getString(2)); // get mapping
+					if (timezone == null) {
+						continue;
+					}
 					String uQuery = updateQuery + timezone + "' where user_id = " + id;
 					update.addBatch(uQuery);
 					if (counter == fetchsize) {

@@ -33,6 +33,7 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -44,6 +45,7 @@ import org.apache.lucene.spatial.geopoint.search.GeoPointInBBoxQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.swt.widgets.Display;
 import org.jxmapviewer.viewer.GeoPosition;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -63,6 +65,7 @@ import socialocean.parts.Console;
 import socialocean.parts.Histogram;
 import socialocean.parts.LuceneStatistics;
 import socialocean.parts.QueryHistory;
+import socialocean.parts.SettingsPart;
 import socialocean.parts.Time;
 import socialocean.parts.TopSelectionPart;
 
@@ -156,8 +159,9 @@ public enum Lucene {
 	private long user_maxDate;
 	
 	public static boolean SHOWHeatmap = true;
+	public static boolean SHOWCountries = false;
 	public static boolean DATACHANGED = false;
-	public static boolean INITCountires = false;
+	public static boolean INITCountries = false;
 	
 	public void initLucene(String index, ILuceneQuerySearcher querySearcher) throws Exception {
 
@@ -1308,6 +1312,12 @@ public enum Lucene {
 				try {
 					Document document = searcher.doc(docID);
 					// System.out.println(document.getField("id").stringValue());
+					
+					// no geo
+					IndexableField f = document.getField("geo");
+					if (f == null)
+						continue;
+					
 					long hashgeo = (document.getField("geo")).numericValue().longValue();
 					double lat = GeoPointField.decodeLatitude(hashgeo);
 					double lon = GeoPointField.decodeLongitude(hashgeo);
@@ -1738,17 +1748,25 @@ public enum Lucene {
 	
 	public void initCountriesMap() {
 		DATACHANGED = true;
+		SHOWCountries = false;
+//		MapPanelCreator.mapCon.
+		
+		Display.getDefault().asyncExec(new Runnable() {
+		    public void run() {
+		    	SettingsPart.selectCountries(false);
+//		    	SettingsPart.enableCountries(false);
+		    }
+		});
+		
 		Thread initCountries = new Thread(new Runnable() {
-			
 			@Override
 			public void run() {
-				MapPanelCreator.mapCon.getCountries(16);
+				MapPanelCreator.mapCon.clearCountries();
+				MapPanelCreator.mapCon.getCountries(MapPanelCreator.getZoomLevel());
 			}
 		}, "InitCountries");
 		initCountries.start();
 		
 	}
-
-
 
 }
