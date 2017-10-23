@@ -25,6 +25,8 @@ public class MyEdge {
 	private String category;
 	private Date date;
 	
+	private double weight = 1.0;
+	
 	private String toString = "";
 	
 	public MyEdge(String id) {
@@ -159,6 +161,15 @@ public class MyEdge {
 
 	public void addNeg(int neg) {
 		this.neg = neg;
+	}
+
+	
+	public double getWeight() {
+		return weight;
+	}
+
+	public void setWeight(double weight) {
+		this.weight = weight;
 	}
 	
 	

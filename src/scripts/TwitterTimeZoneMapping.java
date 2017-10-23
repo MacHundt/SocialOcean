@@ -35,8 +35,10 @@ public class TwitterTimeZoneMapping {
 				
 				// E --> Escape the string within ' '
 				twTimezone = twTimezone.replace("'", "\\'");
-				String query = "Select user_id, user_timezone from " + table + " where user_timezone = "
-						+ "E'" + twTimezone	+ "'";
+				String query = "Select user_id, user_location from " + table + " where user_location = "
+						+ "E'" + twTimezone	+ "' and user_timezone = 'null'";
+				//String query = "Select user_id, user_timezone from " + table + " where user_timezone = "
+//						+ "E'" + twTimezone	+ "'";
 				String updateQuery = "Update " + table + " set user_timezone = '";
 				c.setAutoCommit(false);
 				Statement st = c.createStatement();
@@ -56,7 +58,7 @@ public class TwitterTimeZoneMapping {
 				while (rs.next()) {
 					counter++;
 					long id = Long.parseLong(rs.getString(1));
-					String timezone = TimezoneMapping.get(rs.getString(2)); // get mapping
+					String timezone = TimezoneMapping.get(rs.getString(2).trim()); // get mapping
 					if (timezone == null) {
 						continue;
 					}
@@ -75,7 +77,7 @@ public class TwitterTimeZoneMapping {
 					}
 				}
 				// add last
-				st.executeBatch();
+				update.executeBatch();
 				updateCon.commit();
 				update.clearBatch();
 			}
@@ -95,7 +97,11 @@ public class TwitterTimeZoneMapping {
 	 * http://api.rubyonrails.org/classes/ActiveSupport/TimeZone.html
 	 */
 	private static void initMapping() {
-
+		
+		TimezoneMapping.put("Ulaan Bataar", "Asia/Ulaanbaatar");
+		TimezoneMapping.put("Ulan Bator", "Asia/Ulaanbaatar");
+		
+		
 		TimezoneMapping.put("International Date Line West", "Pacific/Midway");
 		TimezoneMapping.put("Midway Island", "Pacific/Midway");
 		TimezoneMapping.put("American Samoa", "Pacific/Pago_Pago");
@@ -104,17 +110,17 @@ public class TwitterTimeZoneMapping {
 		TimezoneMapping.put("Pacific Time (US & Canada)", "America/Los_Angeles");
 		TimezoneMapping.put("Tijuana", "America/Tijuana");
 		TimezoneMapping.put("Mountain Time (US & Canada)", "America/Denver");
-		// TimezoneMapping.put("Arizona","America/Phoenix");
+		 TimezoneMapping.put("Arizona","America/Phoenix");
 		TimezoneMapping.put("Chihuahua", "America/Chihuahua");
 		TimezoneMapping.put("Mazatlan", "America/Mazatlan");
 		TimezoneMapping.put("Central Time (US & Canada)", "America/Chicago");
-		// TimezoneMapping.put("Saskatchewan","America/Regina");
+		 TimezoneMapping.put("Saskatchewan","America/Regina");
 		TimezoneMapping.put("Guadalajara", "America/Mexico_City");
 		TimezoneMapping.put("Mexico City", "America/Mexico_City");
-		// TimezoneMapping.put("Monterrey","America/Monterrey" );
+		 TimezoneMapping.put("Monterrey","America/Monterrey" );
 		TimezoneMapping.put("Central America", "America/Guatemala");
 		TimezoneMapping.put("Eastern Time (US & Canada)", "America/New_York");
-		// TimezoneMapping.put("Indiana (East)","America/Indiana/Indianapolis" );
+		 TimezoneMapping.put("Indiana (East)","America/Indiana/Indianapolis" );
 		TimezoneMapping.put("Bogota", "America/Bogota");
 		TimezoneMapping.put("Lima", "America/Lima");
 		TimezoneMapping.put("Quito", "America/Lima");
@@ -126,29 +132,29 @@ public class TwitterTimeZoneMapping {
 		TimezoneMapping.put("Brasilia", "America/Sao_Paulo");
 		TimezoneMapping.put("Buenos Aires", "America/Argentina/Buenos_Aires");
 		TimezoneMapping.put("Montevideo", "America/Montevideo");
-		// TimezoneMapping.put("Georgetown","America/Guyana" );
+		 TimezoneMapping.put("Georgetown","America/Guyana" );
 		TimezoneMapping.put("Greenland", "America/Godthab");
-		// TimezoneMapping.put( "Mid-Atlantic","Atlantic/South_Georgia" );
+		 TimezoneMapping.put( "Mid-Atlantic","Atlantic/South_Georgia" );
 		TimezoneMapping.put("Azores", "Atlantic/Azores");
 		TimezoneMapping.put("Cape Verde Is.", "Atlantic/Cape_Verde");
 		TimezoneMapping.put("Dublin", "Europe/Dublin");
 		TimezoneMapping.put("Edinburgh", "Europe/London");
 		TimezoneMapping.put("Lisbon", "Europe/Lisbon");
 		TimezoneMapping.put("London", "Europe/London");
-		// TimezoneMapping.put( "Casablanca","Africa/Casablanca");
+		 TimezoneMapping.put( "Casablanca","Africa/Casablanca");
 		TimezoneMapping.put("Monrovia", "Africa/Monrovia");
 		TimezoneMapping.put("UTC", "Etc/UTC");
-		// TimezoneMapping.put("Belgrade","Europe/Belgrade" );
+		 TimezoneMapping.put("Belgrade","Europe/Belgrade" );
 		TimezoneMapping.put("Bratislava", "Europe/Bratislava");
 		TimezoneMapping.put("Budapest", "Europe/Budapest");
 		TimezoneMapping.put("Ljubljana", "Europe/Ljubljana");
 		TimezoneMapping.put("Prague", "Europe/Prague");
 		TimezoneMapping.put("Sarajevo", "Europe/Sarajevo");
 		TimezoneMapping.put("Skopje", "Europe/Skopje");
-		// TimezoneMapping.put("Warsaw","Europe/Warsaw" );
+		 TimezoneMapping.put("Warsaw","Europe/Warsaw" );
 		TimezoneMapping.put("Zagreb", "Europe/Zagreb");
 		TimezoneMapping.put("Brussels", "Europe/Brussels");
-		// TimezoneMapping.put("Copenhagen","Europe/Copenhagen");
+		 TimezoneMapping.put("Copenhagen","Europe/Copenhagen");
 		TimezoneMapping.put("Madrid", "Europe/Madrid");
 		TimezoneMapping.put("Paris", "Europe/Paris");
 		TimezoneMapping.put("Amsterdam", "Europe/Amsterdam");
@@ -158,53 +164,53 @@ public class TwitterTimeZoneMapping {
 		TimezoneMapping.put("Rome", "Europe/Rome");
 		TimezoneMapping.put("Stockholm", "Europe/Stockholm");
 		TimezoneMapping.put("Vienna", "Europe/Vienna");
-		// TimezoneMapping.put("West Central Africa","Africa/Algiers");
-		// TimezoneMapping.put("Bucharest","Europe/Bucharest");
+		 TimezoneMapping.put("West Central Africa","Africa/Algiers");
+		 TimezoneMapping.put("Bucharest","Europe/Bucharest");
 		TimezoneMapping.put("Cairo", "Africa/Cairo");
 		TimezoneMapping.put("Helsinki", "Europe/Helsinki");
-		// TimezoneMapping.put("Kyiv","Europe/Kiev");
+		 TimezoneMapping.put("Kyiv","Europe/Kiev");
 		TimezoneMapping.put("Riga", "Europe/Riga");
 		TimezoneMapping.put("Sofia", "Europe/Sofia");
 		TimezoneMapping.put("Tallinn", "Europe/Tallinn");
 		TimezoneMapping.put("Vilnius", "Europe/Vilnius");
-		// TimezoneMapping.put("Athens","Europe/Athens");
-		// TimezoneMapping.put("Istanbul","Europe/Istanbul");
+		 TimezoneMapping.put("Athens","Europe/Athens");
+		 TimezoneMapping.put("Istanbul","Europe/Istanbul");
 		TimezoneMapping.put("Minsk", "Europe/Minsk");
 		TimezoneMapping.put("Jerusalem", "Asia/Jerusalem");
 		TimezoneMapping.put("Harare", "Africa/Harare");
 		TimezoneMapping.put("Pretoria", "Africa/Johannesburg");
 		TimezoneMapping.put("Kaliningrad", "Europe/Kaliningrad");
 		TimezoneMapping.put("Moscow", "Europe/Moscow");
-		// TimezoneMapping.put("St. Petersburg","Europe/Moscow");
+		 TimezoneMapping.put("St. Petersburg","Europe/Moscow");
 		TimezoneMapping.put("Volgograd", "Europe/Volgograd");
-		// TimezoneMapping.put("Samara","Europe/Samara");
+		 TimezoneMapping.put("Samara","Europe/Samara");
 		TimezoneMapping.put("Kuwait", "Asia/Kuwait");
 		TimezoneMapping.put("Riyadh", "Asia/Riyadh");
 		TimezoneMapping.put("Nairobi", "Africa/Nairobi");
 		TimezoneMapping.put("Baghdad", "Asia/Baghdad");
 		TimezoneMapping.put("Tehran", "Asia/Tehran");
-		// TimezoneMapping.put("Abu Dhabi","Asia/Muscat");
+		 TimezoneMapping.put("Abu Dhabi","Asia/Muscat");
 		TimezoneMapping.put("Muscat", "Asia/Muscat");
-		// TimezoneMapping.put("Baku","Asia/Baku");
+		 TimezoneMapping.put("Baku","Asia/Baku");
 		TimezoneMapping.put("Tbilisi", "Asia/Tbilisi");
 		TimezoneMapping.put("Yerevan", "Asia/Yerevan");
-		// TimezoneMapping.put("Kabul","Asia/Kabul");
+		 TimezoneMapping.put("Kabul","Asia/Kabul");
 		TimezoneMapping.put("Ekaterinburg", "Asia/Yekaterinburg");
 		TimezoneMapping.put("Islamabad", "Asia/Karachi");
 		TimezoneMapping.put("Karachi", "Asia/Karachi");
-		// TimezoneMapping.put("Tashkent","Asia/Tashkent");
-		// TimezoneMapping.put("Chennai","Asia/Kolkata");
+		 TimezoneMapping.put("Tashkent","Asia/Tashkent");
+		 TimezoneMapping.put("Chennai","Asia/Kolkata");
 		TimezoneMapping.put("Kolkata", "Asia/Kolkata");
 		TimezoneMapping.put("Mumbai", "Asia/Kolkata");
 		TimezoneMapping.put("New Delhi", "Asia/Kolkata");
-		// TimezoneMapping.put("Kathmandu","Asia/Kathmandu");
+		 TimezoneMapping.put("Kathmandu","Asia/Kathmandu");
 		TimezoneMapping.put("Astana", "Asia/Dhaka");
 		TimezoneMapping.put("Dhaka", "Asia/Dhaka");
 		TimezoneMapping.put("Sri Jayawardenepura", "Asia/Colombo");
 		TimezoneMapping.put("Almaty", "Asia/Almaty");
 		TimezoneMapping.put("Novosibirsk", "Asia/Novosibirsk");
 		TimezoneMapping.put("Rangoon", "Asia/Rangoon");
-		// TimezoneMapping.put("Bangkok","Asia/Bangkok");
+		 TimezoneMapping.put("Bangkok","Asia/Bangkok");
 		TimezoneMapping.put("Hanoi", "Asia/Bangkok");
 		TimezoneMapping.put("Jakarta", "Asia/Jakarta");
 		TimezoneMapping.put("Krasnoyarsk", "Asia/Krasnoyarsk");
@@ -236,12 +242,12 @@ public class TwitterTimeZoneMapping {
 		TimezoneMapping.put("Magadan", "Asia/Magadan");
 		TimezoneMapping.put("Srednekolymsk", "Asia/Srednekolymsk");
 		TimezoneMapping.put("Solomon Is.", "Pacific/Guadalcanal");
-		// TimezoneMapping.put("New Caledonia","Pacific/Noumea");
+		 TimezoneMapping.put("New Caledonia","Pacific/Noumea");
 		TimezoneMapping.put("Fiji", "Pacific/Fiji");
-		// TimezoneMapping.put("Kamchatka","Asia/Kamchatka");
+		 TimezoneMapping.put("Kamchatka","Asia/Kamchatka");
 		TimezoneMapping.put("Marshall Is.", "Pacific/Majuro");
 		TimezoneMapping.put("Auckland", "Pacific/Auckland");
-		// TimezoneMapping.put("Wellington","Pacific/Auckland");
+		TimezoneMapping.put("Wellington","Pacific/Auckland");
 		TimezoneMapping.put("Nuku'alofa", "Pacific/Tongatapu");
 		TimezoneMapping.put("Tokelau Is.", "Pacific/Fakaofo");
 		TimezoneMapping.put("Chatham Is.", "Pacific/Chatham");

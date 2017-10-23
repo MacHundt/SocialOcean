@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Observer;
 import java.util.Properties;
 import java.util.TreeMap;
 
@@ -52,6 +53,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 
 import impl.GraphCreatorThread;
 import impl.GraphML_Helper;
+import impl.GraphPanelCreator;
 import impl.GraphPanelCreator3;
 import impl.MapPanelCreator;
 import impl.MyEdge;
@@ -1149,6 +1151,7 @@ public enum Lucene {
 	public void createGraphView(ScoreDoc[] result) {
 //		GraphPanelCreator3.createGraph(result, searcher, withMention, withFollows);
 //		GraphPanelCreator3.createSimpleGraph(result, searcher, withMention, withFollows);
+		GraphPanelCreator.createGraph(result, searcher, withMention, withFollows);
 	}
 	
 	

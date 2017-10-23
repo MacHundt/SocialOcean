@@ -90,7 +90,7 @@ public class SettingsPart {
 			}
 		});
 		
-		follows.setEnabled(true);
+		follows.setEnabled(false);
 		
 //		Button btnPositiv = new Button(parent, SWT.CHECK);
 //		btnPositiv.setText("positiv");

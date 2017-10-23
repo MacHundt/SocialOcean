@@ -64,8 +64,8 @@ public class GraphPart {
 		
 		
 //		canvasSwing = new PSwingCanvas();
-//		JButton btn = new JButton("TEst");
-//		PSwing pSwingNode = new PSwing(panel);
+//		JButton btn = new JButton("Test");
+//		PSwing pSwingNode = new PSwing(btn);
 //		canvasSwing.getLayer().addChild(pSwingNode);
 //		canvasSwing.removeInputEventListener(canvasSwing.getZoomEventHandler());
 //		PMouseWheelEventHandler wheelHandler = new PMouseWheelEventHandler();

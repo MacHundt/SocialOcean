@@ -20,6 +20,7 @@
             </children>
             <children xsi:type="basic:PartStack" xmi:id="_n1WZAIosEeauXYmQDjn7lw" elementId="socialocean.partstack.settings" containerData="4000" accessibilityPhrase="settingsPartStack" selectedElement="_M9Y_oBMGEeenmLxjomef8A">
               <children xsi:type="basic:Part" xmi:id="_M9Y_oBMGEeenmLxjomef8A" elementId="socialocean.part.graph" contributionURI="bundleclass://SocialOcean/socialocean.parts.GraphPart" label="" iconURI="platform:/plugin/SocialOcean/icons/socialgraph_icon.png" tooltip="Mention Graph"/>
+              <children xsi:type="basic:Part" xmi:id="_r-u2ALNSEeepAoS40u8xNw" elementId="socialocean.part.jung" contributionURI="bundleclass://SocialOcean/socialocean.parts.JungGraphPart" label="" iconURI="platform:/plugin/SocialOcean/icons/socialgraph_icon.png" tooltip="Jung Graph"/>
             </children>
             <children xsi:type="basic:PartStack" xmi:id="_ngQSwIosEeauXYmQDjn7lw" elementId="socialocean.partstack.map" containerData="4000" selectedElement="_LGak0IorEeauXYmQDjn7lw">
               <children xsi:type="basic:Part" xmi:id="_LGak0IorEeauXYmQDjn7lw" elementId="socialocean.part.map" containerData="" contributionURI="bundleclass://SocialOcean/socialocean.parts.MapPart" label="" iconURI="platform:/plugin/SocialOcean/icons/map_icon.png" tooltip="Map"/>

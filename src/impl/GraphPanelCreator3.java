@@ -310,12 +310,16 @@ public class GraphPanelCreator3 {
 
 				String type = (document.getField("type")).stringValue();
 				String id = (document.getField("id")).stringValue();
-				long hashgeo = (document.getField("geo")).numericValue().longValue();
-				double lat = GeoPointField.decodeLatitude(hashgeo);
-				double lon = GeoPointField.decodeLongitude(hashgeo);
 				boolean hasGeo = false;
-				if (lat != 0.0 || lon != 0.0) {
-					hasGeo = true;
+				double lat = 0;
+				double lon = 0;
+				if (document.getField("geo") != null) {
+					long hashgeo = (document.getField("geo")).numericValue().longValue();
+					lat = GeoPointField.decodeLatitude(hashgeo);
+					lon = GeoPointField.decodeLongitude(hashgeo);
+					if (lat != 0.0 || lon != 0.0) {
+						hasGeo = true;
+					}
 				}
 				String screenName = ""; 	// (document.getField("name")).stringValue();
 				String content = "";

@@ -24,16 +24,33 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.geom.Point2D;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JApplet;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JToggleButton;
@@ -42,6 +59,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.spatial.geopoint.document.GeoPointField;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Display;
 import org.xml.sax.SAXException;
 
 import com.google.common.base.Function;
@@ -50,6 +73,11 @@ import com.google.common.base.Supplier;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.mxgraph.analysis.mxAnalysisGraph;
+import com.mxgraph.analysis.mxGraphStructure;
+import com.mxgraph.model.mxCell;
+import com.mxgraph.view.mxEdgeStyle;
+import com.mxgraph.view.mxStylesheet;
 
 import edu.uci.ics.jung.algorithms.cluster.EdgeBetweennessClusterer;
 import edu.uci.ics.jung.algorithms.layout.AggregateLayout;
@@ -60,11 +88,16 @@ import edu.uci.ics.jung.algorithms.layout.util.Relaxer;
 import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.Hypergraph;
 import edu.uci.ics.jung.graph.SparseMultigraph;
+import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.io.GraphMLReader;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
+import socialocean.parts.Histogram;
+import utils.DBManager;
+import utils.Lucene;
 
 
 /**
@@ -76,8 +109,13 @@ import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
  */
 @SuppressWarnings("serial")
 public class JungGraphImpl extends JApplet {
+	
+	private static Graph<MyUser, MyEdge> g;
+	private static int topK = 5;
+	static boolean ASC = true;
+	static boolean DESC = false;
 
-	VisualizationViewer<Number,Number> vv;
+	VisualizationViewer<Number, Number> vv;
 
 	LoadingCache<Number, Paint> vertexPaints =
 			CacheBuilder.newBuilder().build(
@@ -87,7 +125,7 @@ public class JungGraphImpl extends JApplet {
 					CacheLoader.from(Functions.<Paint>constant(Color.blue))); 
 
 	
-	public final Color[] similarColors =
+	public final Color[] similarColors =	
 	{
 		new Color(216, 134, 134),
 		new Color(135, 137, 211),
@@ -101,30 +139,14 @@ public class JungGraphImpl extends JApplet {
 		new Color(30, 250, 100)
 	};
 	
-//	public static void main(String[] args) throws IOException {
-//		
-//		JungGraphImpl cd = new JungGraphImpl();
-//		cd.start();
-//		// Add a restart button so the graph can be redrawn to fit the size of the frame
-//		JFrame jf = new JFrame();
-//		jf.getContentPane().add(cd);
-//		
-//		jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//		jf.pack();
-//		jf.setVisible(true);
-//	}
-
-	public void start(String filename) {
-        try
-        {
-            setUpView(filename);
-        }
-        catch (IOException | ParserConfigurationException | SAXException e)
-        {
-            System.out.println("Error in loading graph");
-            e.printStackTrace();
-        }
+	public static void createGraph(ScoreDoc[] result, IndexSearcher searcher, boolean withMentions, boolean withFollows) {
+		
+		
+		
 	}
+	
+
+	
 
 	private void setUpView(String filename) throws IOException, ParserConfigurationException, SAXException {
 		
@@ -161,6 +183,8 @@ public class JungGraphImpl extends JApplet {
 //				new KKLayout<Number, Number>(graph));
         final AggregateLayout<Number, Number> layout = new AggregateLayout<Number, Number>(
     			new KKLayout<>(graph));
+        Rectangle rec =  Display.getCurrent().getBounds();
+        layout.setSize(new Dimension(rec.width, rec.height));
 
 		vv = new VisualizationViewer<Number,Number>(layout);
 		vv.setBackground( Color.white );
@@ -176,6 +200,7 @@ public class JungGraphImpl extends JApplet {
 			}
 		});
 
+		
 		vv.getRenderContext().setEdgeDrawPaintTransformer(edgePaints);
 
 		vv.getRenderContext().setEdgeStrokeTransformer(new Function<Number,Stroke>() {
@@ -217,7 +242,7 @@ public class JungGraphImpl extends JApplet {
         edgeBetweennessSlider.setBackground(Color.WHITE);
 		edgeBetweennessSlider.setPreferredSize(new Dimension(210, 50));
 		edgeBetweennessSlider.setPaintTicks(true);
-		edgeBetweennessSlider.setMaximum(graph.getEdgeCount());
+		edgeBetweennessSlider.setMaximum(10);
 		edgeBetweennessSlider.setMinimum(0);
 		edgeBetweennessSlider.setValue(0);
 		edgeBetweennessSlider.setMajorTickSpacing(10);

@@ -11,7 +11,7 @@ public class MyUser {
 	
 	
 	public MyUser(String id, String screenName) {
-		this.id = id;
+		this.setId(id);
 		name = screenName;
 	}
 	
@@ -33,5 +33,13 @@ public class MyUser {
 	@Override
 	public String toString() {
 		return toString;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 }

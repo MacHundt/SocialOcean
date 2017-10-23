@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="libs/jruby-complete-9.1.13.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/esri-geometry-api-2.0.0.jar" sourcepath="/Users/michaelhundt/.m2/repository/com/esri/geometry/esri-geometry-api/2.0.0/esri-geometry-api-2.0.0-sources.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="http://esri.github.io/geometry-api-java/javadoc/"/>
@@ -16,13 +17,13 @@
 	<classpathentry exported="true" kind="lib" path="libs/piccolo2d-swt-3.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/piccolo2d-core-3.0.jar" sourcepath="libs/piccolo2d-core-3.0-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/piccolo2d-extras-3.0.jar" sourcepath="libs/piccolo2d-extras-3.0-sources.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/jung-api-2.1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jung-api-2.1.1.jar" sourcepath="/Users/michaelhundt/.m2/repository/net/sf/jung/jung-api/2.1.1/jung-api-2.1.1-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/guava-22.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/commons-logging-1.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/jung-samples-2.1.1.jar" sourcepath="libs/jung-samples-2.1.1-sources.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/jung-algorithms-2.1.1.jar" sourcepath="libs/jung-algorithms-2.1.1-sources.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/jung-graph-impl-2.1.1.jar" sourcepath="libs/jung-graph-impl-2.1.1-sources.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/jung-io-2.1.1.jar" sourcepath="libs/jung-io-2.1.1-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jung-samples-2.1.1.jar" sourcepath="/Users/michaelhundt/.m2/repository/net/sf/jung/jung-samples/2.1.1/jung-samples-2.1.1-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jung-algorithms-2.1.1.jar" sourcepath="/Users/michaelhundt/.m2/repository/net/sf/jung/jung-algorithms/2.1.1/jung-algorithms-2.1.1-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jung-graph-impl-2.1.1.jar" sourcepath="/Users/michaelhundt/.m2/repository/net/sf/jung/jung-graph-impl/2.1.1/jung-graph-impl-2.1.1-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jung-io-2.1.1.jar" sourcepath="/Users/michaelhundt/.m2/repository/net/sf/jung/jung-io/2.1.1/jung-io-2.1.1-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jung-visualization-2.1.1.jar" sourcepath="libs/jung-visualization-2.1.1-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/xchart-3.3.0.jar" sourcepath="libs/xchart-3.3.0-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jsch-0.1.54.jar"/>

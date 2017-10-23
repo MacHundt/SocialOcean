@@ -14,6 +14,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.widgets.Composite;
 
+import impl.JungGraphImpl;
 import impl.MapPanelCreator;
 import swingintegration.example.EmbeddedSwingComposite;
 import utils.Swing_SWT;
@@ -56,7 +57,7 @@ public class MapPart {
 		Frame frame = SWT_AWT.new_Frame(mapComposite);
  		
 		rootContainer = new JApplet();
-		
+		new JungGraphImpl();
 		JPanel panel = MapPanelCreator.getMapPanel();
 		
 		rootContainer.add(panel);
