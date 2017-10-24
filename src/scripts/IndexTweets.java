@@ -28,6 +28,7 @@ import org.apache.lucene.spatial.geopoint.document.GeoPointField;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
+import impl.MyLuceneAnalyser;
 import utils.DBManager;
 
 public class IndexTweets {
@@ -36,11 +37,11 @@ public class IndexTweets {
 	private static String countryTable = "countries_all";
 	
 //	private static String TWEETDATA = "tweetdata";
-	private static String TWEETDATA = "bb_tweets";
-//	private static String TWEETDATA = "nodexl_my2k_tweets";
+//	private static String TWEETDATA = "bb_tweets";
+	private static String TWEETDATA = "nodexl_my2k_tweets";
 //	private static String USERS = "users";
-//	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index_nodexl/";
-	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index/";
+	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index_nodexl/";
+//	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index/";
 
 	private static boolean LOCAL = false;
 	
@@ -56,8 +57,11 @@ public class IndexTweets {
 			Directory dir = FSDirectory.open(Paths.get(indexPath));
 			
 			FileReader reader = new FileReader(new File("./stopwords/stopwords.txt"));
-			Analyzer analyzer = new StandardAnalyzer(reader);
+			Analyzer analyzer = new MyLuceneAnalyser(reader);
+//			Analyzer my_analyzer = new MyLuceneAnalyser(reader);		// without lowercase
+			
 			IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
+//			IndexWriterConfig my_iwc = new IndexWriterConfig(my_analyzer);
 			
 			if (create) {
 				// Create a new index in the directory, removing any
@@ -69,6 +73,7 @@ public class IndexTweets {
 			}
 			
 			IndexWriter writer = new IndexWriter(dir, iwc);
+//			IndexWriter my_writer = new IndexWriter(dir, my_iwc);
 			
 			c.setAutoCommit(false);
 			Statement stmt = c.createStatement();
@@ -84,8 +89,8 @@ public class IndexTweets {
 					+ "hasurl, "
 //					+ "user_id, "				// bb_tweets -- more unique than screen_name
 					+ "user_screenname, "
-					+ "tweet_source, "			// bb_tweets
-					+ "user_language, "				// bb_tweets
+//					+ "tweet_source, "			// bb_tweets
+//					+ "user_language, "				// bb_tweets
 					+ "positive, "
 					+ "negative, "
 					+ "category, "
@@ -113,8 +118,8 @@ public class IndexTweets {
 				t.setHasurl(rs.getBoolean("hasurl"));
 				t.setUserScreenName(rs.getString("user_screenname")); 			
 //				t.setUser_id(rs.getLong("user_id"));								// bb_tweets
-				t.setTweet_source(rs.getString("tweet_source"));					// bb_tweets
-				t.setLanguage(rs.getString("user_language"));					// bb_tweets  // text is english, but the user can select his profile language
+//				t.setTweet_source(rs.getString("tweet_source"));					// bb_tweets
+//				t.setLanguage(rs.getString("user_language"));					// bb_tweets  // text is english, but the user can select his profile language
 				t.setPositive(rs.getInt("positive"));
 				t.setNegative(rs.getInt("negative"));
 				t.setCategory((rs.getString("category") != null) ? rs.getString("category") : "other");
@@ -194,7 +199,7 @@ public class IndexTweets {
 			doc.add(new StringField("source", source, Field.Store.YES));
 			
 			// User_ScreenName
-			doc.add(new StringField("name", t.getUserScreenName().toLowerCase(), Field.Store.YES));
+			doc.add(new StringField("name", t.getUserScreenName(), Field.Store.YES));
 			
 			// User_Language
 			doc.add(new StringField("user_language", t.getLanguage().toLowerCase(), Field.Store.YES));
@@ -205,7 +210,7 @@ public class IndexTweets {
 			
 			if (content != null) {
 			
-				tags = getTagsFromTweets(content);
+				tags = getTagsFromTweets(content).toLowerCase();
 				TextField tag_field = new TextField("tags", tags, Field.Store.YES);
 				doc.add(tag_field);
 
@@ -213,15 +218,17 @@ public class IndexTweets {
 				mentions = getMentionsFromTweets(content);
 				StringField hasMention = new StringField("has@", (mentions.isEmpty()) ? "false" : "true", Field.Store.YES);
 				doc.add(hasMention);
-				TextField mention_field = new TextField("mention", mentions, Field.Store.NO);
+				TextField mention_field = new TextField("mention", mentions, Field.Store.YES);
 				doc.add(mention_field);
+//				StringField mention_string = new StringField("mentionStg", mentions, Field.Store.YES);
+//				doc.add(mention_string);
 
 //				doc.add(mention_field);
 //				doc.add(new StringField("has@", (!mentions.isEmpty()) ? "true" : "false", Field.Store.YES));
 
 				// fulltext
 				content = content.replaceAll("\"", "");
-				TextField content_field = new TextField("content", content, Field.Store.NO);
+				TextField content_field = new TextField("content", content.toLowerCase(), Field.Store.NO);
 				doc.add(content_field);
 				
 				category = t.getCategory();
@@ -230,11 +237,11 @@ public class IndexTweets {
 			
 				doc.add(new StringField("hasURL", (t.isHasurl())? "true" : "false" , Field.Store.YES));
 				
-				// TweetSource
-//				doc.add(new StringField("source", t.getTweet_source(), Field.Store.YES));
+//				 TweetSource
+				doc.add(new StringField("source", t.getTweet_source(), Field.Store.YES));
 				
-//				// User_id
-//				doc.add(new StringField("uid", t.getUser_id()+"", Field.Store.YES));
+				// User_id
+				doc.add(new StringField("uid", t.getUser_id()+"", Field.Store.YES));
 				
 				// Sentiment
 				doc.add(new StringField("sentiment", t.getSentiment(), Field.Store.YES));

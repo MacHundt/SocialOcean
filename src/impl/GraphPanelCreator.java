@@ -6,6 +6,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Paint;
+import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -53,12 +54,16 @@ import com.google.common.base.Functions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.mxgraph.model.mxCell;
+import com.mxgraph.view.mxEdgeStyle;
+import com.mxgraph.view.mxStylesheet;
 
 import edu.uci.ics.jung.algorithms.cluster.EdgeBetweennessClusterer;
 import edu.uci.ics.jung.algorithms.layout.AggregateLayout;
 import edu.uci.ics.jung.algorithms.layout.CircleLayout;
 import edu.uci.ics.jung.algorithms.layout.KKLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.algorithms.layout.SpringLayout2;
 import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Graph;
@@ -66,6 +71,7 @@ import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
+import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import socialocean.parts.Histogram;
 import utils.DBManager;
 import utils.Lucene;
@@ -118,8 +124,8 @@ public class GraphPanelCreator {
 			// the Graph
 			graph = new DirectedSparseMultigraph<MyUser, MyEdge>();
 			
-			// the Graph Layout
-			layout = new AggregateLayout<MyUser, MyEdge>(new KKLayout<>(graph));
+			// the Graph Layout			// KKLayout
+			layout = new AggregateLayout<MyUser, MyEdge>(new SpringLayout2<>(graph));
 			// take whole screen size 
 			
 			Rectangle rec = Display.getCurrent().getBounds();
@@ -153,6 +159,12 @@ public class GraphPanelCreator {
 	                        return THICK;
 	                }
 	            });
+			
+			
+			 // Probably the most important step for the pure rendering performance:
+	        // Disable anti-aliasing
+	        vv.getRenderingHints().remove(RenderingHints.KEY_ANTIALIASING);
+			
 
 			DefaultModalGraphMouse<MyUser, MyEdge> gm = new DefaultModalGraphMouse<MyUser, MyEdge>();
 			vv.setGraphMouse(gm);
@@ -276,61 +288,32 @@ public class GraphPanelCreator {
 	}
 
 
-	public static void createGraph(ScoreDoc[] result, IndexSearcher searcher, boolean withMention,
+	public static void createSimpleGraph(ScoreDoc[] result, IndexSearcher searcher, boolean withMention,
 			boolean withFollows) {
 		
 		clearGraph();
 		
 		vv.setVisible(false);
 		
-		
 		HashMap<String, MyUser> nodeNames = new HashMap<>(); // screenName -> id
 		HashMap<String, MyUser> sources = new HashMap<>();
 
 		HashMap<String, Integer> edgesMap = new HashMap<>();
 		int nodesCounter = 0;
-		Lucene l = Lucene.INSTANCE;
 		
 		try {
-			Connection c = DBManager.getConnection();
-			String table = DBManager.getTweetdataTable();
-			String userTable = DBManager.getUserTable();
-			Statement stmt = c.createStatement();
-			
-			// Calibrate Min-Max for normalized user_creation
-			ZoneId zonedId = ZoneId.of( "Europe/Berlin" );
-			LocalDate today = LocalDate.now( zonedId );
-			long now = Date.UTC(today.getYear(), today.getMonthValue(), today.getDayOfMonth(), 0, 0, 0);
-			double maxFollow = Math.log10(8448672);				// loged
-			double maxFriends = Math.log10(290739);
-			double maxMessage = Math.log10(625638);
-			long maxDate = l.getUser_maxDate();
-			long minDate = l.getUser_minDate();
-			
-			
 			for (ScoreDoc doc : result) {
 				int docID = doc.doc;
 				Document document = searcher.doc(docID);
-				String type = (document.getField("type")).stringValue();
+//				String type = (document.getField("type")).stringValue();
+//				String uId = (document.getField("uid")).stringValue();
+//				long tweetdate = Long.parseLong((document.getField("date")).stringValue());
+			
 				String id = (document.getField("id")).stringValue();
-				long tweetdate = Long.parseLong((document.getField("date")).stringValue());
+				String mentionString = (document.getField("mention")).stringValue();
+				String screenName = (document.getField("name")).stringValue();
 
 				// EDGE information
-				String query = "";
-				String screenName = "";
-				String content = "";
-//				double sentiment = 0;
-				String posStrength = (document.getField("pos")).stringValue();
-				String negStrength = (document.getField("neg")).stringValue();
-				int pos = (posStrength.isEmpty()) ? 0 : Integer.parseInt((document.getField("pos")).stringValue());
-				int neg = (negStrength.isEmpty()) ? 0 : Integer.parseInt((document.getField("neg")).stringValue());
-				
-				String sentiment = "neu";
-				
-				String category = "other";
-				boolean hasUrl = false;
-				boolean isRetreet = false; // --> replyusername != null
-				String relationship = "";
 				boolean hasGeo = false;
 				double lat = 0;
 				double lon = 0;
@@ -343,111 +326,10 @@ public class GraphPanelCreator {
 					}
 				}
 					
-
-				// NODE information --> user meta data ..
-				int listedCount = 0;
-				// Datetime
-				long datetime = 0;
-				int friends = 0;
-				int followers = 0;
-				int tweetCount = 0;
-				// today - userCreationDate
-				long time = 0;
-				java.util.Date date = null;
-				String nodexl_target = "";
-				
-				switch (type) {
-				// get the tweet
-				case "twitter":
-					query = "Select "
-						+ "t.user_screenname, t.tweet_content, t.sentiment, t.positive, t.negative, t.category, t.hasurl, t.relationship "
-						+ " from "+table+" as t where t.tweet_id = "
-						+ Long.parseLong(id);
-					
-					break;
-				case "flickr":
-//					query = "Select t.sentiment from flickrdata as t where t.\"photoID\" = " + Long.parseLong(id);
-					break;
-				}
-				ResultSet rs = stmt.executeQuery(query);
-				
-				String language = "en";
-				String geom = "";
-				boolean isEmpty = true;
-				while (rs.next()) {
-//					isEmpty = false;
-//					screenName = rs.getString(1);
-//					content = rs.getString(2);
-//					sentiment = rs.getInt(3);
-//					category = rs.getString(4);
-//					hasUrl = rs.getBoolean(5);
-//					isRetreet = (rs.getString(6).equals("null")) ? false : true;
-//					listedCount = rs.getInt(7);
-//					// DATE
-//					String cd = rs.getString(8).split(" ")[0];
-//					Date dt = new Date(Integer.parseInt(cd.split("-")[0]), (Integer.parseInt(cd.split("-")[1])) -1 , Integer.parseInt(cd.split("-")[2]));
-//					time = dt.getTime(); 	// the bigger the 'older' the user
-//					friends = rs.getInt(9);
-//					followers = rs.getInt(10);
-//					tweetCount = rs.getInt(11);
-//					language = rs.getString(12);
-//					geom = rs.getString(13);
-					
-					screenName = rs.getString(1);
-					content = rs.getString(2);
-					sentiment = rs.getString(3);
-					pos = rs.getInt(4);
-					neg = rs.getInt(5);
-					category = rs.getString(6);
-					category = category.replace(" & ", "_").toLowerCase();
-					hasUrl = rs.getBoolean(7);
-					
-				}
-				if (sentiment == null)
-					sentiment = "neu";
-				
-				// get Colors
-				String colorString = "";
-				if (l.getColorScheme().equals(Lucene.ColorScheme.CATEGORY)) {
-					org.eclipse.swt.graphics.Color color = Histogram.getCategoryColor(category);
-					colorString = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue()); 
-				}
-				else {
-					org.eclipse.swt.graphics.Color color = new org.eclipse.swt.graphics.Color(Display.getDefault(), 255,255,191);
-					colorString = "#fee08b";
-//					colorString = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue()); 
-					
-					if (sentiment.equals("pos")) {
-						color = color = new org.eclipse.swt.graphics.Color(Display.getDefault(), 26,152,80);
-//						colorString = "green";
-						colorString = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue()); 
-					}
-					else if (sentiment.equals("neg")) {
-						color = color = new org.eclipse.swt.graphics.Color(Display.getDefault(), 215,48,39);
-//						colorString = "red";
-						colorString = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue()); 
-					}
-				}
-				
-				
-//				double sc_follow =  Math.log10(followers) / maxFollow;
-//				double sc_friend =  Math.log10(friends) / maxFriends;
-//				double sc_tweets =  Math.log10(tweetCount) / maxMessage;
-//				double sc_time = ((Math.log(time) / Math.log(1000)) - (Math.log(minDate) / Math.log(1000))) / ((Math.log(maxDate) / Math.log(1000)) - (Math.log(minDate) / Math.log(1000)));
-//				double credible  = 1 - ((sc_follow + sc_friend +sc_tweets + sc_time) / 4.0);
-				
-				String mentionString = (content != null) ? getMentionsFromTweets(content) : "";
-				// continue, no target, no mentions
-				if (mentionString.length() < 2) {
-					continue;
-				}
-				
 				// ADD source node
 				MyUser nodeID = null;
 				if (!nodeNames.containsKey(screenName)) {
 					nodeID = new MyUser("n" + nodesCounter++, screenName);
-					nodeID.addLanguage(language);
-					
 					// ...
 					graph.addVertex(nodeID);
 					nodeNames.put(screenName, nodeID);
@@ -489,10 +371,6 @@ public class GraphPanelCreator {
 						}
 
 						edge = new MyEdge(id);
-						edge.addCategory(category);
-						edge.addSentiment(sentiment);
-						edge.addPos(pos);
-						edge.addNeg(neg);
 						edge.changeToString(MyEdge.LabelType.SentiStrenth);
 
 						if (hasGeo)
@@ -503,15 +381,12 @@ public class GraphPanelCreator {
 					}
 				}
 			}
-			
-			stmt.close();
-			c.close();
 			if (withFollows) {
-//				addAllFollows(nodeNames, edgesMap);
+				addAllFollows(nodeNames, edgesMap);
 			}
 			
 			
-		} catch (IOException | SQLException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
@@ -542,6 +417,63 @@ public class GraphPanelCreator {
 		}
 		
 	}
+	
+	
+	private static void addAllFollows(HashMap<String, MyUser> nodeNames, HashMap<String, Integer> edgesMap) {
+
+		try {
+			Connection c = DBManager.getConnection();
+			String table = DBManager.getTweetdataTable();
+			Statement stmt = c.createStatement();
+			for (String name : nodeNames.keySet()) {
+
+				// get all follows
+				String query = "Select target, tweet_id, latitude, longitude From " + table
+						+ " where user_screenname = '" + name + "' and relationship = 'Followed'";
+				ResultSet rs = stmt.executeQuery(query);
+				while (rs.next()) {
+					// see if target is in keySet --> true add an edge
+					String target = rs.getString("target");
+					String id = rs.getString("tweet_id");
+					double lon = rs.getDouble("longitude");
+					double lat = rs.getDouble("latitude");
+					boolean hasGeo = false;
+					if (lat != 0.0 || lon != 0.0) {
+						hasGeo = true;
+					}
+					if (nodeNames.keySet().contains(target)) {
+						// add edge
+						MyEdge edge = null;
+						// ADD Edge: source to Target
+
+						String edgesNames = "" + ((MyUser) nodeNames.get(name)).getId() + "_"
+								+ ((MyUser) nodeNames.get(target)).getId();
+						if (edgesMap.containsKey(edgesNames)) {
+							edgesMap.put(edgesNames, edgesMap.get(edgesNames) + 1);
+						} else {
+							edgesMap.put(edgesNames, new Integer(1));
+						}
+
+						edge = new MyEdge(id);
+						edge.addCredibility(0);
+						edge.addCategory("");
+						edge.addSentiment("neu");
+						edge.addDate(null);
+						edge.setRelationsip("Followed");
+						
+						graph.addEdge(edge, nodeNames.get(name), nodeNames.get(target));
+
+					}
+				}
+			}
+			stmt.close();
+			c.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+	}
+	
 	
 	
 	/**

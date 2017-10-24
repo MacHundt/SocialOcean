@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry exported="true" kind="lib" path="libs/jruby-complete-9.1.13.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jruby-complete-9.1.13.0.jar" sourcepath="/Users/michaelhundt/.m2/repository/org/jruby/jruby-complete/9.1.13.0/jruby-complete-9.1.13.0-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/esri-geometry-api-2.0.0.jar" sourcepath="/Users/michaelhundt/.m2/repository/com/esri/geometry/esri-geometry-api/2.0.0/esri-geometry-api-2.0.0-sources.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="http://esri.github.io/geometry-api-java/javadoc/"/>
@@ -24,7 +24,7 @@
 	<classpathentry exported="true" kind="lib" path="libs/jung-algorithms-2.1.1.jar" sourcepath="/Users/michaelhundt/.m2/repository/net/sf/jung/jung-algorithms/2.1.1/jung-algorithms-2.1.1-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jung-graph-impl-2.1.1.jar" sourcepath="/Users/michaelhundt/.m2/repository/net/sf/jung/jung-graph-impl/2.1.1/jung-graph-impl-2.1.1-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jung-io-2.1.1.jar" sourcepath="/Users/michaelhundt/.m2/repository/net/sf/jung/jung-io/2.1.1/jung-io-2.1.1-sources.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/jung-visualization-2.1.1.jar" sourcepath="libs/jung-visualization-2.1.1-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jung-visualization-2.1.1.jar" sourcepath="/Users/michaelhundt/.m2/repository/net/sf/jung/jung-visualization/2.1.1/jung-visualization-2.1.1-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/xchart-3.3.0.jar" sourcepath="libs/xchart-3.3.0-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jsch-0.1.54.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jfreechart-1.0.19.jar">
@@ -41,7 +41,7 @@
 	<classpathentry exported="true" kind="lib" path="libs/lucene-analyzers-common-6.5.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/lucene-backward-codecs-6.5.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/lucene-codecs-6.5.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/lucene-core-6.5.0.jar" sourcepath="/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/libs/lucene-src_6.5.0/core.zip"/>
+	<classpathentry exported="true" kind="lib" path="libs/lucene-core-6.5.0.jar" sourcepath="/Users/michaelhundt/.m2/repository/org/apache/lucene/lucene-core/6.5.0/lucene-core-6.5.0-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/lucene-grouping-6.5.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/lucene-join-6.5.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/lucene-misc-6.5.0.jar"/>

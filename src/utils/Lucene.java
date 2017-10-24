@@ -1151,7 +1151,7 @@ public enum Lucene {
 	public void createGraphView(ScoreDoc[] result) {
 //		GraphPanelCreator3.createGraph(result, searcher, withMention, withFollows);
 //		GraphPanelCreator3.createSimpleGraph(result, searcher, withMention, withFollows);
-		GraphPanelCreator.createGraph(result, searcher, withMention, withFollows);
+		GraphPanelCreator.createSimpleGraph(result, searcher, withMention, withFollows);
 	}
 	
 	
