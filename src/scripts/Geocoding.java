@@ -27,11 +27,15 @@ public class Geocoding {
 	private static int batchcounter = 0;
 	
 	private static java.util.regex.Pattern letters = java.util.regex.Pattern.compile("\\w+\\.?");
+//	private static java.util.regex.Pattern not_ascii_letters = java.util.regex.Pattern.compile("[^a-zA-Z ]");
+	private static java.util.regex.Pattern remover = java.util.regex.Pattern.compile("[0-9#!?§.$%&/()=¡¶¢|\\{\\}≠¿@¥≈ç√∫~µ∞,']");
+	private static java.util.regex.Pattern coordinates = java.util.regex.Pattern.compile("[-]?(\\d+)[.](\\d+)[ ,]+[-]?(\\d+)[.](\\d+)");
 
 	public static void main(String[] args) {
 
 		Connection c = DBManager.getConnection(LOCAL, RCP);
-		String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table + " where geom is null";
+//		String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table + " where geom is null;";
+		String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table + ";";
 
 		try {
 			c.setAutoCommit(false);
@@ -111,15 +115,83 @@ public class Geocoding {
 			String loc = e.getA().get(1);
 			String tz = e.getA().get(2);
 			int geoType = Integer.parseInt(e.getA().get(3));
-			
 			String updateQuery = "";
-			if (geoType > 5) {
-				updateQuery = geocode5(uid, loc, tz);
-				if (updateQuery != null) {
-//					System.out.println(loc+" >> From Type "+geoType);
-//					System.out.println(updateQuery);
+			
+//		############ Geocoding Type 1 #############
+			
+//			if (geoType > 1) {
+//				updateQuery = geocode1(uid, loc, tz);
+//				if (!updateQuery.equals("NaV")) {
+//					st.addBatch(updateQuery);
+//					counter++;
+//					geoType = 1;
+//				}
+//			}
+			
+//		############ Geocoding Type 2 #############
+			
+//			if (geoType > 2) {
+//				updateQuery = geocode2(uid, loc, tz);
+//				if (!updateQuery.equals("NaV")) {
+//					st.addBatch(updateQuery);
+//					counter++;
+//					geoType = 2;
+//				}
+//			}
+			
+//		############ Geocoding Type 3 #############
+			
+			if (geoType > 3) {
+				updateQuery = geocode3(uid, loc, tz);
+				if (!updateQuery.equals("NaV")) {
 					st.addBatch(updateQuery);
 					counter++;
+					geoType = 3;
+				}
+			}
+			
+
+//		############ Geocoding Type 4 #############
+			
+			if (geoType > 4) {
+				updateQuery = geocode4(uid, tz);
+				if (!updateQuery.equals("NaV")) {
+					st.addBatch(updateQuery);
+					counter++;
+					geoType = 4;
+				}
+			}
+			
+			
+//		############ Geocoding Type 5 #############			
+			if (geoType > 5) {
+				updateQuery = geocode5(uid, loc, tz);
+				if (!updateQuery.equals("NaV")) {
+					st.addBatch(updateQuery);
+					counter++;
+					geoType = 5;
+				}
+			}
+			
+			
+//			############ Geocoding Type 6 #############			
+			if (geoType > 6) {
+				updateQuery = geocode6(uid, loc);
+				if (!updateQuery.equals("NaV")) {
+					st.addBatch(updateQuery);
+					counter++;
+					geoType = 6;
+				}
+			}
+			
+			
+//			############ Geocoding Type 7 #############			
+			if (geoType > 7) {
+				updateQuery = geocode7(uid, loc);
+				if (!updateQuery.equals("NaV")) {
+					st.addBatch(updateQuery);
+					counter++;
+					geoType = 7;
 				}
 			}
 			
@@ -137,13 +209,103 @@ public class Geocoding {
 		c.close();
 		
 	}
+	
+
+
+	private static String geocode1(long uid, String loc, String tz) {
+		// loc has coordinates:
+		if (loc.matches(coordinates.pattern()))  {
+			loc = loc.replaceAll("[a-zA-Z?!\\'\\\":ï¿½TÜÄÖüäö]*", "").trim();
+			double lat = Double.parseDouble(loc.substring(0, loc.indexOf(',')));
+			double lon = Double.parseDouble(loc.substring(loc.indexOf(',')+1, loc.length()));
+			//get the coordinates, test if in timezoneshape
+			if (is_in_timezoneshape(lat, lon, tz, true)) {
+				String query = "Update "+user_table+" set geocoding_type = 1, "
+						+ "geom = St_setsrid(St_Point("+lon+","+lat+"), 4326), "
+								+ "longitude = "+lon+", "
+										+ "latitude = "+lat+" where user_id = "+uid+";";
+				return query;
+			}
+		}
+		
+		return "NaV";
+	}
 
 	
+	private static String geocode2(long uid, String loc, String tz) {
+		// loc has coordinates:
+		if (loc.matches(coordinates.pattern())) {
+			loc = loc.replaceAll("[a-zA-Z?!\\'\\\":ï¿½TÜÄÖüäö]*", "").trim();
+			double lat = Double.parseDouble(loc.substring(0, loc.indexOf(',')));
+			double lon = Double.parseDouble(loc.substring(loc.indexOf(',') + 1, loc.length()));
+			// get the coordinates, test if in timezoneshape
+			if (is_in_timezoneshape(lat, lon, tz, false)) {
+				String query = "Update " + user_table + " set geocoding_type = 2, " + "geom = St_setsrid(St_Point("
+						+ lon + "," + lat + "), 4326), " + "longitude = " + lon + ", " + "latitude = " + lat
+						+ " where user_id = " + uid + ";";
+				return query;
+			}
+		}
+
+		return "NaV";
+	}
+	
+	
+	/**
+	 * GT 3 Test
+	 * Geocoding_type5:
+	 * user_location is a city and user_timezone matches the corresponding city timezone
+	 * @param uid
+	 * @param loc
+	 * @param tz
+	 * @return The Update query String
+	 */
+	private static String geocode3(long uid, String loc, String tz) {
+		if (loc.matches(letters.pattern()) && !tz.equals("null"))  {
+			String location = loc.toLowerCase();
+			location = location.substring(0, 1).toUpperCase() + location.substring(1);
+			Coordinate cityCoor = get_is_city_most_populated(location, tz, true);
+			if (cityCoor != null) {
+				String query = "Update "+user_table+" set geocoding_type = 3, "
+						+ "geom = St_setsrid(St_Point("+cityCoor.y+","+cityCoor.x+"), 4326), "
+								+ "longitude = "+cityCoor.y+", "
+										+ "latitude = "+cityCoor.x+" where user_id = "+uid+";";
+				return query;
+			}
+		}
+		return "NaV";
+	}
+
+	
+	
+	/**
+	 * GT 4 Test
+	 * Geocoding_type4:
+	 * user_timezone mappes to valid timezone
+	 * @param uid
+	 * @param loc
+	 * @param tz
+	 * @return The Update query String
+	 */
+	private static String geocode4(long uid, String tz) {
+		if (!tz.equals("null"))  {
+			Coordinate cityCoor = get_is_timezone(tz);
+			if (cityCoor != null) {
+				String query = "Update "+user_table+" set geocoding_type = 4, "
+						+ "geom = St_setsrid(St_Point("+cityCoor.y+","+cityCoor.x+"), 4326), "
+								+ "longitude = "+cityCoor.y+", "
+										+ "latitude = "+cityCoor.x+" where user_id = "+uid+";";
+				return query;
+			}
+		}
+		return "NaV";
+	}
+
+
 	/**
 	 * GT 5 Test
 	 * Geocoding_type5:
 	 * user_location is a city
-	 * update ... add to batch.
 	 * @param uid
 	 * @param loc
 	 * @param tz
@@ -152,8 +314,6 @@ public class Geocoding {
 	private static String geocode5(long uid, String loc, String tz) {
 		
 		if (loc.matches(letters.pattern()))  {
-			// loc is a cityname ( get asciiname of cities1000
-			// sort by population, take the first
 			String location = loc.toLowerCase();
 			location = location.substring(0, 1).toUpperCase() + location.substring(1);
 			Coordinate cityCoor = get_is_city_most_populated(location, tz, false);
@@ -165,16 +325,225 @@ public class Geocoding {
 				return query;
 			}
 		}
-		return null;
+		return "NaV";
 	}
 
 	
 	
+	
+	/**
+	 * GT 6 Test
+	 * Geocoding_type6:
+	 * user_location is like a cityname
+	 * Take the longest string match and the highest population
+	 * @param uid
+	 * @param loc
+	 * @return The Update query String
+	 */
+	private static String geocode6(long uid, String loc) {
+		String location = loc.toLowerCase();
+		location = location.replaceAll(",", ", ");
+		location = location.replaceAll(remover.pattern(), "");
+		
+		if (!location.trim().isEmpty()) {
+			location = location.substring(0, 1).toUpperCase() + location.substring(1);
+//			contains " "  Capitalize all words
+			if (location.contains(" ")) {
+				String capLocation = "";
+				for (String s : location.split(" ")) {
+					if (s.length() > 2)
+						capLocation += s.substring(0, 1).toUpperCase() + s.substring(1)+" ";
+					else 
+						capLocation += s.toUpperCase();
+				}
+				location = capLocation.trim();
+			}
+			
+			Coordinate cityCoor = get_like_city(location);
+			if (cityCoor != null) {
+				String query = "Update "+user_table+" set geocoding_type = 6, "
+						+ "geom = St_setsrid(St_Point("+cityCoor.y+","+cityCoor.x+"), 4326), "
+								+ "longitude = "+cityCoor.y+", "
+										+ "latitude = "+cityCoor.x+" where user_id = "+uid+";";
+				return query;
+			}
+		}
+		return "NaV";
+	}
+	
+	
+	/**
+	 * GT 7 Test
+	 * Geocoding_type7:
+	 * user_location is like a timezone
+	 * Take the longest string match and the highest population
+	 * @param uid
+	 * @param loc
+	 * @return The Update query String
+	 */
+	private static String geocode7(long uid, String loc) {
+		String location = loc.toLowerCase();
+		location = location.replaceAll(",", ", ");
+		location = location.replaceAll(remover.pattern(), "");
+		
+		if (!location.trim().isEmpty()) {
+			location = location.substring(0, 1).toUpperCase() + location.substring(1);
+//			contains " "  Capitalize all words
+			if (location.contains(" ")) {
+				String capLocation = "";
+				for (String s : location.split(" ")) {
+					if (s.length() > 2)
+						capLocation += s.substring(0, 1).toUpperCase() + s.substring(1)+" ";
+					else 
+						capLocation += s.toUpperCase();
+				}
+				location = capLocation.trim();
+			}
+			
+			Coordinate cityCoor = get_like_Timezone(location);
+			if (cityCoor != null) {
+				String query = "Update "+user_table+" set geocoding_type = 6, "
+						+ "geom = St_setsrid(St_Point("+cityCoor.y+","+cityCoor.x+"), 4326), "
+								+ "longitude = "+cityCoor.y+", "
+										+ "latitude = "+cityCoor.x+" where user_id = "+uid+";";
+				return query;
+			}
+		}
+		return "NaV";
+	}
+	
+	
+	
+	
+	/**
+	 * Helper method to find out if user_location is LIKE a country of a timezone
+	 * Order by longest string match
+	 * @param loc
+	 * @return the coordinates of the city
+	 */
+	private static Coordinate get_like_Timezone(String loc) {
+		Connection c = DBManager.getConnection(LOCAL, RCP);
+		if (loc.length() > 3) {
+//			Select * from cities1000 where ('Canada Red Deer' like '%'||asciiname||'%' or 'Canada Red Deer' like '%'||name||'%') Order by char_length(asciiname) DESC, population DESC Limit 1
+			String query = "Select St_Y(cpoint), St_X(cpoint) from timezone_shapes where tzid like '%'||'"+loc+"'||'%' or '"+loc+"' like '%'||substring(tzid, 0, position('/' in tzid))||'%' Order by char_length(tzid) DESC Limit 1";
+			ResultSet cr = null;
+			try {
+				Statement st = c.createStatement();
+				cr = st.executeQuery(query);
+				int counter = 0;
+				double lat = 0;
+				double lon = 0;
+				while (cr.next()) {
+					counter++;
+					lat = cr.getDouble(1);
+					lon = cr.getDouble(2);
+				}
+				if (counter > 0) {
+					Coordinate latlong = new Coordinate(lat, lon);
+					st.close();
+					c.close();
+					return latlong;
+				} else {
+					st.close();
+					c.close();
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+				System.out.println(query);
+			}
+		}
+		return null;
+	}
+
+
+	/**
+	 * Helper method to find out if user_location is LIKE a cityname
+	 * Order by longest string match and for the city with the highest population
+	 * @param loc
+	 * @return the coordinates of the city
+	 */
+	private static Coordinate get_like_city(String loc) {
+		Connection c = DBManager.getConnection(LOCAL, RCP);
+		if (loc.length() > 3) {
+//			Select * from cities1000 where ('Canada Red Deer' like '%'||asciiname||'%' or 'Canada Red Deer' like '%'||name||'%') Order by char_length(asciiname) DESC, population DESC Limit 1
+			String query = "Select lat, lon from cities1000 where '"+loc+"' like '%'||asciiname||'%' or '"+loc+"' like '%'||name||'%' Order by char_length(asciiname) DESC, population DESC Limit 1";
+			ResultSet cr = null;
+			try {
+				Statement st = c.createStatement();
+				cr = st.executeQuery(query);
+				int counter = 0;
+				double lat = 0;
+				double lon = 0;
+				while (cr.next()) {
+					counter++;
+					lat = cr.getDouble(1);
+					lon = cr.getDouble(2);
+				}
+				if (counter > 0) {
+					Coordinate latlong = new Coordinate(lat, lon);
+					st.close();
+					c.close();
+					return latlong;
+				} else {
+					st.close();
+					c.close();
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
+
+
+	/**
+	 * Helper method to find out if a point lays inside of a timezone_shape
+	 * Additionally you could check if the user_timezone equals the timezone_id of the timezone_shape
+	 * @param lat
+	 * @param lon
+	 * @param utz, the user_timezone
+	 * @param withTZ
+	 * @return Boolean
+	 */
+	private static boolean is_in_timezoneshape(double lat, double lon, String user_timezone, boolean withTZ) {
+		boolean isIn = false;
+		Connection c = DBManager.getConnection(LOCAL, RCP);
+		String query = "Select tzid from timezone_shapes as b where St_Contains(b.geom, St_setsrid(St_point("+lon+", "+lat+"),4326)) = TRUE;";
+		ResultSet rs = null;
+		try {
+			Statement st = c.createStatement();
+			rs = st.executeQuery(query);
+			while (rs.next()) {
+				String tz = rs.getString(1);
+				if (withTZ) {
+					if (tz.equals(user_timezone.trim()))
+						isIn = true;
+				} else {
+					isIn = true;
+				}
+					
+			}
+			st.close();
+			c.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return isIn;
+	}
+	
+	
+	/**
+	 * Helper method to get a matching city from the cities1000 dataset
+	 * @param loc
+	 * @param tz
+	 * @param withTZ
+	 * @return the coordinates of the city
+	 */
 	private static Coordinate get_is_city_most_populated(String loc, String tz, boolean withTZ) {
 		Connection c = DBManager.getConnection(LOCAL, RCP);
-		String query = "Select lat, lon from cities1000 where asciiname = '"+loc+"' order by population DESC Limit 1";
+		String query = "Select lat, lon from cities1000 where asciiname = '"+loc+"' or name = '"+loc+"' order by population DESC Limit 1";
 		if (withTZ)
-			query = "Select lat, lon from cities1000 where asciiname = '"+loc+"' and timezone = '"+tz+"' order by population DESC Limit 1";
+			query = "Select lat, lon from cities1000 where (asciiname = '"+loc+"' or name = '"+loc+"') and timezone = '"+tz+"' order by population DESC Limit 1";
 		
 		ResultSet cr = null;
 		try {
@@ -188,11 +557,15 @@ public class Geocoding {
 				lat = cr.getDouble(1);
 				lon = cr.getDouble(2);
 			}
-			Coordinate latlong = new Coordinate(lat, lon);
-			st.close();
-			c.close();
-			return latlong;
-					
+			if (counter > 0) {
+				Coordinate latlong = new Coordinate(lat, lon);
+				st.close();
+				c.close();
+				return latlong;
+			} else {
+				st.close();
+				c.close();
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -200,6 +573,44 @@ public class Geocoding {
 		return null;
 	}
 
+	
+	/**
+	 * Helper method to check if the user_timezone equals a valid timezone from timezone_shapes
+	 * @param tz
+	 * @return the coordinates of the centroid of the timezone shape.
+	 */
+	private static Coordinate get_is_timezone(String tz) {
+		Connection c = DBManager.getConnection(LOCAL, RCP);
+		String query = "Select St_Y(tz.cpoint), St_X(tz.cpoint) from timezone_shapes as tz where tz.tzid = '"+tz+"';";
+		ResultSet rs = null;
+		try {
+			Statement st = c.createStatement();
+			rs = st.executeQuery(query);
+			int counter = 0;
+			double lat = 0;
+			double lon = 0;
+			while (rs.next()) {
+				counter++;
+				lat = rs.getDouble(1);
+				lon = rs.getDouble(2);
+			}
+			if (counter > 0) {
+				Coordinate latlong = new Coordinate(lat, lon);
+				st.close();
+				c.close();
+				return latlong;
+			} else {
+				st.close();
+				c.close();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	
+	
 	public static class Entry<A> {
 
 		private ArrayList<String> a;

@@ -100,16 +100,18 @@ public class GraphPanelCreator {
 	
 	public final static Color[] similarColors =	
 		{
-			new Color(216, 134, 134),
-			new Color(135, 137, 211),
-			new Color(134, 206, 189),
-			new Color(206, 176, 134),
-			new Color(194, 204, 134),
-			new Color(145, 214, 134),
-			new Color(133, 178, 209),
-			new Color(103, 148, 255),
-			new Color(60, 220, 220),
-			new Color(30, 250, 100)
+			new Color(124,119,119)
+			
+//			new Color(216, 134, 134),
+//			new Color(135, 137, 211),
+//			new Color(134, 206, 189),
+//			new Color(206, 176, 134),
+//			new Color(194, 204, 134),
+//			new Color(145, 214, 134),
+//			new Color(133, 178, 209),
+//			new Color(103, 148, 255),
+//			new Color(60, 220, 220),
+//			new Color(30, 250, 100)
 		};
 	
 	
