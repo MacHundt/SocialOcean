@@ -72,6 +72,7 @@ import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
+import edu.uci.ics.jung.visualization.picking.PickedState;
 import socialocean.parts.Histogram;
 import utils.DBManager;
 import utils.Lucene;
@@ -170,6 +171,7 @@ public class GraphPanelCreator {
 
 			DefaultModalGraphMouse<MyUser, MyEdge> gm = new DefaultModalGraphMouse<MyUser, MyEdge>();
 			vv.setGraphMouse(gm);
+			
 			
 			// The clustSizeSlider
 			clusterSizeSlider = new JSlider(JSlider.HORIZONTAL);
@@ -271,6 +273,31 @@ public class GraphPanelCreator {
 				}
 			});
 			
+			
+			final PickedState<MyUser> pickedState = vv.getPickedVertexState();
+
+			// Attach the listener that will print when the vertices selection changes.
+			pickedState.addItemListener(new ItemListener() {
+
+			    @Override
+			    public void itemStateChanged(ItemEvent e) {
+			        Object subject = e.getItem();
+			        // The graph uses Integers for vertices.
+			        if (subject instanceof MyUser) {
+			        		MyUser vertex = (MyUser) subject;
+			        		vertex.setNameVisible();
+			            if (pickedState.isPicked(vertex)) {
+			                System.out.println("Vertex " + vertex.toString()+"_"+ vertex.getId()
+			                    + " is now selected");
+			            } else {
+			            		// TODO Do something with the selection --> show details, transform graph
+//			                System.out.println("Vertex " + vertex.toString()
+//			                    + " no longer selected");
+			            }
+			        }
+			    }
+			});
+			
 			graphPanel.add(new GraphZoomScrollPane(vv), BorderLayout.CENTER);
 			JPanel south = new JPanel();
 //			JPanel grid = new JPanel(new GridLayout(2,1));
@@ -313,7 +340,7 @@ public class GraphPanelCreator {
 			
 				String id = (document.getField("id")).stringValue();
 				String mentionString = (document.getField("mention")).stringValue();
-				String screenName = (document.getField("name")).stringValue();
+				String screenName = (document.getField("name")).stringValue().trim();
 
 				// EDGE information
 				boolean hasGeo = false;
@@ -351,10 +378,10 @@ public class GraphPanelCreator {
 						if (target.isEmpty())
 							continue;
 
-						target = target.replace(":", "");
+						target = target.replace(":", "").trim();
 
 						if (!nodeNames.containsKey(target)) {
-							nodeID = new MyUser("n" + nodesCounter++, screenName);
+							nodeID = new MyUser("n" + nodesCounter++, target);
 
 							graph.addVertex(nodeID);
 							nodeNames.put(target, nodeID);
@@ -376,9 +403,12 @@ public class GraphPanelCreator {
 						edge.changeToString(MyEdge.LabelType.SentiStrenth);
 
 						if (hasGeo)
-							((MyEdge) edge).addPoint(lat, lon);
+							edge.addPoint(lat, lon);
 						
-						graph.addEdge(edge, sourceID, nodeID);
+						// No self-Edges
+						if (!sourceID.getName().equals(nodeID.getName())) {
+							graph.addEdge(edge, sourceID, nodeID);
+						} 
 
 					}
 				}

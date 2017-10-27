@@ -99,6 +99,8 @@ public class LuceneSearch {
 		partService.showPart("socialocean.part.timeline", PartState.VISIBLE );
 		partService.showPart("socialocean.part.settings", PartState.CREATE);
 		partService.showPart("socialocean.part.queryhistory", PartState.CREATE);
+		partService.showPart("socialocean.part.graph", PartState.CREATE);
+		partService.showPart("socialocean.part.jung", PartState.CREATE);
 //		MPart part = partService.createPart("socialocean.partdescriptor.sample");
 		
 		

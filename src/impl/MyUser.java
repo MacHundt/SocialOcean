@@ -29,6 +29,10 @@ public class MyUser {
 	}
 	
 	
+	public String getName() {
+		return name;
+	}
+	
 
 	@Override
 	public String toString() {

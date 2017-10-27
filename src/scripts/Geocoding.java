@@ -32,10 +32,12 @@ public class Geocoding {
 	private static java.util.regex.Pattern coordinates = java.util.regex.Pattern.compile("[-]?(\\d+)[.](\\d+)[ ,]+[-]?(\\d+)[.](\\d+)");
 
 	public static void main(String[] args) {
+		
+		System.out.println("GEOCODING ...");
 
 		Connection c = DBManager.getConnection(LOCAL, RCP);
-//		String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table + " where geom is null;";
-		String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table + ";";
+		String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table + " where geom is null;";
+//		String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table + " where geocoding_type = 4 and user_location is not null";
 
 		try {
 			c.setAutoCommit(false);
@@ -45,7 +47,6 @@ public class Geocoding {
 			list = new ArrayList<>();
 			int counter = 0;
 			while (rs.next()) {
-				counter++;
 				long uid = Long.parseLong(rs.getString(1));
 				String location = rs.getString(2);
 				String timezone = rs.getString(3);
@@ -53,12 +54,13 @@ public class Geocoding {
 				
 				// GT 10  -- Stay Default. No geocoding possible
 				if ((location == null || location.trim().isEmpty()) && timezone.equals("null")) {
-					if (counter == fetchsize) {
-						counter = 0;
-					}
+//					if (counter == fetchsize) {
+//						counter = 0;
+//					}
 					continue;
 				}
 
+				counter++;
 				fields = new ArrayList<>();
 				fields.add(uid+"");
 				fields.add(location);
@@ -81,12 +83,15 @@ public class Geocoding {
 			// add last
 			geocode(list);
 			list.clear();
+			st.close();
+			c.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 
 			main(args);
 
 		}
+		System.out.println(">>> DONE");
 	}
 
 
@@ -108,9 +113,10 @@ public class Geocoding {
 		Statement st = c.createStatement();
 		
 		// GEOCODE
+		int fetchcounter = list.size();
 		int counter = 0;
 		for (Entry<ArrayList<String>> e : list) {
-			
+			fetchcounter--;
 			long uid = Long.parseLong(e.getA().get(0));
 			String loc = e.getA().get(1);
 			String tz = e.getA().get(2);
@@ -141,41 +147,46 @@ public class Geocoding {
 			
 //		############ Geocoding Type 3 #############
 			
-			if (geoType > 3) {
-				updateQuery = geocode3(uid, loc, tz);
-				if (!updateQuery.equals("NaV")) {
-					st.addBatch(updateQuery);
-					counter++;
-					geoType = 3;
-				}
-			}
+//			if (geoType > 3) {
+//				updateQuery = geocode3(uid, loc, tz);
+//				if (!updateQuery.equals("NaV")) {
+//					st.addBatch(updateQuery);
+//					counter++;
+//					geoType = 3;
+//				}
+//			}
 			
 
 //		############ Geocoding Type 4 #############
 			
-			if (geoType > 4) {
-				updateQuery = geocode4(uid, tz);
-				if (!updateQuery.equals("NaV")) {
-					st.addBatch(updateQuery);
-					counter++;
-					geoType = 4;
-				}
-			}
+//			if (geoType > 4) {
+//				updateQuery = geocode4(uid, tz);
+//				if (!updateQuery.equals("NaV")) {
+//					st.addBatch(updateQuery);
+//					counter++;
+//					geoType = 4;
+//				}
+//			}
 			
 			
-//		############ Geocoding Type 5 #############			
-			if (geoType > 5) {
-				updateQuery = geocode5(uid, loc, tz);
-				if (!updateQuery.equals("NaV")) {
-					st.addBatch(updateQuery);
-					counter++;
-					geoType = 5;
-				}
-			}
+//		############ Geocoding Type 5 #############		
+			
+//			if (geoType > 5) {
+//				updateQuery = geocode5(uid, loc, tz);
+//				if (!updateQuery.equals("NaV")) {
+//					st.addBatch(updateQuery);
+//					counter++;
+//					geoType = 5;
+//				}
+//			}
 			
 			
-//			############ Geocoding Type 6 #############			
-			if (geoType > 6) {
+			loc = loc.replaceAll(",", ", ").toLowerCase();
+			loc = loc.replaceAll(remover.pattern(), "").trim();
+			
+//			############ Geocoding Type 6 #############		
+			
+			if (geoType > 6 ) {
 				updateQuery = geocode6(uid, loc);
 				if (!updateQuery.equals("NaV")) {
 					st.addBatch(updateQuery);
@@ -186,6 +197,7 @@ public class Geocoding {
 			
 			
 //			############ Geocoding Type 7 #############			
+			
 			if (geoType > 7) {
 				updateQuery = geocode7(uid, loc);
 				if (!updateQuery.equals("NaV")) {
@@ -195,7 +207,6 @@ public class Geocoding {
 				}
 			}
 			
-			
 			if (counter == batchsize) {
 				st.executeBatch();
 				c.commit();
@@ -203,6 +214,7 @@ public class Geocoding {
 			}
 			
 		}
+		
 		st.executeBatch();
 		c.commit();
 		st.close();
@@ -340,12 +352,12 @@ public class Geocoding {
 	 * @param loc
 	 * @return The Update query String
 	 */
-	private static String geocode6(long uid, String loc) {
-		String location = loc.toLowerCase();
-		location = location.replaceAll(",", ", ");
-		location = location.replaceAll(remover.pattern(), "");
+	private static String geocode6(long uid, String location) {
+//		String location = loc.toLowerCase();
+//		location = location.replaceAll(",", ", ");
+//		location = location.replaceAll(remover.pattern(), "");
 		
-		if (!location.trim().isEmpty()) {
+		if (!location.isEmpty()) {
 			location = location.substring(0, 1).toUpperCase() + location.substring(1);
 //			contains " "  Capitalize all words
 			if (location.contains(" ")) {
@@ -381,12 +393,12 @@ public class Geocoding {
 	 * @param loc
 	 * @return The Update query String
 	 */
-	private static String geocode7(long uid, String loc) {
-		String location = loc.toLowerCase();
-		location = location.replaceAll(",", ", ");
-		location = location.replaceAll(remover.pattern(), "");
+	private static String geocode7(long uid, String location) {
+//		String location = loc.toLowerCase();
+//		location = location.replaceAll(",", ", ");
+//		location = location.replaceAll(remover.pattern(), "");
 		
-		if (!location.trim().isEmpty()) {
+		if (!location.isEmpty()) {
 			location = location.substring(0, 1).toUpperCase() + location.substring(1);
 //			contains " "  Capitalize all words
 			if (location.contains(" ")) {
