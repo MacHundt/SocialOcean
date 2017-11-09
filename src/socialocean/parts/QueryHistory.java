@@ -82,8 +82,10 @@ public class QueryHistory {
 				try {
 					String his = history.getText();
 					int lastNewline = his.lastIndexOf("\n");
-					history.setText(his.substring(0, lastNewline));
-					history.update();
+					if (lastNewline != -1) {
+						history.setText(his.substring(0, lastNewline));
+						history.update();
+					} 
 				} catch (Throwable t) {
 					t.printStackTrace();
 					System.out.println(" Could not print to Console");

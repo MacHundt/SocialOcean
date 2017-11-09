@@ -62,7 +62,7 @@ public class GlyphPainter implements Painter<JXMapViewer> {
 		int outerDiameter = mapCon.getCellSize();
 		int outerRadius = outerDiameter / 2;
 		int zoom = map.getZoom();
-		Map<MapGridRectangle, List<Document>> cells = mapCon.getGridCells(zoom);
+		Map<MapGridRectangle, List<String>> cells = mapCon.getGridCells(zoom);
 		
 		if (cells == null) {
 			return;
@@ -70,7 +70,7 @@ public class GlyphPainter implements Painter<JXMapViewer> {
 		
 		for (Rectangle r : cells.keySet()) {
 			// Draw the glyph within the cells
-			List<Document> yards = cells.get(r);
+			List<String> yards = cells.get(r);
 			int centerX = (int) r.getCenterX();
 			int centerY = (int) r.getCenterY();
 
@@ -102,7 +102,7 @@ public class GlyphPainter implements Painter<JXMapViewer> {
 				double sumProbabilityInf = 0.0d;
 				double sumProbabilityNotInf = 0.0d;
 
-				for (Document y : yards) {
+				for (String y : yards) {
 //					WineyardPrediction pRes = y.getPredictionRestult();
 //					double[] probInf = pRes.getInfestedProbabilityPerMonth();
 //					double[] probNotInf = pRes.getNotInfestedProbabilityPerMonth();

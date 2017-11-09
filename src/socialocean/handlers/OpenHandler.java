@@ -97,6 +97,7 @@ public class OpenHandler {
 			l.clearMap();
 			l.clearQueryHistroy();
 			
+			
 		} catch (IOException e1) {
 //			e1.printStackTrace();
 			System.err.println(lucenIndex +" >>>> has no settings.propertyies file");

@@ -4,39 +4,33 @@ import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.awt.Paint;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
-import javax.swing.JToggleButton;
+import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -45,7 +39,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.spatial.geopoint.document.GeoPointField;
-import org.eclipse.e4.ui.workbench.UIEvents.Application;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
 
@@ -54,14 +47,10 @@ import com.google.common.base.Functions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.mxgraph.model.mxCell;
-import com.mxgraph.view.mxEdgeStyle;
-import com.mxgraph.view.mxStylesheet;
 
 import edu.uci.ics.jung.algorithms.cluster.EdgeBetweennessClusterer;
 import edu.uci.ics.jung.algorithms.layout.AggregateLayout;
-import edu.uci.ics.jung.algorithms.layout.CircleLayout;
-import edu.uci.ics.jung.algorithms.layout.KKLayout;
+import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.SpringLayout2;
 import edu.uci.ics.jung.graph.DirectedGraph;
@@ -70,16 +59,11 @@ import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
-import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
-import edu.uci.ics.jung.visualization.picking.PickedState;
-import socialocean.parts.Histogram;
 import utils.DBManager;
-import utils.Lucene;
 
 
 public class GraphPanelCreator {
-
+	
 	private static JPanel graphPanel = null;
 	private static VisualizationViewer<MyUser, MyEdge> vv;
 	private static DirectedGraph<MyUser, MyEdge> graph;
@@ -94,6 +78,10 @@ public class GraphPanelCreator {
 			CacheBuilder.newBuilder().build(
 					CacheLoader.from(Functions.<Paint>constant(Color.blue)));
 	
+//	private static LoadingCache<MyUser, Paint> selectedVertexPaints =
+//			CacheBuilder.newBuilder().build(
+//					CacheLoader.from(Functions.<Paint>constant(Color.red))); 
+	
 	
 	private static int topK = 5;
 	static boolean ASC = true;
@@ -101,7 +89,7 @@ public class GraphPanelCreator {
 	
 	public final static Color[] similarColors =	
 		{
-			new Color(124,119,119)
+			new Color(124,119,119, 200)
 			
 //			new Color(216, 134, 134),
 //			new Color(135, 137, 211),
@@ -138,14 +126,16 @@ public class GraphPanelCreator {
 			vv.setBackground(Color.white);
 			//Tell the renderer to use our own customized color rendering
 			vv.getRenderContext().setVertexFillPaintTransformer(vertexPaints);
+			
 			vv.getRenderContext().setVertexDrawPaintTransformer(new Function<MyUser,Paint>() {
 				public Paint apply(MyUser v) {
 					if(vv.getPickedVertexState().isPicked(v)) {
-						return Color.cyan;
+						return Color.YELLOW;
 					} else {
 						return Color.BLACK;
 					}
 				}
+				
 			});
 			
 			vv.getRenderContext().setEdgeDrawPaintTransformer(edgePaints);
@@ -163,13 +153,36 @@ public class GraphPanelCreator {
 	                }
 	            });
 			
+			vv.getRenderContext().setArrowDrawPaintTransformer(new Function<MyEdge,Paint>() {
+				public Paint apply(MyEdge v) {
+					if(vv.getPickedEdgeState().isPicked(v)) {
+						return Color.YELLOW;
+					} else {
+						return Color.BLACK;
+					}
+				}
+				
+			});
+			
+			vv.getRenderContext().setEdgeDrawPaintTransformer(new Function<MyEdge,Paint>() {
+				public Paint apply(MyEdge v) {
+					if(vv.getPickedEdgeState().isPicked(v)) {
+						return Color.YELLOW;
+					} else {
+						return Color.BLACK;
+					}
+				}
+				
+			});
+			
+			
 			
 			 // Probably the most important step for the pure rendering performance:
 	        // Disable anti-aliasing
 	        vv.getRenderingHints().remove(RenderingHints.KEY_ANTIALIASING);
 			
 
-			DefaultModalGraphMouse<MyUser, MyEdge> gm = new DefaultModalGraphMouse<MyUser, MyEdge>();
+	        MyModalGraphMouse<MyUser, MyEdge> gm = new MyModalGraphMouse<MyUser, MyEdge>();
 			vv.setGraphMouse(gm);
 			
 			
@@ -274,29 +287,58 @@ public class GraphPanelCreator {
 			});
 			
 			
-			final PickedState<MyUser> pickedState = vv.getPickedVertexState();
+//			final PickedState<MyUser> pickedState = vv.getPickedVertexState();
+//			final PickedState<MyEdge> pickedEdge = vv.getPickedEdgeState();
+			
+//			vv.addChangeListener(new ChangeListener() {
+//				
+//				@Override
+//				public void stateChanged(ChangeEvent e) {
+//					Object o = e.getSource();
+//					System.out.println();
+//					// fires when zoom or pan changed
+//				}
+//			});
+//			vv.getPickSupport().
+			
+//			pickedEdge.addItemListener( new ItemListener() {
+//				
+//				@Override
+//				public void itemStateChanged(ItemEvent e) {
+//					Object subject = e.getItem();
+//			        // The graph eges
+//			        if (subject instanceof MyEdge) {
+//			        		MyEdge edge = (MyEdge) subject;
+//			        		if (pickedEdge.isPicked(edge)) {
+//	//			        		System.out.println("Edge " + edge.getId());
+//			        			// partService.showPart("socialocean.part.graph", PartState.ACTIVATE);
+//			        			
+//			        		}
+//			        }
+//					
+//				}
+//			});
+
 
 			// Attach the listener that will print when the vertices selection changes.
-			pickedState.addItemListener(new ItemListener() {
-
-			    @Override
-			    public void itemStateChanged(ItemEvent e) {
-			        Object subject = e.getItem();
-			        // The graph uses Integers for vertices.
-			        if (subject instanceof MyUser) {
-			        		MyUser vertex = (MyUser) subject;
-			        		vertex.setNameVisible();
-			            if (pickedState.isPicked(vertex)) {
-			                System.out.println("Vertex " + vertex.toString()+"_"+ vertex.getId()
-			                    + " is now selected");
-			            } else {
-			            		// TODO Do something with the selection --> show details, transform graph
-//			                System.out.println("Vertex " + vertex.toString()
-//			                    + " no longer selected");
-			            }
-			        }
-			    }
-			});
+//			pickedState.addItemListener(new ItemListener() {
+//
+//			    @Override
+//			    public void itemStateChanged(ItemEvent e) {
+//			        Object subject = e.getItem();
+//			        if (subject instanceof MyUser) {
+//			        		MyUser vertex = (MyUser) subject;
+//			        		vertex.setNameVisible();
+//			            if (pickedState.isPicked(vertex)) {
+////			            		selectedVertexPaints.put(vertex, Color.red);
+////			                System.out.println("Vertex " + vertex.toString()+"_"+ vertex.getId()
+////			                    + " is now selected");
+//			            		// TODO Transform the Node
+//			            		
+//			            } 
+//			        }
+//			    }
+//			});
 			
 			graphPanel.add(new GraphZoomScrollPane(vv), BorderLayout.CENTER);
 			JPanel south = new JPanel();
@@ -433,7 +475,7 @@ public class GraphPanelCreator {
 	/**
 	 * Removes all vertices and edges from the graph
 	 */
-	private static void clearGraph() {
+	public static void clearGraph() {
 		MyEdge[] edgearr = new MyEdge[graph.getEdgeCount()];
 		graph.getEdges().toArray(edgearr);
 		for (int i = 0; i < edgearr.length; i++) {
@@ -447,6 +489,16 @@ public class GraphPanelCreator {
 			MyUser v = userarr[i];
 			graph.removeVertex(v);
 		}
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				vv.repaint();
+			}
+			
+		});
+		
+		
 		
 	}
 	
@@ -492,6 +544,10 @@ public class GraphPanelCreator {
 						edge.addSentiment("neu");
 						edge.addDate(null);
 						edge.setRelationsip("Followed");
+//						edge.addSource(name);
+//						edge.addTarget(target);
+						if (hasGeo)
+							edge.addPoint(lat, lon);
 						
 						graph.addEdge(edge, nodeNames.get(name), nodeNames.get(target));
 
@@ -665,8 +721,13 @@ public class GraphPanelCreator {
 			for(MyUser v : vertices) {
 				subGraph.addVertex(v);
 			}
+//			Layout<MyUser,MyEdge> subLayout = 
+//				new CircleLayout<MyUser, MyEdge>(subGraph);
+			
 			Layout<MyUser,MyEdge> subLayout = 
-				new CircleLayout<MyUser, MyEdge>(subGraph);
+					new ISOMLayout<MyUser, MyEdge>(subGraph);
+			
+			
 			
 			subLayout.setInitializer(vv.getGraphLayout());
 			subLayout.setSize(new Dimension(60,60));

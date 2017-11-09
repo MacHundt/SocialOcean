@@ -4,6 +4,7 @@ package socialocean.parts;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
@@ -67,6 +68,7 @@ public class Time {
 	TimeSeriesCollection dataset;
 	ChartPanel panel;
 	JFreeChart chart;
+	protected Point endPoint;
 	
 	@PostConstruct
 	public void postConstruct(Composite parent) {
@@ -123,15 +125,32 @@ public class Time {
 		
 		panel.addMouseListener(new MouseListener() {
 			
+			private Point startingPoint;
+
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				
 				Plot p = chart.getPlot();
+				endPoint = e.getPoint();
 				System.out.println("GET Domain Range:");
 				Number low = plot.getDomainAxis().getRange().getLowerBound();
 				Number up = plot.getDomainAxis().getRange().getUpperBound();
 				
+				// CONVERT UTC to Timestamp
+//				Date date = new Date(low.longValue());
+//				Format format = new SimpleDateFormat("yyyy MM dd HH:mm:ss");
+//				String from =  format.format(date);
+//				date = new Date(up.longValue());
+//				String to = format.format(date);
+				
 				boolean zoom = false;
+				int range1 = (int) startingPoint.getX();
+				int range2 = (int) endPoint.getX();
+			
+				if (startingPoint.getX() == endPoint.getX()) {
+					zoom = true;
+				}
+				
 				if (low.longValue() > last_lowerBound && low.longValue() < last_upperBound 
 						&& up.longValue() > last_lowerBound && up.longValue() < last_upperBound	)
 					zoom = true;
@@ -145,14 +164,9 @@ public class Time {
 					return;
 				}
 
-				Date date = new Date(low.longValue());
-				Format format = new SimpleDateFormat("yyyy MM dd HH:mm:ss");
-				String from =  format.format(date);
-				date = new Date(up.longValue());
-				String to = format.format(date);
-				
 //				result = l.searchTimeRange(low.longValue(), up.longValue(), true, true);
-				if (l.getLastResult() != null && zoom) {
+//				if (l.getLastResult() != null && zoom) {
+				if (!zoom) {
 					Result  result = l.searchTimeRange(low.longValue(),  up.longValue(), true,  true);
 					ScoreDoc[] data = result.getData();
 					l.changeHistogramm(result.getHistoCounter());
@@ -163,7 +177,7 @@ public class Time {
 						@Override
 						public void execute() {
 							l.createGraphView(result.getData());
-//							l.createSimpleGraphView(data);
+							
 						}
 					};
 					graphThread.start();
@@ -179,6 +193,8 @@ public class Time {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
+				
+				startingPoint = e.getPoint();
 //				EventQueue.invokeLater(new Runnable() {
 //					public void run() {
 //						markerStart = getPosition(e).longValue();
@@ -284,11 +300,11 @@ public class Time {
 				}
 				dataset.addSeries(series);	
 //				dataset.setAutoWidth(true);
+				panel.restoreAutoBounds();
+				panel.revalidate();
+				panel.repaint();
 			}
 		});
-		panel.restoreAutoBounds();
-		panel.revalidate();
-		panel.updateUI();
 		
 		Number low = plot.getDomainAxis().getLowerBound();
 		Number up = plot.getDomainAxis().getUpperBound();

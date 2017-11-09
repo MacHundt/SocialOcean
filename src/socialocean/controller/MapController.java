@@ -31,6 +31,8 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
 import impl.MapPanelCreator;
+import impl.MyEdge;
+import impl.MyUser;
 import socialocean.model.MapCountries;
 import socialocean.model.MapGridRectangle;
 import socialocean.model.Result;
@@ -42,10 +44,13 @@ import utils.Lucene;
 public class MapController extends Observable {
 
 	// Zoomlevel to gridCell
-	Map<Integer, Map<MapGridRectangle, List<Document>>> cellsToYard = new HashMap<>();
-	Map<Integer, Map<MapCountries, List<Document>>> countriesToYard = new HashMap<>();
+//	Map<Integer, Map<MapGridRectangle, List<Document>>> cellsToYard = new HashMap<>();
+	Map<Integer, Map<MapGridRectangle, List<String>>> cellsToYard = new HashMap<>();
+	Map<Integer, Map<MapCountries, List<String>>> countriesToYard = new HashMap<>();
 	// Map<Integer, Map<MapCountries, List<Document>>> countriesToYard = new
 	// HashMap<>();
+	
+	private ArrayList<?> selection = null;
 
 	private int cellSize = 128;
 	// ArrayList<Geometry> admin0 = new ArrayList<>();
@@ -57,13 +62,226 @@ public class MapController extends Observable {
 		this.map = map;
 	}
 
-	public Map<MapCountries, List<Document>> getCountries(int zoomLvl) {
+	public Map<MapCountries, List<String>> getCountries(int zoomLvl) {
 		if (!countriesToYard.containsKey(zoomLvl)) {
 			if (zoomLvl > 12)
+				if (selection != null) {
+					initCountries(selection);
+				}
 				initCountries();
 		}
 		return countriesToYard.get(zoomLvl);
 	}
+	
+	
+	
+
+	public void setSelection(ArrayList<?> allItems) {
+		selection = allItems;
+	}
+	
+	
+	private void initCountries(ArrayList<?> allItems) {
+		Lucene l = Lucene.INSTANCE;
+		Lucene.INITCountries = false;
+		Display.getDefault().asyncExec(new Runnable() {
+			public void run() {
+				// SettingsPart.selectCountries(false);
+				SettingsPart.enableCountries(false);
+			}
+		});
+
+		Map<MapCountries, List<String>> countries = new HashMap<>();
+		Map<MapCountries, List<String>> states = new HashMap<>();
+		WKTReader wkt = new WKTReader();
+		ShapeWriter sw = new ShapeWriter(new GeoToCartesianTransformation(map));
+		GeometryFactory factory = new GeometryFactory();
+		Connection c = DBManager.getConnection();
+
+		boolean user = false;
+
+		if (allItems.isEmpty()) {
+			return;
+		}
+
+		if (allItems.get(0) instanceof MyUser)
+			user = true;
+
+		for (Object o : allItems) {
+			String id = "";
+			double lat = 0;
+			double lon = 0;
+			if (o instanceof MyEdge) { // change Color
+				MyEdge e = (MyEdge) o;
+				id = e.getId();
+				if (!e.hasGeo())
+					continue;
+				if (e.getLatitude() == 0.0 || e.getLongitude() == 0.0)
+					continue;
+
+				lon = e.getLongitude();
+				lat = e.getLatitude();
+
+			} else if (o instanceof MyUser) {
+				MyUser u = (MyUser) o;
+				id = u.getId();
+				if (!u.hasGeo())
+					continue;
+				if (u.getLatitude() == 0.0 || u.getLongitude() == 0.0)
+					continue;
+
+				lon = u.getLongitude();
+				lat = u.getLatitude();
+			}
+
+			if (lat == 0.0 || lon == 0.0)
+				continue;
+
+			HashMap<String, Geometry> geometryMap = null;
+			Geometry geometry = null;
+			String admin = "";
+			geometryMap = getCountryGeometry(lat, lon, c);
+			for (String s : geometryMap.keySet())
+				admin = s;
+			for (Geometry g : geometryMap.values())
+				geometry = g;
+
+			// point not in country
+			if (geometry == null) {
+				continue;
+			}
+
+			// States
+			String[] admin1 = { "Australia", "Brazil", "Canada", "United States of America", "United States" };
+			boolean isInAdmin1 = false;
+			for (String country : admin1) {
+				if (country.equals(admin)) {
+					isInAdmin1 = true;
+					break;
+				}
+			}
+
+			String stateName = admin;
+			Geometry stateGeom = geometry;
+			// Geometry stateGeom = null;
+			if (isInAdmin1) {
+				geometryMap = getCountryProvinceGeometry(lat, lon, c);
+				for (String s : geometryMap.keySet())
+					stateName = s;
+				for (Geometry g : geometryMap.values())
+					stateGeom = g;
+			}
+
+			// Country
+			Polygon[] polygons = new Polygon[geometry.getNumGeometries()];
+			for (int i = 0; i < geometry.getNumGeometries(); i++) {
+				polygons[i] = (Polygon) geometry.getGeometryN(i);
+			}
+
+			MapCountries country = new MapCountries(polygons, factory);
+			if (!countries.containsKey(country)) {
+				countries.put(country, new ArrayList<>());
+			}
+			countries.get(country).add(id);
+
+			// States
+			if (stateGeom == null) {
+				continue;
+			}
+			Polygon[] polygonsState = new Polygon[stateGeom.getNumGeometries()];
+			for (int i = 0; i < stateGeom.getNumGeometries(); i++) {
+				polygonsState[i] = (Polygon) stateGeom.getGeometryN(i);
+			}
+
+			MapCountries state = new MapCountries(polygonsState, factory);
+			if (!states.containsKey(state)) {
+				states.put(state, new ArrayList<>());
+			}
+			states.get(state).add(id);
+		}
+
+		// Set Color for countries
+		double maxDocs = Math.log((double) allItems.size());
+		double stepsize = maxDocs / 5;
+		for (MapCountries key : countries.keySet()) {
+			double cellN = Math.log(countries.get(key).size());
+			int bucket = (int) Math.ceil(cellN / stepsize);
+			int a = 15;
+			switch (bucket) {
+			case 1:
+				a = 51;
+				break;
+			case 2:
+				a = 102;
+				break;
+			case 3:
+				a = 153;
+				break;
+			case 4:
+				a = 204;
+				break;
+			case 5:
+				a = 255;
+				break;
+			default:
+				break;
+			}
+			key.setBackgroundColor(new Color(0, 0, 255, a));
+		}
+
+		// Set Color for states
+		for (MapCountries key : states.keySet()) {
+			double cellN = Math.log(states.get(key).size());
+			int bucket = (int) Math.ceil(cellN / stepsize);
+			int a = 15;
+			switch (bucket) {
+			case 1:
+				a = 51;
+				break;
+			case 2:
+				a = 102;
+				break;
+			case 3:
+				a = 153;
+				break;
+			case 4:
+				a = 204;
+				break;
+			case 5:
+				a = 255;
+				break;
+			default:
+				break;
+			}
+			key.setBackgroundColor(new Color(0, 0, 255, a));
+		}
+
+		System.out.println("Number of Countries: " + countries.size());
+
+		// from 10 to max --> countries
+		for (int i = 16; i < MapPanelCreator.maxZoom; ++i) {
+			countriesToYard.put(i, countries);
+		}
+
+		for (int i = 12; i < 16; ++i) {
+			countriesToYard.put(i, states);
+		}
+
+		Lucene.DATACHANGED = false;
+		Lucene.INITCountries = true;
+
+		Display.getDefault().asyncExec(new Runnable() {
+			public void run() {
+				// SettingsPart.selectCountries(true);
+				SettingsPart.enableCountries(true);
+			}
+		});
+
+		l.printlnToConsole(">> Countries ready");
+		System.out.println("Countries ready");
+	}
+	
+	
 
 	private void initCountries() {
 
@@ -79,14 +297,13 @@ public class MapController extends Observable {
 		
 		// ShapeWriter sw = new ShapeWriter(new GeoToCartesianTransformation(map));
 
-		Map<MapCountries, List<Document>> countries = new HashMap<>();
-		Map<MapCountries, List<Document>> states = new HashMap<>();
+		Map<MapCountries, List<String>> countries = new HashMap<>();
+		Map<MapCountries, List<String>> states = new HashMap<>();
 
 		if (result == null)
 			return;
 
 		IndexSearcher searcher = l.getIndexSearcher();
-		WKTReader wkt = new WKTReader();
 		GeometryFactory factory = new GeometryFactory();
 		Connection c = DBManager.getConnection();
 		try {
@@ -170,7 +387,7 @@ public class MapController extends Observable {
 				if (!countries.containsKey(country)) {
 					countries.put(country, new ArrayList<>());
 				}
-				countries.get(country).add(document);
+				countries.get(country).add(document.getField("id").stringValue());
 				
 				// States
 				if (stateGeom == null) {
@@ -185,7 +402,7 @@ public class MapController extends Observable {
 				if (!states.containsKey(state)) {
 					states.put(state, new ArrayList<>());
 				}
-				states.get(state).add(document);
+				states.get(state).add(document.getField("id").stringValue());
 				
 			}
 
@@ -359,7 +576,8 @@ public class MapController extends Observable {
 		return countryGeoms;
 	}
 
-	private HashMap<String, Geometry> getCountryGeometry(double lat, double lon, Connection c) {
+	
+	public static HashMap<String, Geometry> getCountryGeometry(double lat, double lon, Connection c) {
 		Geometry geo = null;
 		HashMap<String, Geometry> countryGeoms = new HashMap<>(1);
 		WKTReader wkt = new WKTReader();
@@ -389,14 +607,144 @@ public class MapController extends Observable {
 		return countryGeoms;
 
 	}
-
-	public Map<MapGridRectangle, List<Document>> getGridCells(int zoomLvl) {
+	
+	public Map<MapGridRectangle, List<String>> getGridCells(int zoomLvl, ArrayList<?> allItems) {
 		if (!cellsToYard.containsKey(zoomLvl)) {
+			initGridCells(zoomLvl, allItems);
+		}
+
+		return cellsToYard.get(zoomLvl);
+		
+	}
+	
+	
+	private void initGridCells(int zoomLvl, ArrayList<?> allItems) {
+		
+		WKTReader wkt = new WKTReader();
+		boolean user = false;
+		// Assign relevant tweet or user to their gridcells wrt all zoomlvls
+		ShapeWriter sw = new ShapeWriter(new GeoToCartesianTransformation(map));
+
+//		Map<MapGridRectangle, List<Document>> cells = new HashMap<>();
+		Map<MapGridRectangle, List<String>> cells = new HashMap<>();
+		
+		if (allItems.isEmpty()) {
+			return;
+		}
+		
+		if (allItems.get(0) instanceof MyUser)
+			user = true;
+		
+		for (Object o : allItems) {
+			String id = "";
+			String point = "";
+			if (o instanceof MyEdge) {		// change Color
+				MyEdge e = (MyEdge) o;
+				id = e.getId();
+				if (!e.hasGeo())
+					continue;
+				if (e.getLatitude() == 0.0 || e.getLongitude() == 0.0)
+					continue;
+				
+				point = "POINT (" + e.getLongitude() + " " + e.getLatitude() + ")";
+				
+			} else if (o instanceof MyUser) {
+				MyUser u = (MyUser) o;
+				id = u.getId();
+				if (!u.hasGeo())
+					continue;
+				if (u.getLatitude() == 0.0 || u.getLongitude() == 0.0)
+					continue;
+				
+				point = "POINT (" + u.getLongitude() + " " + u.getLatitude() + ")";
+			}
+			
+			if (point.isEmpty())
+				continue;
+			
+			try {
+				com.vividsolutions.jts.geom.Geometry geometry = wkt.read(point);
+				// Geometry geometry = JtsGeometry.geomFromString("POINT ("+lon+" "+lat+")");
+				Shape s = sw.toShape(geometry);
+				
+				// TODO: for now we assign each polygon to the gridcell which
+				// contains the center of the bounding rect
+				Rectangle2D b = s.getBounds2D();
+				
+				double centerX = b.getCenterX();
+				double centerY = b.getCenterY();
+				
+				// Find the correct cell(s)
+				int cellX = (int) (centerX / cellSize);
+				int cellY = (int) (centerY / cellSize);
+				
+				MapGridRectangle cell = new MapGridRectangle(cellX * cellSize, cellY * cellSize, cellSize, cellSize);
+				if (!cells.containsKey(cell)) {
+					cells.put(cell, new ArrayList<>());
+				}
+				cells.get(cell).add(id);
+				
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+			
+		}
+
+		// Set Color of cell
+		double maxDocs = Math.log((double) allItems.size());
+		
+		double stepsize = maxDocs / 5;
+		for (MapGridRectangle key : cells.keySet()) {
+			double cellN = Math.log(cells.get(key).size());
+			int bucket = (int) Math.ceil(cellN / stepsize);
+			int a = 15;
+			switch (bucket) {
+			case 1:
+				a = 51;
+				break;
+			case 2:
+				a = 102;
+				break;
+			case 3:
+				a = 153;
+				break;
+			case 4:
+				a = 204;
+				break;
+			case 5:
+				a = 255;
+				break;
+
+			default:
+				break;
+			}
+			
+			// RED
+			if (user)
+				key.setBackgroundColor(new Color(255, 0, 0, a));
+			else 
+				key.setBackgroundColor(new Color(0, 0, 255, a));
+		}
+
+		// System.out.println("Number of Cells: " + cells.size());
+		// System.out.println("Cellsize: " + cellSize);
+		cellsToYard.put(zoomLvl, cells);
+
+	}
+	
+	
+
+	public Map<MapGridRectangle, List<String>> getGridCells(int zoomLvl) {
+		if (!cellsToYard.containsKey(zoomLvl)) {
+			if (selection != null) {
+				initGridCells(zoomLvl, selection);
+			}
 			initGridCells(zoomLvl);
 		}
 
 		return cellsToYard.get(zoomLvl);
 	}
+	
 
 	private void initGridCells(int zoomLvl) {
 		// Check the cells that contain data (the others can be skipped)
@@ -404,10 +752,11 @@ public class MapController extends Observable {
 		Lucene l = Lucene.INSTANCE;
 		Result result = l.getLastResult();
 
-		// Assign relevant wineyards and to their gridcells wrt all zoomlvls
+		// Assign relevant tweet or user to their gridcells wrt all zoomlvls
 		ShapeWriter sw = new ShapeWriter(new GeoToCartesianTransformation(map));
 
-		Map<MapGridRectangle, List<Document>> cells = new HashMap<>();
+//		Map<MapGridRectangle, List<Document>> cells = new HashMap<>();
+		Map<MapGridRectangle, List<String>> cells = new HashMap<>();
 
 		if (result == null)
 			return;
@@ -452,7 +801,7 @@ public class MapController extends Observable {
 				if (!cells.containsKey(cell)) {
 					cells.put(cell, new ArrayList<>());
 				}
-				cells.get(cell).add(document);
+				cells.get(cell).add(document.getField("id").stringValue());
 
 			} catch (IOException | ParseException e) {
 
@@ -539,4 +888,8 @@ public class MapController extends Observable {
 	public void clearCountries() {
 		this.countriesToYard.clear();
 	}
+
+
+
+
 }

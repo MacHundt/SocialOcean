@@ -1,5 +1,11 @@
 package scripts;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.ZoneOffset;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 public class TEST {
@@ -8,6 +14,27 @@ public class TEST {
 		System.out.println(java.lang.Runtime.getRuntime().maxMemory());
 		System.out.println(java.lang.Runtime.getRuntime().totalMemory());
 		System.out.println(java.lang.Runtime.getRuntime().availableProcessors());
+		
+		String tzid = "UTC";
+	    TimeZone tz = TimeZone.getTimeZone(ZoneOffset.UTC);
+
+	    ZoneOffset off = ZoneOffset.UTC;
+//	    off.getLong(field)
+	    
+	    long utc = 1365905080;  // supply your timestamp here
+	  
+	    Date d = new Date(utc*1000L); 
+
+	    // timezone symbol (z) included in the format pattern for debug
+	    DateFormat format = new SimpleDateFormat("yyyy/MM/dd hh:mm a z");
+
+	    // format date in default timezone
+	    System.err.println(format.format(d));
+
+	    // format date in target timezone
+	    format.setTimeZone(tz);
+	    System.err.println(format.format(d));
+		
 		
 		Pattern p = Pattern.compile("[^a-zA-z0-9+-=._/*(),@'$:;&#!?]");
 //		String http = "http"
@@ -52,8 +79,13 @@ public class TEST {
 //			System.out.println(name);
 //		}
 		
-			
-		
+	}
+	
+	public static long getLocalToUtcDelta() {
+	    Calendar local = Calendar.getInstance();
+	    local.clear();
+	    local.set(1970, Calendar.JANUARY, 1, 0, 0, 0);
+	    return local.getTimeInMillis();
 	}
 
 }

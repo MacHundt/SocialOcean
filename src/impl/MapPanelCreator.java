@@ -168,6 +168,9 @@ public class MapPanelCreator {
 		public void update(Observable o, Object arg) {
 			drawGrid();
 		}
+		
+		
+		
 
 		public void drawGrid() {
 			if (GraphPanelCreator3.SELECTED) {
@@ -181,7 +184,7 @@ public class MapPanelCreator {
 						p -> p instanceof GlyphPainter || p instanceof GridPainter || p instanceof WaypointPainter
 						|| p instanceof CountryPainter);
 
-			System.out.println("ZOOM >> " + map.getZoom());
+//			System.out.println("ZOOM >> " + map.getZoom());
 
 			if (map.getZoom() < 14 && swingWaypointPainter != null) {
 				swingWaypointPainter.setWaypoints(waypoints);
@@ -226,6 +229,8 @@ public class MapPanelCreator {
 		}
 
 	}
+	
+	
 
 	public static JPanel getMapPanel() {
 		if (mapPanel != null) {
@@ -474,7 +479,7 @@ public class MapPanelCreator {
 //					Point p = e.getPoint();
 					Point p = mapViewer.getMousePosition();
 					int zooml = mapViewer.getZoom();
-					Map<MapGridRectangle, List<Document>> cells = mapCon.getGridCells(mapViewer.getZoom());
+					Map<MapGridRectangle, List<String>> cells = mapCon.getGridCells(mapViewer.getZoom());
 					if (cells == null) {
 						return;
 					}
@@ -713,4 +718,7 @@ public class MapPanelCreator {
 	public static int getZoomLevel() {
 		return mapViewer.getZoom();
 	}
+
+
+
 }

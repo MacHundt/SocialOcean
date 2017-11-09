@@ -8,7 +8,6 @@ import java.awt.RenderingHints;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.lucene.document.Document;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.painter.Painter;
 
@@ -46,9 +45,8 @@ public class GridPainter implements Painter<JXMapViewer> {
 		g.setColor(Color.GREEN);
 		g.setStroke(new BasicStroke(1));
 		
-
 		int zoom = map.getZoom();
-		Map<MapGridRectangle, List<Document>> cells = mapCon.getGridCells(zoom);
+		Map<MapGridRectangle, List<String>> cells = mapCon.getGridCells(zoom);
 		
 		if (cells == null)
 			return;

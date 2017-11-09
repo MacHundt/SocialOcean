@@ -15,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -283,6 +284,315 @@ public class GraphPanelCreator3 {
 		graph.removeCells(remove, true);
 		graph.getModel().endUpdate();
 	}
+	
+	
+	public static <V,E> void createDetailGraph(Collection<V> nodes, Collection<E> edges, boolean withMention, boolean withFollows, boolean clear) {
+		
+		Lucene l = Lucene.INSTANCE;
+		if (clear) {
+			clearGraph();
+			l.clearMap();
+		}
+		
+		HashMap<String, Object> nodeNames = new HashMap<>(); // screenName -> id
+		HashMap<String, Object> sources = new HashMap<>();
+		HashMap<String, Integer> edgesMap = new HashMap<>();
+		
+		Connection c = DBManager.getConnection(false, true);
+		// Get User information, create nodes
+		for (V n : nodes) {
+			if (n instanceof MyUser) {
+				MyUser user = (MyUser) n;
+				String user_name = user.getName();
+				String id = user.getId();
+
+				try {
+					String creationdate = "";
+					String user_language = "";
+					String gender = "unknown";
+
+					int user_statuses = 0;
+					int user_lists = 0;
+					int user_friends = 0;
+					int user_follower = 0;
+					double desc_score = 0.0;
+
+					double lati = 0.0;
+					double longi = 0.0;
+					int geocode_type = 10;
+
+					boolean foundUser = false;
+					Statement st = c.createStatement();
+					String query = "Select * from "+DBManager.getUserTable()+" where user_screenname = '" + user_name + "';";
+					ResultSet rs = st.executeQuery(query);
+					while (rs.next()) {
+						foundUser = true;
+						creationdate = rs.getString("user_creationdate");
+						user_language = rs.getString("user_language");
+						gender = rs.getString("gender");
+						user_statuses = rs.getInt("user_statusescount");
+						user_lists = rs.getInt("user_listedcount");
+						user_friends = rs.getInt("user_friendscount");
+						user_follower = rs.getInt("user_followerscount");
+						desc_score = rs.getDouble("desc_score");
+						lati = rs.getDouble("latitude");
+						longi = rs.getDouble("longitude");
+						geocode_type = rs.getInt("geocoding_type");
+					}
+					// a sourceUser --> many details
+					if (foundUser) {
+						// ADD source node
+						Object nodeID = null;
+						if (!nodeNames.containsKey(user_name)) {
+							nodeID = new MyUser(id, user_name);
+							((MyUser)nodeID).addLanguage(user_language);
+							((MyUser)nodeID).addCredibility(desc_score);
+							((MyUser)nodeID).addGender(gender);
+							
+							if (lati != 0.0 || longi != 0.0) {
+								((MyUser)nodeID).addPoint(lati, longi);
+							}
+							
+							((MyUser)nodeID).setNameVisible();
+
+							nodeID = graph.insertVertex(parent, null, nodeID, 0, 0, 40, 40,
+									"ROUNDED;strokeColor=white;fillColor=white");
+							nodeNames.put(user_name, nodeID);
+							sources.put(user_name, nodeID);
+
+						} else {
+							nodeID = nodeNames.get(user_name);
+						}
+					} else {
+//						NO source node -- add just the screenname
+						Object nodeID = null;
+						if (!nodeNames.containsKey(user_name)) {
+							nodeID = new MyUser(id, user_name);
+							((MyUser)nodeID).setNameVisible();
+
+							nodeID = graph.insertVertex(parent, null, nodeID, 0, 0, 40, 40,
+									"ROUNDED;strokeColor=white;fillColor=white");
+							nodeNames.put(user_name, nodeID);
+							sources.put(user_name, nodeID);
+
+						} else {
+							nodeID = nodeNames.get(user_name);
+						}
+					}
+					
+					st.close();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+
+			}
+		}
+		
+		for (E e : edges) {
+			if (e instanceof MyEdge) {
+				MyEdge edge = (MyEdge) e;
+				long tweet_id = Long.parseLong(edge.getId());
+//				String source = edge.getSource();
+//				String target = edge.getTarget();
+				
+				try {
+					String source = "";
+					String content = "";
+					String sentiment = "neu";
+					double pos = 0;
+					double neg = 0;
+					String category = "other";
+					boolean hasUrl = false;
+					String relationship = "";
+					double lati = 0.0;
+					double longi = 0.0;
+					
+					Statement tst = c.createStatement();
+					String query = "Select "
+							+ "t.user_screenname, t.tweet_content, t.sentiment, t.positive, t.negative, t.category, t.hasurl, t.relationship, "
+							+ "t.latitude, t.longitude "
+							+ " from "+DBManager.getTweetdataTable()+" as t where t.tweet_id = "+tweet_id;
+					
+					ResultSet rs = tst.executeQuery(query);
+					boolean foundTweet = false;
+					while (rs.next()) {
+						foundTweet = true;
+						source = rs.getString(1);
+						content = rs.getString(2);
+						sentiment = rs.getString(3);
+						pos = rs.getDouble(4);
+						neg = rs.getDouble(5);
+						category = rs.getString(6);
+						category = category.replace(" & ", "_").toLowerCase();
+						hasUrl = rs.getBoolean(7);
+						relationship = rs.getString(8);
+						lati = rs.getDouble(9);
+						longi = rs.getDouble(10);
+					}
+					if (foundTweet) {
+						//create Edge
+						// GET Colors
+						String colorString = "";
+						if (l.getColorScheme().equals(Lucene.ColorScheme.CATEGORY)) {
+							Color color = Histogram.getCategoryColor(category);
+							colorString = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
+						} else {
+							Color color = new Color(Display.getDefault(), 255, 255, 191);
+							colorString = "#fee08b";
+							if (sentiment.equals("pos")) {
+								color = color = new Color(Display.getDefault(), 26, 152, 80);
+								// colorString = "green";
+								colorString = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
+							} else if (sentiment.equals("neg")) {
+								color = color = new Color(Display.getDefault(), 215, 48, 39);
+								// colorString = "red";
+								colorString = String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
+							}
+						}
+
+						String mentionString = (content != null) ? getMentionsFromTweets(content) : "";
+						// continue, no target, no mentions
+						if (mentionString.length() < 2) {
+							continue;
+						}
+						
+						boolean hasGeo = false;
+						if (lati != 0.0 || longi != 0.0) {
+							hasGeo = true;
+						}
+						
+						// ADD target nodes
+						String[] mentions = mentionString.split(" ");
+						if (withMention) {
+							for (String target : mentions) {
+
+								if (target.isEmpty())
+									continue;
+
+								target = target.replace(":", "");
+								Object tnode = null;
+
+								if (!nodeNames.containsKey(target)) {
+									tnode = new MyUser(tweet_id+"", target);
+
+									tnode = graph.insertVertex(parent, null, tnode, 0, 0, 40, 40,
+											"ROUNDED;strokeColor=white;fillColor=white");
+									nodeNames.put(target, tnode);
+
+								} else {
+									tnode = nodeNames.get(target);
+								}
+
+								Object gedge = null;
+								Object sourceID = nodeNames.get(source);
+								// ADD Edge: source to Target
+								String edgesNames = "" + ((mxCell) sourceID).getId() + "_" + ((mxCell) tnode).getId();
+								if (edgesMap.containsKey(edgesNames)) {
+									edgesMap.put(edgesNames, edgesMap.get(edgesNames) + 1);
+								} else {
+									edgesMap.put(edgesNames, new Integer(1));
+								}
+
+								gedge = new MyEdge(tweet_id+"");
+								((MyEdge) gedge).addCategory(category);
+								((MyEdge) gedge).addSentiment(sentiment);
+								((MyEdge) gedge).addPos((int)pos);
+								((MyEdge) gedge).addNeg((int)neg);
+								((MyEdge) gedge).changeToString(MyEdge.LabelType.SentiStrenth);
+
+								if (hasGeo)
+									((MyEdge) gedge).addPoint(lati, longi);
+
+								graph.insertEdge(parent, null, gedge, sourceID, tnode,
+										"edgeStyle=elbowEdgeStyle;elbow=horizontal;" + "strokeWidth=3;"
+												+ "STYLE_PERIMETER_SPACING;" + "strokeColor=" + colorString
+								// +
+								// "exitX=0.5;exitY=1;exitPerimeter=1;entryX=0;entryY=0;entryPerimeter=1;"
+								);
+							}
+						}
+						
+					}
+					
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+				
+			}
+		}
+		
+		mxAnalysisGraph anaGraph = new mxAnalysisGraph();
+		anaGraph.setGraph(graph);
+
+//		mxGraphStructure struc = new mxGraphStructure();
+//		Object[][] cc = struc.getGraphComponents(anaGraph);
+//
+//		ArrayList<Object[]> filtered = new ArrayList<>();
+//		if (cc != null) {
+//			for (Object[] o : cc) {
+//				if (o != null && o.length >= 3) {
+//					filtered.add(o);
+//				}
+//				 else {
+//				 graph.removeCells(o, true);
+//				 }
+//			}
+//
+//			// DESC
+//			filtered.sort(new Comparator<Object[]>() {
+//
+//				@Override
+//				public int compare(Object[] o1, Object[] o2) {
+//					return Integer.compare(o2.length, o1.length);
+//				}
+//			});
+//
+//			// Object[] most = filtered.get(0);
+//			// filterOutComponents(cc, 2);
+//		}
+		morphGraph(graph, graphComponent);
+
+		// USERS of EDGES?
+		Object[] allnodes = graph.getChildVertices(parent);
+//		Object[] alledges = graph.getAllEdges(allnodes);
+		
+		ArrayList<MyEdge> allEdges = new ArrayList<>();
+		ArrayList<MyUser> allUser = new ArrayList<>();
+		
+		for (Object o : allnodes) {
+			if (o instanceof mxCell) {
+				mxCell myCell = (mxCell) o;
+				// Add Users
+				if (myCell.getValue() instanceof MyUser) {
+					MyUser myUs = (MyUser) myCell.getValue();
+					allUser.add(myUs);
+
+					Object[] nEdge = graph.getEdges(o);
+					for (Object e : nEdge) {
+						if (e instanceof mxCell) {
+							mxCell myECell = (mxCell) e;
+							// Add Edges
+							if (myECell.getValue() instanceof MyEdge) {
+								MyEdge myEd = (MyEdge) myECell.getValue();
+								allEdges.add(myEd);
+							}
+						}
+					}
+				}
+			}
+
+		}
+		
+		System.out.println("# Users "+allUser.size()+" selected");
+		System.out.println("# Edges "+allEdges.size()+" selected");
+		
+		// TODO show Edges // Users in Map .. Heatmap, Countries -- take allEdges // allUsers as parameter!!
+		l.showClustersInMap(allUser, allEdges);
+		
+
+	}
+	
+	
 	
 	
 	

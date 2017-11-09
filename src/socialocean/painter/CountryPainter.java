@@ -49,7 +49,7 @@ public class CountryPainter implements Painter<JXMapViewer> {
 		g.setStroke(new BasicStroke(1));
 		
 		int zoom = map.getZoom();
-		Map<MapCountries, List<Document>> countries = mapCon.getCountries(zoom);
+		Map<MapCountries, List<String>> countries = mapCon.getCountries(zoom);
 		
 		if (countries == null)
 			return;

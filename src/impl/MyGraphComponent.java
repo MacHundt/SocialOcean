@@ -42,11 +42,14 @@ public class MyGraphComponent extends mxGraphComponent {
     	
     	protected CellRendererPane rendererPane = new CellRendererPane();
 
-		protected JLabel vertexRenderer = new JLabel();
+    		protected JLabel vertexRenderer = new JLabel();
 
 		protected mxGraphComponent graphComponent;
 		
 		private BufferedImage img = FilesUtil.readIconFile("icons/user.png");
+		private BufferedImage male = FilesUtil.readIconFile("icons/user_male32.png");
+		private BufferedImage female = FilesUtil.readIconFile("icons/user_female32.png");
+		
     	
 	    public MyInteractiveCanvas(MyGraphComponent myGraphComponent) {
 	        super(myGraphComponent);
@@ -94,14 +97,29 @@ public class MyGraphComponent extends mxGraphComponent {
 	            shape.paintShape(this, state);
 
 	            if(((mxCell)state.getCell()).isVertex()) { 
-	                int x = (int)(state.getCenterX() - state.getWidth() / 2);
-	                int y = (int)(state.getCenterY()- state.getHeight() / 2);
+	            		int x = (int)(state.getCenterX() - state.getWidth() / 2);
+	            		int y = (int)(state.getCenterY()- state.getHeight() / 2) - 15;
+	            	
+					mxCell o = (mxCell) state.getCell();
+					if (o.getValue() instanceof MyUser) {
+						MyUser user = (MyUser) o.getValue();
+						if (user.getGender().equals("male") || user.getGender().equals("mostly_male")) {
+							previousGraphics.drawImage(male, x, y, null);
+						}
+						else if (user.getGender().equals("female") || user.getGender().equals("mostly_female")) {
+							previousGraphics.drawImage(female, x, y, null);
+						}
+						else
+							previousGraphics.drawImage(img, x, y, null);
 //	            	int x = (int)(state.getCenterX());
 //		            int y = (int)(state.getCenterY());
 //	                Image img = Toolkit.getDefaultToolkit().getImage("");
 //	                BufferedImage img = FilesUtil.readIconFile("icons/pos_32.png");
 //	                BufferedImage img = FilesUtil.readIconFile("icons/user.png");
-	                previousGraphics.drawImage(img, x, y, null);
+						
+					} else 
+						previousGraphics.drawImage(img, x, y, null);
+
 	            }
 
 	            g.dispose();

@@ -5,9 +5,6 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.eclipse.e4.ui.di.Focus;
-import org.eclipse.e4.ui.workbench.modeling.EPartService;
-import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
-import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -16,7 +13,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Label;
 
 import impl.MapPanelCreator;
@@ -143,6 +139,54 @@ public class SettingsPart {
 				combo.select(0);
 			}
 		});
+		
+		
+		Button tweets = new Button(parent, SWT.CHECK);
+		tweets.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
+		tweets.setText("Tweets");
+		tweets.setSelection(Lucene.SHOWTweet);
+		tweets.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent arg0) {
+				
+				System.out.println(tweets.getText() + " is turned to: "+tweets.getSelection());
+				Lucene.SHOWTweet = tweets.getSelection();
+				Lucene l = Lucene.INSTANCE;
+				
+				// TODO
+			}
+			
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent arg0) {
+			}
+		});
+		
+		
+		Button users = new Button(parent, SWT.CHECK);
+		users.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
+		users.setText("Users");
+		users.setSelection(Lucene.SHOWUser);
+		users.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent arg0) {
+				
+				System.out.println(users.getText() + " is turned to: "+users.getSelection());
+				Lucene.SHOWUser = users.getSelection();
+				Lucene l = Lucene.INSTANCE;
+				
+				// TODO
+			}
+			
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent arg0) {
+			}
+		});
+		
+		
 		
 		Button heatmap = new Button(parent, SWT.CHECK);
 		heatmap.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));

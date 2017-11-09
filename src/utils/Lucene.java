@@ -3,11 +3,13 @@ package utils;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
@@ -15,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -57,6 +60,7 @@ import impl.GraphPanelCreator;
 import impl.GraphPanelCreator3;
 import impl.MapPanelCreator;
 import impl.MyEdge;
+import impl.MyUser;
 import impl.ReIndexingThread;
 import impl.TimeLineCreatorThread;
 import interfaces.ILuceneQuerySearcher;
@@ -162,6 +166,9 @@ public enum Lucene {
 	
 	public static boolean SHOWHeatmap = true;
 	public static boolean SHOWCountries = false;
+	public static boolean SHOWUser = false;
+	public static boolean SHOWTweet = true;
+	
 	public static boolean DATACHANGED = false;
 	public static boolean INITCountries = false;
 	
@@ -244,6 +251,7 @@ public enum Lucene {
 		mq = new MultiFieldQueryParser(idxFields, analyzer);
 		mq.setDefaultOperator(mq.AND_OPERATOR);
 		isInitialized = true;
+		changedTimeSeries = false;
 
 		// pre_statement_min = con.prepareStatement("Select creationdate
 		// from tweetdata order by creationdate ASC Limit 1");
@@ -1348,6 +1356,7 @@ public enum Lucene {
 				}
 			}
 
+			MapPanelCreator.mapCon.setSelection(null);
 			MapPanelCreator.dataChanged();
 //			MapPanelCreator.showWayPointsOnMap();
 		}
@@ -1386,7 +1395,6 @@ public enum Lucene {
 //					senti = "positive";
 //				else if (sentiment < 0)
 //					senti = "negative";
-					
 				
 			}
 			
@@ -1528,8 +1536,11 @@ public enum Lucene {
 	public void showLastResult() {
 
 		currentPointer = Math.max(currentPointer-1, 0);
-		System.out.println("Last Query: "+queryResults.get(currentPointer).toString());
+		if (queryResults.isEmpty()) {
+			return;
+		}
 
+		System.out.println("Last Query: "+queryResults.get(currentPointer).toString());
 		Result lastResult = queryResults.get(currentPointer).result;
 		ScoreDoc[] data = lastResult.getData();
 		createMapMarkers(data, true);
@@ -1568,6 +1579,55 @@ public enum Lucene {
 		printlnToConsole("<< back: "+ last_query + "#:"+ lastResult.size());
 
 	}
+	
+	
+	public void showCurrentResult() {
+
+		currentPointer = Math.max(currentPointer, 0);
+		if (queryResults.isEmpty()) {
+			return;
+		}
+
+		System.out.println("Last Query: "+queryResults.get(currentPointer).toString());
+		Result lastResult = queryResults.get(currentPointer).result;
+		ScoreDoc[] data = lastResult.getData();
+		createMapMarkers(data, true);
+		changeHistogramm(lastResult.getHistoCounter());
+		
+		GraphCreatorThread graphThread = new GraphCreatorThread(this) {
+			
+			@Override
+			public void execute() {
+				createGraphView(data);
+//				createSimpleGraphView(data);
+			}
+		};
+		graphThread.start();
+//		createGraphML_Mention(lastResult, true);
+		
+		if (QueryHistory.isInitialized) {
+			QueryHistory history = QueryHistory.getInstance();
+			history.removeLastQuery();
+		}
+		
+		
+		Time time = Time.getInstance();
+		last_result = lastResult;
+		last_query = queryResults.get(currentPointer).query.toString();
+		TimeLineCreatorThread lilt = new TimeLineCreatorThread(this) {
+			@Override
+			public void execute() {
+				Lucene l = Lucene.INSTANCE;
+//				changeTimeLine(TimeBin.MINUTES);
+				last_result.setTimeCounter(createTimeBins(TimeBin.HOURS, last_result.getData()));
+				l.showInTimeLine(last_result.getTimeCounter());
+			}
+		};
+		lilt.start();
+		printlnToConsole("<< back: "+ last_query + "#:"+ lastResult.size());
+
+	}
+	
 
 	public void addnewQueryResult(Result result, Query query) {
 //		System.out.println("CurrentPointer: "+currentPointer + " results:size(): "+queryResults.size());
@@ -1625,7 +1685,7 @@ public enum Lucene {
 		
 	}
 
-	public void reindexLastResult(String name) {
+	public void reindexLastResult(String name)  {
 		
 		reIndexCount++;
 		// MAP indexCount to name
@@ -1745,7 +1805,16 @@ public enum Lucene {
 	
 
 	public void clearGraph() {
-		GraphPanelCreator3.clearGraph();		
+		
+		GraphPanelCreator3.clearGraph();	
+		
+		Display.getCurrent().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				GraphPanelCreator.clearGraph();
+			}
+		});
+		
 	}
 	
 	
@@ -1771,5 +1840,66 @@ public enum Lucene {
 		initCountries.start();
 		
 	}
+
+
+	public <V, E> void showDetailsOfSelection(Collection<V> nodes, Collection<E> edges, boolean clear) {
+		GraphPanelCreator3.createDetailGraph(nodes, edges, withMention, withFollows, clear);
+	}
+
+
+	public void showClustersInMap(ArrayList<MyUser> allUser, ArrayList<MyEdge> allEdges) {
+		
+		
+		// User locations or Edges locations?
+		if (SHOWUser) {
+			if (allUser.isEmpty()) {
+				// take last_result
+				MapPanelCreator.mapCon.setSelection(null);
+				showCurrentResult();
+				return;
+			}
+			if (SHOWHeatmap) {
+				MapPanelCreator.mapCon.resetGridCells();
+				MapPanelCreator.mapCon.setSelection(allUser);
+				MapPanelCreator.dataChanged();
+			}
+			if (SHOWCountries) {
+				MapPanelCreator.mapCon.clearCountries();
+				MapPanelCreator.mapCon.setSelection(allUser);
+				MapPanelCreator.dataChanged();
+			}
+		}
+		
+		else if (SHOWTweet) {
+			if (allEdges.isEmpty()) {
+				MapPanelCreator.mapCon.setSelection(null);
+				showCurrentResult();
+				return;
+			}
+			if (SHOWHeatmap) {
+				MapPanelCreator.mapCon.resetGridCells();
+				MapPanelCreator.mapCon.setSelection(allEdges);
+				MapPanelCreator.dataChanged();
+			}
+			if (SHOWCountries) {
+				MapPanelCreator.mapCon.clearCountries();
+				MapPanelCreator.mapCon.setSelection(allEdges);
+				MapPanelCreator.dataChanged();
+			}
+				
+		}
+		
+	}
+
+
+//	public <E> void showPickedEdges(Collection<E> pickedEdges) {
+//		
+//		for (E ed : pickedEdges) {
+//			if (ed instanceof MyEdge) {
+//				MyEdge edge = (MyEdge) ed;
+//				System.out.println("EDGE: "+edge.getId());
+//			}
+//		}
+//	}
 
 }

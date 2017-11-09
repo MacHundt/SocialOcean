@@ -28,6 +28,10 @@ public class MyEdge {
 	private double weight = 1.0;
 	
 	private String toString = "";
+
+	private String source;
+
+	private String target;
 	
 	public MyEdge(String id) {
 		this.id = id;
@@ -108,7 +112,7 @@ public class MyEdge {
 		return cred_score;
 	}
 
-	public boolean isHasGeo() {
+	public boolean hasGeo() {
 		return hasGeo;
 	}
 
@@ -171,6 +175,23 @@ public class MyEdge {
 	public void setWeight(double weight) {
 		this.weight = weight;
 	}
+
+	public void addSource(String name) {
+		this.source = name;
+		
+	}
 	
+	public String getSource() {
+		return source;
+	}
+
+	public void addTarget(String target) {
+		this.target = target;
+		
+	}
+	
+	public String getTarget() {
+		return target;
+	}
 	
 }
