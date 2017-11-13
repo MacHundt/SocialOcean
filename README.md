@@ -38,7 +38,8 @@ But first try to change the settings at:
 
 ### Required Plug-ins
 
-You have to ensure all required plug-ins selected.
+You have to ensure all required plug-ins selected. If not, you have to add all required plug-ins manually .(SocialOcean.product --> Contents --> Add Required Plug-ins)
+
 - com.ibm.icu
 - javax.annotation
 - javax.inject
