@@ -587,7 +587,7 @@ public class MapController extends Observable {
 //			String query = "Select admin, ST_astext(geom) " + "from countries_admin0 "
 //					+ "where ST_Contains(geom, ST_SetSRID(St_Point(" + lon + ", " + lat + "), 4326)) Limit 1";
 
-			String query = "Select admin0.name, St_astext(admin0.geom) from countries_admin0 as admin0, ( "
+			String query = "select admin0.name, St_astext(admin0.geom) from countries_admin0 as admin0, ( "
 					+ "Select name_0 from countries_all "
 					+ "where St_Contains(geom, St_setSrid(St_Point("+lon+","+lat+"),4326)) "
 							+ ") as t "

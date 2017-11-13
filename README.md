@@ -26,8 +26,8 @@ or from eclipse itself, see [**here**](http://wiki.eclipse.org/Eclipse4/RCP).
 
 - If it is not yet included and you would like to have GUI tool for the database, you could download [PgAdmin](https://www.pgadmin.org)
 
-- **Clone** this git reporsitory and import the project into Eclipse.
 
+- **Clone** this git reporsitory and import the project into Eclipse.
 ### Setup
 
 Depending on the system that you use, you may have to adapt the configuration of the target **platform**.
@@ -35,6 +35,90 @@ But first try to change the settings at:
 
 	SocialOcean.product --> Configuration --> Configuration File (maxosx, solaris, win32)
 	SocialOcean.product --> Contents --> Add Required Plug-ins
+
+##Required Plug-ins
+You have to ensure all required plug-ins selected.
+
+com.ibm.icu
+javax.annotation
+javax.inject
+javax.servlet
+javax.xml
+org.apache.batik.css
+org.apache.batik.util
+org.apache.commons.jxpath
+org.apache.commons.logging
+org.apache.felix.gogo.command
+org.apache.felix.gogo.runtime
+org.apache.felix.scr
+org.eclipse.ant.core
+org.eclipse.core.commands
+org.eclipse.core.conttenttype
+org.eclipse.core.databinding
+org.eclipse.core.databinding.beans
+org.eclipse.core.databinding.observable
+org.eclipse.core.databinding.property
+org.eclipse.core.expressions
+org.eclipse.core.filesystem
+org.eclipse.core.filesystem.win32.x86_64 ---> choose your own operating system
+org.eclipse.core.jobs
+org.eclipse.core.resources
+org.eclipse.core.resources.win32.x86_64
+org.eclipse.core.runtime
+org.eclipse.core.variables
+org.eclipse.e4.core.commands
+org.eclipse.e4.core.contexts
+org.eclipse.e4.core.di
+org.eclipse.e4.core.di.annotations
+org.eclipse.e4.core.di.extensions
+org.eclipse.e4.core.di.extensions.supplier
+org.eclipse.e4.core.services
+org.eclipse.e4.emf.xpath
+org.eclipse.e4.ui.bindings
+org.eclipse.e4.ui.css.core
+org.eclipse.e4.ui.css.swt
+org.eclipse.e4.ui.css.theme
+org.eclipse.e4.ui.di
+org.eclipse.e4.ui.model.workbench
+org.eclipse.e4.ui.services
+org.eclipse.e4.ui.widgets
+org.eclipse.e4.ui.workbench
+org.eclipse.e4.ui.workbench.addons.swt
+org.eclipse.e4.ui.workbench.renderers.swt
+org.eclipse.e4.ui.workbench.swt
+org.eclipse.e4.ui.workbench3
+org.eclipse.emf.common
+org.eclipse.emf.databinding
+org.eclipse.emf.ecore
+org.eclipse.emf.ecore.change
+org.eclipse.emf.ecore.xmi
+org.eclipse.equinox.app
+org.eclipse.equinox.bidi
+org.eclipse.equinox.common
+org.eclipse.equinox.concurrent
+org.eclipse.equinox.ds
+org.eclipse.equinox.event
+org.eclipse.equinox.preferences
+org.eclipse.equinox.registry
+org.eclipse.equinox.util
+org.eclipse.help
+org.eclipse.jface
+org.eclipse.jface.databinding
+org.eclipse.osgi
+org.eclipse.osgi.compatibility.state
+org.eclipse.osgi.services
+org.eclipse.osgi.util
+org.eclipse.swt
+org.eclipse.swt.win32.win32.x86_64 --> Choose your operating system
+org.eclipse.ui
+org.eclipse.ui.workbench
+org.w3c.css.sac
+org.w3c.dom.events
+org.w3c.dom.smil
+org.w3c.svg
+
+
+	
 If this doesn't work, go to:
 
 	targetPlatform --> SocialOcean.target --> Environment --> Target Environment
