@@ -35,10 +35,8 @@ But first try to change the settings at:
 
 	SocialOcean.product --> Configuration --> Configuration File (maxosx, solaris, win32)
 	SocialOcean.product --> Contents --> Add Required Plug-ins
-
 ##Required Plug-ins
 You have to ensure all required plug-ins selected.
-
 com.ibm.icu
 javax.annotation
 javax.inject
@@ -117,8 +115,6 @@ org.w3c.dom.events
 org.w3c.dom.smil
 org.w3c.svg
 
-
-	
 If this doesn't work, go to:
 
 	targetPlatform --> SocialOcean.target --> Environment --> Target Environment
