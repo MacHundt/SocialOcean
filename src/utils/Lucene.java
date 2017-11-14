@@ -1515,6 +1515,11 @@ public enum Lucene {
 		return query_type;
 	}
 
+	public ArrayList<Query> getQueryHistory() {
+		return queryHistory;
+	}
+
+
 	public Color getColor() {
 		Color c;
 
@@ -1685,6 +1690,11 @@ public enum Lucene {
 		
 	}
 
+	
+	/**
+	 * 
+	 * @param name of the lucene index directory
+	 */
 	public void reindexLastResult(String name)  {
 		
 		reIndexCount++;
@@ -1736,6 +1746,7 @@ public enum Lucene {
 		
 		System.out.println("\tcreated directory '" + newIndex + "' ... DONE");
 		printlnToConsole("\tcreated directory '"+newIndex+"' ... DONE");
+		
 		
 		try {
 			Directory dir = FSDirectory.open(Paths.get(newIndex.getAbsolutePath()));

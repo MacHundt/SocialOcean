@@ -76,6 +76,11 @@ public class QueryHistory {
 	}
 	
 	
+	public String getHistory() {
+		return history.getText();
+	}
+	
+	
 	public void removeLastQuery () {
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {

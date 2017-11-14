@@ -186,7 +186,7 @@ public class IndexTweets {
 //			doc.add(new StringField("isRetweet", (t.getTweet_replytostatus() > 0) ? "true" : "false", Field.Store.NO));
 			doc.add(new StringField("relationship", t.getRelationship().toLowerCase(), Field.Store.YES));
 			
-			
+//			TweetSource
 			String source = t.getTweet_source().toLowerCase();
 			// last char is '/'  --> remove
 			if (source.endsWith("/")) {
@@ -237,9 +237,7 @@ public class IndexTweets {
 			
 				doc.add(new StringField("hasURL", (t.isHasurl())? "true" : "false" , Field.Store.YES));
 				
-//				 TweetSource
-				doc.add(new StringField("source", t.getTweet_source(), Field.Store.YES));
-				
+//				
 				// User_id
 				doc.add(new StringField("uid", t.getUser_id()+"", Field.Store.YES));
 				
