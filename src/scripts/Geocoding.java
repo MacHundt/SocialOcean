@@ -42,7 +42,7 @@ public class Geocoding {
 		// String query = "Select user_id, user_location, user_timezone, geocoding_type
 		// from " + user_table + " where geom is null;";
 		String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table
-				+ " where geocoding_type > 5";
+				+ " where geocoding_type > 7 and geocoding_type < 11";
 //		 String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table + " where geocoding_type = 4";
 
 		try {
@@ -58,13 +58,13 @@ public class Geocoding {
 				String timezone = rs.getString(3);
 				int geoType = rs.getInt(4);
 
-				// GT 10 -- Stay Default. No geocoding possible
-				if ((location == null || location.trim().isEmpty()) && timezone.equals("null")) {
-					// if (counter == fetchsize) {
-					// counter = 0;
-					// }
-					continue;
-				}
+//				// GT 10 -- Stay Default. No geocoding possible --> update to 11
+//				if ((location == null || location.trim().isEmpty()) && timezone.equals("null")) {
+//					// if (counter == fetchsize) {
+//					// counter = 0;
+//					// }
+//					continue;
+//				}
 
 				counter++;
 				fields = new ArrayList<>();
@@ -130,6 +130,13 @@ public class Geocoding {
 			String tz = e.getA().get(2);
 			int geoType = Integer.parseInt(e.getA().get(3));
 			String updateQuery = "";
+			
+			// ############ Geocoding Type 11 #############
+			if ((loc == null || loc.trim().isEmpty()) && tz.equals("null")) {
+				updateQuery =  "update "+user_table+" set geocoding_type = 11 where user_id = "+uid;
+				st.addBatch(updateQuery);
+				counter++;
+			}
 
 			// ############ Geocoding Type 1 #############
 
@@ -209,6 +216,12 @@ public class Geocoding {
 					counter++;
 					geoType = 7;
 				}
+			}
+			
+			if (geoType > 7) {
+				updateQuery = "update "+user_table+" set geocoding_type = 11 where user_id = "+uid;
+				st.addBatch(updateQuery);
+				counter++;
 			}
 
 			if (counter == batchsize) {

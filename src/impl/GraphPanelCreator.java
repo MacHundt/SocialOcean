@@ -345,12 +345,12 @@ public class GraphPanelCreator {
 //			JPanel grid = new JPanel(new GridLayout(2,1));
 //			grid.add(groupVertices);
 //			south.add(grid);
-			south.add(clusterControls);
-			south.add(eastControls);
 			JPanel p = new JPanel();
 			p.setBorder(BorderFactory.createTitledBorder("Mouse Mode"));
 			p.add(gm.getModeComboBox());
 			south.add(p);
+			south.add(clusterControls);
+			south.add(eastControls);
 			graphPanel.add(south, BorderLayout.SOUTH);
 			
 			return graphPanel;

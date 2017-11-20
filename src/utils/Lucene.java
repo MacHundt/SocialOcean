@@ -62,6 +62,7 @@ import impl.MapPanelCreator;
 import impl.MyEdge;
 import impl.MyUser;
 import impl.ReIndexingThread;
+import impl.StoreToJSONThread;
 import impl.TimeLineCreatorThread;
 import interfaces.ILuceneQuerySearcher;
 import socialocean.controller.MapController;
@@ -1690,6 +1691,38 @@ public enum Lucene {
 		
 	}
 
+	public void exporttoJSON(String name) {
+		
+		File newIndex = new File(luceneIndex+"/"+name);
+		if (!newIndex.exists()) {
+		    System.out.println("\tcreating directory: " + newIndex.getName());
+		    boolean result = false;
+
+		    try{
+		    	newIndex.mkdir();
+		        result = true;
+		    } 
+		    catch(SecurityException se){
+		        //handle it
+		    }        
+		    if(result) {    
+		        System.out.println("\tDIR created");  
+		    }
+		}
+		
+		Connection c = DBManager.getConnection();
+		Statement stmt;
+		try {
+			stmt = c.createStatement();
+			StoreToJSONThread indexer = new StoreToJSONThread(this, last_result.getData(), c, stmt, newIndex.getAbsolutePath());
+			indexer.start();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	
+	}
+	
 	
 	/**
 	 * 

@@ -105,7 +105,7 @@ public class LuceneSearch {
 		
 		
 		Lucene l = Lucene.INSTANCE;
-		parent.setLayout(new GridLayout(9, false));
+		parent.setLayout(new GridLayout(10, false));
 		
 		
 		Button btnAdd = new Button(parent, SWT.CHECK );
@@ -228,6 +228,9 @@ public class LuceneSearch {
 			@Override
 			public void mouseDown(MouseEvent e) {
 				
+				if (l.getLastResult() == null)
+					return;
+				
 				InputDialog input = new InputDialog(parent.getShell(), "", "Enter Folder Name", "", null);
 				input.open();
 				
@@ -252,6 +255,34 @@ public class LuceneSearch {
 				l.clearGraph();	
 			}
 		});
+		
+		Button export = new Button(parent, SWT.BUTTON1);
+//		btnClear.setFont(newFont);
+		export.setText("Export");
+		export.setBackground(grey);
+		
+		export.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				
+				if (l.getLastResult() == null)
+					return;
+				
+				InputDialog input = new InputDialog(parent.getShell(), "", "Enter a name", "", null);
+				input.open();
+				
+				String name = input.getValue();
+				
+				input.close();
+				
+				System.out.println("Export to JSON");
+				l.printlnToConsole("Export to JSON");
+				
+				l.exporttoJSON(name);
+			}
+		});
+		
+		export.setToolTipText("Export to JSON");
 		
 		
 		Button btnClear = new Button(parent, SWT.BUTTON1);
