@@ -93,7 +93,8 @@ public class LuceneSearch {
 //		Font newFont = new Font(display, fd[0].getName(), 13, fd[0].getStyle());
 		
 		
-//		## BUILD GUI
+//		## BUILD GUI  
+		partService.showPart("socialocean.part.console", PartState.CREATE);
 		partService.showPart("socialocean.part.timeline", PartState.CREATE);
 		partService.showPart("socialocean.part.timeline", PartState.ACTIVATE  );
 		partService.showPart("socialocean.part.timeline", PartState.VISIBLE );
