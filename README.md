@@ -40,15 +40,15 @@ But first try to change the settings at:
 
 You have to ensure all required plug-ins selected. If not, you have to add all required plug-ins manually .(SocialOcean.product --> Contents --> Add Required Plug-ins)
 
-org.apache.commons.logging
-org.apache.felix.scr
-org.eclipse.core.databinding.beans
-org.eclipse.emf.databinding
-org.eclipse.equinox.concurrent
-org.eclipse.equinox.ds
-org.eclipse.equinox.event
-org.eclipse.equinox.util
-org.eclipse.ui
+-	org.apache.commons.logging
+-	org.apache.felix.scr
+-	org.eclipse.core.databinding.beans
+-	org.eclipse.emf.databinding
+-	org.eclipse.equinox.concurrent
+-	org.eclipse.equinox.ds
+- 	org.eclipse.equinox.event
+- 	org.eclipse.equinox.util
+-	org.eclipse.ui
 
 If this doesn't work, go to:
 
@@ -79,18 +79,18 @@ The first two (1) und (2) scripts need the following database fields:
 
 The indexing scripts (3) in the current form needs the following database fields:
 
-	tweet_id, 			long
-	tweet_creationdate,		String, timestamp of the form "yyyy-dd-MM hh:mm:ss", example: "2013-08-01 01:15:00"
-	tweet_content,			String
-	relationship,			String (Tweet, Followed)
-	latitude,			double
-	longitude, 			double
-	hasurl, 			boolean
-	source, 			String (=user_screenname)
-	positive, 			int (result of SentiStrength.jar)
-	negative, 			int (result of SentiStrength.jar)
-	category, 			String (from AddCategoryScript.java)
-	sentiment, 			String (from AddCategoryScript.java)
+-	tweet_id, 			long
+-	tweet_creationdate,		String, timestamp of the form "yyyy-dd-MM hh:mm:ss", example: "2013-08-01 01:15:00"
+-	tweet_content,			String
+-	relationship,			String (Tweet, Followed)
+-	latitude,			double
+-	longitude, 			double
+-	hasurl, 			boolean
+-	source, 			String (=user_screenname)
+-	positive, 			int (result of SentiStrength.jar)
+-	negative, 			int (result of SentiStrength.jar)
+-	category, 			String (from AddCategoryScript.java)
+-	sentiment, 			String (from AddCategoryScript.java)
 
 and yields the following indexed Lucene fields:
 
