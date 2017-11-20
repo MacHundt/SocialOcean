@@ -1936,6 +1936,16 @@ public enum Lucene {
 	}
 
 
+	public void takeScreenshot() {
+		
+		// TODO take a screenshot, get the image, store image to a path
+		String path = getLucenIndexPath();
+		
+	}
+	
+	
+
+
 //	public <E> void showPickedEdges(Collection<E> pickedEdges) {
 //		
 //		for (E ed : pickedEdges) {
