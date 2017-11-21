@@ -88,10 +88,20 @@ public class LuceneSearch {
 //		Font newFont = new Font(display, fd[0].getName(), 13, fd[0].getStyle());
 		
 		
-//		## BUILD GUI
+//		## BUILD GUI  
+		partService.showPart("socialocean.part.console", PartState.CREATE);
+		partService.showPart("socialocean.part.timeline", PartState.CREATE);
+		partService.showPart("socialocean.part.timeline", PartState.ACTIVATE  );
+		partService.showPart("socialocean.part.timeline", PartState.VISIBLE );
+		partService.showPart("socialocean.part.settings", PartState.CREATE);
+		partService.showPart("socialocean.part.queryhistory", PartState.CREATE);
+		partService.showPart("socialocean.part.graph", PartState.CREATE);
+		partService.showPart("socialocean.part.jung", PartState.CREATE);
+//		MPart part = partService.createPart("socialocean.partdescriptor.sample");
+		
 		
 		Lucene l = Lucene.INSTANCE;
-		parent.setLayout(new GridLayout(9, false));
+		parent.setLayout(new GridLayout(10, false));
 		
 		
 		Button btnAdd = new Button(parent, SWT.CHECK );
@@ -221,11 +231,42 @@ public class LuceneSearch {
 				
 				// TODO Graph
 				// Clear all Results, Map, Graph
-				System.out.println("Re-Index");
-				l.printToConsole("Re-Index");
+				System.out.println("Re-Index:");
+				l.printlnToConsole("Re-Index:");
 				l.reindexLastResult(name);
+				l.clearMap();
+				l.clearGraph();	
 			}
 		});
+		
+		Button export = new Button(parent, SWT.BUTTON1);
+//		btnClear.setFont(newFont);
+		export.setText("Export");
+		export.setBackground(grey);
+		
+		export.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				
+				if (l.getLastResult() == null)
+					return;
+				
+				InputDialog input = new InputDialog(parent.getShell(), "", "Enter a name", "", null);
+				input.open();
+				
+				String name = input.getValue();
+				
+				input.close();
+				
+				System.out.println("Export to JSON");
+				l.printlnToConsole("Export to JSON");
+				
+				l.exporttoJSON(name);
+				l.takeScreenshot();
+			}
+		});
+		
+		export.setToolTipText("Export to JSON");
 		
 		
 		Button btnClear = new Button(parent, SWT.BUTTON1);
@@ -240,7 +281,7 @@ public class LuceneSearch {
 				// TODO Graph
 				// Clear all Results, Map, Graph
 				System.out.println("CLEAR");
-				l.printToConsole("CLEAR");
+				l.printlnToConsole("CLEAR");
 				l.clearQueryHistroy();
 				l.clearMap();
 				l.showCatHisto();
@@ -257,10 +298,18 @@ public class LuceneSearch {
 		
 		Lucene l = Lucene.INSTANCE;
 		String luceneIndex = l.getLucenIndexPath();
+		
+		if (luceneIndex == null)
+			return;
+		
 		String tempPath = luceneIndex.substring(0, luceneIndex.lastIndexOf("/")+1);
 		
 		System.out.println("Clean up the temp folder ...");
-		File newIndex = new File(tempPath+"/temp");
+		// is already in temp folder .. if not check if we are now in the root folder
+		if (!tempPath.endsWith("temp/")) {
+			tempPath += "temp/";
+		}
+		File newIndex = new File(tempPath);
 		
 		if (newIndex.exists() && newIndex.isDirectory()) {
 			// remove all files in dir
