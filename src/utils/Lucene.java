@@ -1,6 +1,12 @@
 package utils;
 
+import java.awt.AWTException;
 import java.awt.Color;
+import java.awt.HeadlessException;
+import java.awt.Rectangle;
+import java.awt.Robot;
+import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -27,6 +33,8 @@ import java.util.Map;
 import java.util.Observer;
 import java.util.Properties;
 import java.util.TreeMap;
+
+import javax.imageio.ImageIO;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -1936,10 +1944,28 @@ public enum Lucene {
 	}
 
 
-	public void takeScreenshot() {
+	public void takeScreenshot(String name, Rectangle appBounds) {
 		
-		// TODO take a screenshot, get the image, store image to a path
 		String path = getLucenIndexPath();
+		try {
+			BufferedImage image = null;
+			if ( appBounds == null)
+				image = new Robot().createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
+			else 
+				image = new Robot().createScreenCapture(appBounds);
+			
+			if (image != null)
+				ImageIO.write(image, "png", new File(path+"/"+name+"/screenshot.png"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (HeadlessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (AWTException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	}
 	

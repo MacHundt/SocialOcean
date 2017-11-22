@@ -1,6 +1,7 @@
  
 package socialocean.parts;
 
+import java.awt.Rectangle;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -20,6 +21,10 @@ import org.eclipse.e4.core.commands.ECommandService;
 import org.eclipse.e4.core.commands.EHandlerService;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
+import org.eclipse.e4.ui.model.application.MApplication;
+import org.eclipse.e4.ui.model.application.impl.ApplicationImpl;
+import org.eclipse.e4.ui.model.application.ui.basic.MWindow;
+import org.eclipse.e4.ui.workbench.UIEvents.Application;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
 import org.eclipse.jface.dialogs.InputDialog;
@@ -50,11 +55,11 @@ public class LuceneSearch {
 	@Inject ECommandService commandService;
 	@Inject EHandlerService service;
 	@Inject EPartService partService;
-	
+	MApplication app;
 	
 	@Inject
-	public LuceneSearch() {
-		
+	public LuceneSearch(MApplication app) {
+		this.app = app;
 	}
 	
 	public String readTextFile(URL url) throws IOException {
@@ -280,6 +285,12 @@ public class LuceneSearch {
 				l.printlnToConsole("Export to JSON");
 				
 				l.exporttoJSON(name);
+				
+				MWindow window = app.getChildren().get(0);
+				Rectangle appBounds = new Rectangle(window.getX(), window.getY(), window.getWidth(), window.getHeight());
+				
+				l.takeScreenshot(name, appBounds);
+				
 			}
 		});
 		
