@@ -41,9 +41,9 @@ public class Geocoding {
 		Connection c = DBManager.getConnection(LOCAL, RCP);
 		// String query = "Select user_id, user_location, user_timezone, geocoding_type
 		// from " + user_table + " where geom is null;";
-		String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table
-				+ " where geocoding_type > 7 and geocoding_type < 11";
-//		 String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table + " where geocoding_type = 4";
+//		String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table
+//				+ " where geocoding_type > 7 and geocoding_type < 11";
+		 String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table + " where geocoding_type = 4";
 
 		try {
 			c.setAutoCommit(false);
@@ -162,14 +162,14 @@ public class Geocoding {
 
 			// ############ Geocoding Type 3 #############
 
-//			if (geoType > 3) {
-//				updateQuery = geocode3(uid, loc, tz, updateC);
-//				if (!updateQuery.equals("NaV")) {
-//					st.addBatch(updateQuery);
-//					counter++;
-//					geoType = 3;
-//				}
-//			}
+			if (geoType > 3) {
+				updateQuery = geocode3(uid, loc, tz, updateC);
+				if (!updateQuery.equals("NaV")) {
+					st.addBatch(updateQuery);
+					counter++;
+					geoType = 3;
+				}
+			}
 
 			// ############ Geocoding Type 4 #############
 
@@ -193,36 +193,36 @@ public class Geocoding {
 			// }
 			// }
 
-			loc = loc.replaceAll(",", ", ").toLowerCase();
-			loc = loc.replaceAll(remover.pattern(), "").trim();
+//			loc = loc.replaceAll(",", ", ").toLowerCase();
+//			loc = loc.replaceAll(remover.pattern(), "").trim();
 
 			// ############ Geocoding Type 6 #############
 
-			if (geoType > 6) {
-				updateQuery = geocode6(uid, loc, updateC);
-				if (!updateQuery.equals("NaV")) {
-					st.addBatch(updateQuery);
-					counter++;
-					geoType = 6;
-				}
-			}
+//			if (geoType > 6) {
+//				updateQuery = geocode6(uid, loc, updateC);
+//				if (!updateQuery.equals("NaV")) {
+//					st.addBatch(updateQuery);
+//					counter++;
+//					geoType = 6;
+//				}
+//			}
 
 			// ############ Geocoding Type 7 #############
 
-			if (geoType > 7) {
-				updateQuery = geocode7(uid, loc, updateC);
-				if (!updateQuery.equals("NaV")) {
-					st.addBatch(updateQuery);
-					counter++;
-					geoType = 7;
-				}
-			}
-			
-			if (geoType > 7) {
-				updateQuery = "update "+user_table+" set geocoding_type = 11 where user_id = "+uid;
-				st.addBatch(updateQuery);
-				counter++;
-			}
+//			if (geoType > 7) {
+//				updateQuery = geocode7(uid, loc, updateC);
+//				if (!updateQuery.equals("NaV")) {
+//					st.addBatch(updateQuery);
+//					counter++;
+//					geoType = 7;
+//				}
+//			}
+//			
+//			if (geoType > 7) {
+//				updateQuery = "update "+user_table+" set geocoding_type = 11 where user_id = "+uid;
+//				st.addBatch(updateQuery);
+//				counter++;
+//			}
 
 			if (counter == batchsize) {
 				st.executeBatch();
