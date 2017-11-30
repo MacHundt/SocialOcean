@@ -15,7 +15,7 @@ import utils.DBManager;
 
 public class Geocoding {
 
-	private static String user_table = "users";
+	private static String user_table = "so_users";
 	private static int fetchsize = 10000;
 	static ResultSet rs = null;
 	static ArrayList<Entry<ArrayList<String>>> list = null;
@@ -43,8 +43,10 @@ public class Geocoding {
 		// from " + user_table + " where geom is null;";
 //		String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table
 //				+ " where geocoding_type > 7 and geocoding_type < 11";
-		 String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table + " where geocoding_type = 4";
+//		 String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table + " where geocoding_type = 4";
+		 String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table;
 
+		
 		try {
 			c.setAutoCommit(false);
 			Statement st = c.createStatement();
@@ -130,6 +132,7 @@ public class Geocoding {
 			String tz = e.getA().get(2);
 			int geoType = Integer.parseInt(e.getA().get(3));
 			String updateQuery = "";
+			geoType = (geoType == 0) ? 11 : geoType;
 			
 			// ############ Geocoding Type 11 #############
 			if ((loc == null || loc.trim().isEmpty()) && tz.equals("null")) {
@@ -140,25 +143,25 @@ public class Geocoding {
 
 			// ############ Geocoding Type 1 #############
 
-			// if (geoType > 1) {
-			// updateQuery = geocode1(uid, loc, tz);
-			// if (!updateQuery.equals("NaV")) {
-			// st.addBatch(updateQuery);
-			// counter++;
-			// geoType = 1;
-			// }
-			// }
+			if (geoType > 1) {
+				updateQuery = geocode1(uid, loc, tz);
+				if (!updateQuery.equals("NaV")) {
+					st.addBatch(updateQuery);
+					counter++;
+					geoType = 1;
+				}
+			}
 
 			// ############ Geocoding Type 2 #############
 
-			// if (geoType > 2) {
-			// updateQuery = geocode2(uid, loc, tz);
-			// if (!updateQuery.equals("NaV")) {
-			// st.addBatch(updateQuery);
-			// counter++;
-			// geoType = 2;
-			// }
-			// }
+			if (geoType > 2) {
+				updateQuery = geocode2(uid, loc, tz);
+				if (!updateQuery.equals("NaV")) {
+					st.addBatch(updateQuery);
+					counter++;
+					geoType = 2;
+				}
+			}
 
 			// ############ Geocoding Type 3 #############
 
@@ -173,56 +176,56 @@ public class Geocoding {
 
 			// ############ Geocoding Type 4 #############
 
-			// if (geoType > 4) {
-			// updateQuery = geocode4(uid, tz, updateC);
-			// if (!updateQuery.equals("NaV")) {
-			// st.addBatch(updateQuery);
-			// counter++;
-			// geoType = 4;
-			// }
-			// }
+			if (geoType > 4) {
+				updateQuery = geocode4(uid, tz, updateC);
+				if (!updateQuery.equals("NaV")) {
+					st.addBatch(updateQuery);
+					counter++;
+					geoType = 4;
+				}
+			}
 
 			// ############ Geocoding Type 5 #############
 
-			// if (geoType > 5) {
-			// updateQuery = geocode5(uid, loc, tz, updateC);
-			// if (!updateQuery.equals("NaV")) {
-			// st.addBatch(updateQuery);
-			// counter++;
-			// geoType = 5;
-			// }
-			// }
+			if (geoType > 5) {
+				updateQuery = geocode5(uid, loc, tz, updateC);
+				if (!updateQuery.equals("NaV")) {
+					st.addBatch(updateQuery);
+					counter++;
+					geoType = 5;
+				}
+			}
 
-//			loc = loc.replaceAll(",", ", ").toLowerCase();
-//			loc = loc.replaceAll(remover.pattern(), "").trim();
+			loc = loc.replaceAll(",", ", ").toLowerCase();
+			loc = loc.replaceAll(remover.pattern(), "").trim();
 
 			// ############ Geocoding Type 6 #############
 
-//			if (geoType > 6) {
-//				updateQuery = geocode6(uid, loc, updateC);
-//				if (!updateQuery.equals("NaV")) {
-//					st.addBatch(updateQuery);
-//					counter++;
-//					geoType = 6;
-//				}
-//			}
+			if (geoType > 6) {
+				updateQuery = geocode6(uid, loc, updateC);
+				if (!updateQuery.equals("NaV")) {
+					st.addBatch(updateQuery);
+					counter++;
+					geoType = 6;
+				}
+			}
 
 			// ############ Geocoding Type 7 #############
 
-//			if (geoType > 7) {
-//				updateQuery = geocode7(uid, loc, updateC);
-//				if (!updateQuery.equals("NaV")) {
-//					st.addBatch(updateQuery);
-//					counter++;
-//					geoType = 7;
-//				}
-//			}
-//			
-//			if (geoType > 7) {
-//				updateQuery = "update "+user_table+" set geocoding_type = 11 where user_id = "+uid;
-//				st.addBatch(updateQuery);
-//				counter++;
-//			}
+			if (geoType > 7) {
+				updateQuery = geocode7(uid, loc, updateC);
+				if (!updateQuery.equals("NaV")) {
+					st.addBatch(updateQuery);
+					counter++;
+					geoType = 7;
+				}
+			}
+			
+			if (geoType > 7) {
+				updateQuery = "update "+user_table+" set geocoding_type = 11 where user_id = "+uid;
+				st.addBatch(updateQuery);
+				counter++;
+			}
 
 			if (counter == batchsize) {
 				st.executeBatch();
@@ -440,9 +443,9 @@ public class Geocoding {
 			// Select * from cities1000 where ('Canada Red Deer' like '%'||asciiname||'%' or
 			// 'Canada Red Deer' like '%'||name||'%') Order by char_length(asciiname) DESC,
 			// population DESC Limit 1
-			String query = "Select St_Y(cpoint), St_X(cpoint) from timezone_shapes where tzid like '%'||'" + loc
-					+ "'||'%' or '" + loc
-					+ "' like '%'||substring(tzid, 0, position('/' in tzid))||'%' Order by char_length(tzid) DESC Limit 1";
+			String query = "Select St_Y(cpoint), St_X(cpoint) from timezone_shapes where tzid like '%'||$$" + loc
+					+ "$$||'%' or $$" + loc
+					+ "$$ like '%'||substring(tzid, 0, position('/' in tzid))||'%' Order by char_length(tzid) DESC Limit 1";
 			ResultSet cr = null;
 			Statement st = c.createStatement();
 			cr = st.executeQuery(query);
@@ -478,8 +481,8 @@ public class Geocoding {
 			// Select * from cities1000 where ('Canada Red Deer' like '%'||asciiname||'%' or
 			// 'Canada Red Deer' like '%'||name||'%') Order by char_length(asciiname) DESC,
 			// population DESC Limit 1
-			String query = "Select lat, lon from cities1000 where '" + loc + "' like '%'||asciiname||'%' or '" + loc
-					+ "' like '%'||name||'%' Order by char_length(asciiname) DESC, population DESC Limit 1";
+			String query = "Select lat, lon from cities1000 where $$" + loc + "$$ like '%'||asciiname||'%' or $$" + loc
+					+ "$$ like '%'||name||'%' Order by char_length(asciiname) DESC, population DESC Limit 1";
 			ResultSet cr = null;
 			Statement st = c.createStatement();
 			cr = st.executeQuery(query);
@@ -548,30 +551,37 @@ public class Geocoding {
 	 * @return the coordinates of the city
 	 * @throws SQLException 
 	 */
-	private static Coordinate get_is_city_most_populated(String loc, String tz, boolean withTZ, Connection c) throws SQLException {
-		String query = "Select lat, lon from cities1000 where asciiname = '" + loc + "' or name = '" + loc
-				+ "' order by population DESC Limit 1";
+	private static Coordinate get_is_city_most_populated(String loc, String tz, boolean withTZ, Connection c)  {
+		String query = "Select lat, lon from cities1000 where asciiname = $$" + loc + "$$ or name = $$" + loc
+				+ "$$ order by population DESC Limit 1";
 		if (withTZ)
-			query = "Select lat, lon from cities1000 where (asciiname = '" + loc + "' or name = '" + loc
-					+ "') and timezone = '" + tz + "' order by population DESC Limit 1";
+			query = "Select lat, lon from cities1000 where (asciiname = $$" + loc + "$$ or name = $$" + loc
+					+ "$$) and timezone = $$" + tz + "$$ order by population DESC Limit 1";
 
 		ResultSet cr = null;
-		Statement st = c.createStatement();
-		cr = st.executeQuery(query);
-		int counter = 0;
-		double lat = 0;
-		double lon = 0;
-		while (cr.next()) {
-			counter++;
-			lat = cr.getDouble(1);
-			lon = cr.getDouble(2);
-		}
-		if (counter > 0) {
-			Coordinate latlong = new Coordinate(lat, lon);
-			st.close();
-			return latlong;
-		} else {
-			st.close();
+		Statement st;
+		try {
+			st = c.createStatement();
+			cr = st.executeQuery(query);
+			int counter = 0;
+			double lat = 0;
+			double lon = 0;
+			while (cr.next()) {
+				counter++;
+				lat = cr.getDouble(1);
+				lon = cr.getDouble(2);
+			}
+			if (counter > 0) {
+				Coordinate latlong = new Coordinate(lat, lon);
+				st.close();
+				return latlong;
+			} else {
+				st.close();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println(query);
+			return null;
 		}
 		return null;
 	}
@@ -584,26 +594,33 @@ public class Geocoding {
 	 * @return the coordinates of the centroid of the timezone shape.
 	 * @throws SQLException 
 	 */
-	private static Coordinate get_is_timezone(String tz, Connection c) throws SQLException {
-		String query = "Select St_Y(tz.cpoint), St_X(tz.cpoint) from timezone_shapes as tz where tz.tzid = '" + tz
-				+ "';";
+	private static Coordinate get_is_timezone(String tz, Connection c) {
+		String query = "Select St_Y(tz.cpoint), St_X(tz.cpoint) from timezone_shapes as tz where tz.tzid = $$" + tz
+				+ "$$;";
 		ResultSet rs = null;
-		Statement st = c.createStatement();
-		rs = st.executeQuery(query);
-		int counter = 0;
-		double lat = 0;
-		double lon = 0;
-		while (rs.next()) {
-			counter++;
-			lat = rs.getDouble(1);
-			lon = rs.getDouble(2);
-		}
-		if (counter > 0) {
-			Coordinate latlong = new Coordinate(lat, lon);
-			st.close();
-			return latlong;
-		} else {
-			st.close();
+		Statement st;
+		try {
+			st = c.createStatement();
+			rs = st.executeQuery(query);
+			int counter = 0;
+			double lat = 0;
+			double lon = 0;
+			while (rs.next()) {
+				counter++;
+				lat = rs.getDouble(1);
+				lon = rs.getDouble(2);
+			}
+			if (counter > 0) {
+				Coordinate latlong = new Coordinate(lat, lon);
+				st.close();
+				return latlong;
+			} else {
+				st.close();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println(query);
+			return null;
 		}
 		return null;
 	}
