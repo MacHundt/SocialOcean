@@ -15,7 +15,7 @@ import utils.DBManager;
 
 public class Geocoding {
 
-	private static String user_table = "users";
+	private static String user_table = "so_users";
 	private static int fetchsize = 10000;
 	static ResultSet rs = null;
 	static ArrayList<Entry<ArrayList<String>>> list = null;
@@ -43,7 +43,8 @@ public class Geocoding {
 		// from " + user_table + " where geom is null;";
 //		String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table
 //				+ " where geocoding_type > 7 and geocoding_type < 11";
-		 String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table + " where geocoding_type = 4";
+//		 String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table + " where geocoding_type = 4";
+		 String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table;
 
 		try {
 			c.setAutoCommit(false);
@@ -140,14 +141,14 @@ public class Geocoding {
 
 			// ############ Geocoding Type 1 #############
 
-			// if (geoType > 1) {
-			// updateQuery = geocode1(uid, loc, tz);
-			// if (!updateQuery.equals("NaV")) {
-			// st.addBatch(updateQuery);
-			// counter++;
-			// geoType = 1;
-			// }
-			// }
+//			 if (geoType > 1) {
+//			 updateQuery = geocode1(uid, loc, tz);
+//			 if (!updateQuery.equals("NaV")) {
+//			 st.addBatch(updateQuery);
+//			 counter++;
+//			 geoType = 1;
+//			 }
+//			 }
 
 			// ############ Geocoding Type 2 #############
 
