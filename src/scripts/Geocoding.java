@@ -44,8 +44,7 @@ public class Geocoding {
 //		String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table
 //				+ " where geocoding_type > 7 and geocoding_type < 11";
 //		 String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table + " where geocoding_type = 4";
-		 String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table;
-
+		 String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table + " where geom is null";
 		
 		try {
 			c.setAutoCommit(false);
