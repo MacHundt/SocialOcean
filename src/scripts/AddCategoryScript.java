@@ -13,7 +13,7 @@ import utils.DBManager;
 
 public class AddCategoryScript {
 	
-	private static String tweet_table = "bb_tweets";
+	private static String tweet_table = "so_tweets";
 //	private static String tweet_table = "nodexl_ohsen_tweets";
 	
 	private static int fetchsize = 10000;

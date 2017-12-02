@@ -12,7 +12,7 @@ import utils.DBManager;
 
 public class AddSentimentScript {
 	
-	private static String tweet_table = "bb_tweets";
+	private static String tweet_table = "so_tweets";
 //	private static String tweet_table = "nodexl_my2k_tweets";
 	
 	private static int fetchsize = 3000;

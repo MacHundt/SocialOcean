@@ -2,18 +2,21 @@ package scripts;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.TimeZone;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
@@ -35,19 +38,19 @@ public class IndexTweets {
 	private static int Fetchsize = 10000;
 	private static String countryTable = "countries_all";
 	
-//	private static String TWEETDATA = "tweetdata";
-	private static String TWEETDATA = "bb_tweets";
-//	private static String TWEETDATA = "nodexl_my2k_tweets";
-//	private static String USERS = "users";
 //	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index_nodexl/";
-	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index/";
+	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index_5/";
 
 	private static boolean LOCAL = false;
+	private static long mindate = Long.MAX_VALUE;
+	private static long maxdate = Long.MIN_VALUE;
 	
 	// index all tweets from DB
 	public static void main(String[] args) {
 		
 		Connection c = DBManager.getConnection(LOCAL, false);
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS");
+
 		boolean create = true;	// create new Index
 		Date start = new Date();
 		System.out.println("Indexing to directory '" + indexPath + "'...");
@@ -94,7 +97,7 @@ public class IndexTweets {
 					+ "negative, "
 					+ "category, "
 					+ "sentiment "
-					+ "from "+TWEETDATA;
+					+ "from "+DBManager.getTweetdataTable();
 			
 			  
 			ResultSet rs = stmt.executeQuery(query);
@@ -104,7 +107,7 @@ public class IndexTweets {
 			int doc_counter = 0;
 			int counter = 0;
 			int stat = 1;
-			int topX = 2;
+			int topX = 0;
 			while (rs.next()) {
 				counter++;
 				
@@ -144,6 +147,28 @@ public class IndexTweets {
 			}
 			
 			writer.close();
+			
+			// create properties file
+			File propfile = new File(indexPath + "/settings.properties");
+			FileWriter wr;
+			Date date = new Date(mindate * 1000L);
+			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			format.setTimeZone(TimeZone.getTimeZone("UTC"));
+			String mind = format.format(date);
+			date = new Date(maxdate * 1000L);
+			String maxd = format.format(date);
+			
+			String mincdate = getMinUserCreation();
+			String maxcdate = getMaxUserCreation();
+
+//			String userMinD = sdf.format(mincdate);
+//			String userMaxD = sdf.format(maxcdate);
+			
+			wr = new FileWriter(propfile);
+			wr.write("# DB \ntweetdata=" + DBManager.getTweetdataTable() + "\nusers=" + DBManager.getUserTable()
+					+ "\n# TIME \n" + "min=" + mind + "\nmax=" + maxd + "\nusermin=" + mincdate + "\nusermax="
+					+ maxcdate + "\n");
+			wr.flush();
 
 			Date end = new Date();
 			System.out.println();
@@ -160,6 +185,44 @@ public class IndexTweets {
 	}
 	
 	
+	private static String getMaxUserCreation() {
+		Connection c = DBManager.getConnection(LOCAL, false);
+		String maxCreationDate = "";
+		try {
+			Statement stmt = c.createStatement();
+			String query = "select user_creationdate from "+DBManager.getUserTable() +" order by user_creationdate DESC Limit 1";
+			ResultSet rs = stmt.executeQuery(query);
+			while (rs.next()) {
+				maxCreationDate = rs.getString(1);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return maxCreationDate;
+	}
+
+
+	private static String getMinUserCreation() {
+		Connection c = DBManager.getConnection(LOCAL, false);
+		String minCreationDate = "";
+		try {
+			Statement stmt = c.createStatement();
+			String query = "select user_creationdate from "+DBManager.getUserTable() +" order by user_creationdate ASC Limit 1";
+			ResultSet rs = stmt.executeQuery(query);
+			while (rs.next()) {
+				minCreationDate = rs.getString(1);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return minCreationDate;
+	}
+
+
 	private static void indexTweets(IndexWriter writer, ArrayList<Tweet> tweets, int doc_counter) throws SQLException {
 
 		Document doc = new Document();
@@ -244,11 +307,7 @@ public class IndexTweets {
 				doc.add(new StringField("sentiment", t.getSentiment(), Field.Store.YES));
 				doc.add(new StringField("neg", t.getNegative()+"", Field.Store.YES));
 				doc.add(new StringField("pos", t.getPositive()+"", Field.Store.YES));
-//				doc.add(new IntPoint("neg",t.getNegative()));
-//				doc.add(new StoredField("neg", t.getNegative()));
-//				doc.add(new IntPoint("pos",t.getPositive()));
-//				doc.add(new StoredField("pos", t.getPositive()));
-				
+
 				
 				// time
 				String[] datetime = t.getTweet_creationdate().split(" ");
@@ -280,6 +339,9 @@ public class IndexTweets {
 					long utc_time = dt.toEpochSecond(ZoneOffset.UTC);
 //					String date_str = DateTools.dateToString(dt, Resolution.SECOND);
 					doc.add(new StringField("date", ""+utc_time , Field.Store.YES ));
+					
+					mindate = Math.min(mindate, utc_time);
+					maxdate = Math.max(maxdate, utc_time);
 					
 					String dayString = dt.getDayOfWeek().toString().toLowerCase();
 					doc.add(new StringField("day", dayString, Field.Store.YES));
@@ -341,7 +403,7 @@ public class IndexTweets {
 	
 	private static String getCountry(double lati, double longi, Statement stmt) throws SQLException {
 		String country = "";
-		String query = "Select name_0 from countries_all " + 
+		String query = "Select name_0 from "+countryTable+" " + 
 				"where St_Contains(geom, St_setSrid(St_Point("+longi+","+lati+"),4326))";
 		ResultSet rs = stmt.executeQuery(query);
 		while (rs.next()) {
