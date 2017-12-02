@@ -16,7 +16,7 @@ import utils.DBManager;
 public class Geocoding {
 
 	private static String user_table = "so_users";
-	private static int fetchsize = 10000;
+	private static int fetchsize = 1000;
 	static ResultSet rs = null;
 	static ArrayList<Entry<ArrayList<String>>> list = null;
 	static ArrayList<String> fields = null;
@@ -32,19 +32,19 @@ public class Geocoding {
 	private static java.util.regex.Pattern remover = java.util.regex.Pattern
 			.compile("[0-9#!?§.$%&/()=¡¶¢|\\{\\}≠¿@¥≈ç√∫~µ∞,']");
 	private static java.util.regex.Pattern coordinates = java.util.regex.Pattern
-			.compile("[-]?(\\d+)[.](\\d+)[ ,]+[-]?(\\d+)[.](\\d+)");
+			.compile(".*[-]?(\\d+)[.](\\d+)[ ,]+[-]?(\\d+)[.](\\d+)");
 
 	public static void main(String[] args) {
 
 		System.out.println("GEOCODING ...");
 
 		Connection c = DBManager.getConnection(LOCAL, RCP);
-		// String query = "Select user_id, user_location, user_timezone, geocoding_type
-		// from " + user_table + " where geom is null;";
 //		String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table
 //				+ " where geocoding_type > 7 and geocoding_type < 11";
 //		 String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table + " where geocoding_type = 4";
-		 String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table + " where geom is null";
+//		 String query = " SELECT user_id, user_location, user_timezone, geocoding_type "
+//		 		+ "FROM so_users WHERE user_utcoffset != -1 AND user_location ~* '[-]?(\\d+)[.](\\d+)[ ,]+[-]?(\\d+)[.](\\d+)' ";
+		String query = "Select user_id, user_location, user_timezone, geocoding_type from " + user_table + " where geom is null";
 		
 		try {
 			c.setAutoCommit(false);
@@ -113,7 +113,7 @@ public class Geocoding {
 			return;
 
 		// System.out.println ("abc.".matches(letters.pattern()));
-		int batchsize = 1000;
+		int batchsize = 100;
 		Connection c = DBManager.getConnection(LOCAL, RCP);
 		c.setAutoCommit(false);
 
@@ -242,11 +242,18 @@ public class Geocoding {
 	}
 
 	private static String geocode1(long uid, String loc, String tz) throws SQLException {
+		String location = loc.replaceAll("[a-zA-Z?!\\'\\\":ï¿½Ã TÜÄÖüäöÂ]*", "").trim();
 		// loc has coordinates:
-		if (loc.matches(coordinates.pattern())) {
-			loc = loc.replaceAll("[a-zA-Z?!\\'\\\":ï¿½TÜÄÖüäö]*", "").trim();
-			double lat = Double.parseDouble(loc.substring(0, loc.indexOf(',')));
-			double lon = Double.parseDouble(loc.substring(loc.indexOf(',') + 1, loc.length()));
+		if (location.matches(coordinates.pattern())) {
+//			loc = loc.replaceAll("[a-zA-Z?!\\'\\\":ï¿½Ã TÜÄÖüäö]*", "").trim();
+			double lat = 0.0;
+			double lon = 0.0;
+			try {
+				lat = Double.parseDouble(location.substring(0, location.indexOf(',')));
+				lon = Double.parseDouble(location.substring(location.indexOf(',') + 1, location.length()));
+			} catch (NumberFormatException e) {
+				return "NaV";
+			}
 			// get the coordinates, test if in timezoneshape
 			if (is_in_timezoneshape(lat, lon, tz, true)) {
 				String query = "Update " + user_table + " set geocoding_type = 1, " + "geom = St_setsrid(St_Point("
@@ -260,11 +267,17 @@ public class Geocoding {
 	}
 
 	private static String geocode2(long uid, String loc, String tz) throws SQLException {
+		String location = loc.replaceAll("[a-zA-Z?!\\'\\\":ï¿½Ã TÜÄÖüäöÂ]*", "").trim();
 		// loc has coordinates:
-		if (loc.matches(coordinates.pattern())) {
-			loc = loc.replaceAll("[a-zA-Z?!\\'\\\":ï¿½TÜÄÖüäö]*", "").trim();
-			double lat = Double.parseDouble(loc.substring(0, loc.indexOf(',')));
-			double lon = Double.parseDouble(loc.substring(loc.indexOf(',') + 1, loc.length()));
+		if (location.matches(coordinates.pattern())) {
+			double lat = 0.0;
+			double lon = 0.0;
+			try {
+				lat = Double.parseDouble(location.substring(0, location.indexOf(',')));
+				lon = Double.parseDouble(location.substring(location.indexOf(',') + 1, location.length()));
+			} catch (NumberFormatException e) {
+				return "NaV";
+			}
 			// get the coordinates, test if in timezoneshape
 			if (is_in_timezoneshape(lat, lon, tz, false)) {
 				String query = "Update " + user_table + " set geocoding_type = 2, " + "geom = St_setsrid(St_Point("
