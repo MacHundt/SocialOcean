@@ -31,6 +31,7 @@ import javax.swing.event.MouseInputListener;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
+import org.eclipse.swt.widgets.Display;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.OSMTileFactoryInfo;
 import org.jxmapviewer.VirtualEarthTileFactoryInfo;
@@ -688,12 +689,25 @@ public class MapPanelCreator {
 		}
 		if (clearList)
 			waypoints.clear();
+		
 		mapViewer.removeAll();
 		
-//		mapViewer.setZoom(16);
+//		int componets = mapViewer.getComponentCount();
+//		for (int i = 0; i < componets; i++) {
+//			mapViewer.remove(mapViewer.getComponent(i));
+//		}
+		
+//		SwingUtilities.invokeLater(new Runnable() {
+//			public void run() {
+//				mapViewer.removeAll();
+////				mapViewer.setZoom(16);
+//			}
+//		});
 		mapViewer.repaint();
-		mapViewer.updateUI();
+//		mapViewer.updateUI();
 		mapViewer.revalidate();
+		
+		
 	}
 
 	public static void dataChanged() {

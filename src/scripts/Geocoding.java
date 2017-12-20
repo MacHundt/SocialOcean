@@ -15,7 +15,8 @@ import utils.DBManager;
 
 public class Geocoding {
 
-	private static String user_table = "so_users";
+//	private static String user_table = "so_users";
+	private static String user_table = "nodexl_my2k_users";
 	private static int fetchsize = 1000;
 	static ResultSet rs = null;
 	static ArrayList<Entry<ArrayList<String>>> list = null;
@@ -94,7 +95,7 @@ public class Geocoding {
 			st.close();
 			c.close();
 		} catch (SQLException e) {
-			// e.printStackTrace();
+			 e.printStackTrace();
 			main(args);
 
 		}
@@ -132,11 +133,13 @@ public class Geocoding {
 			int geoType = Integer.parseInt(e.getA().get(3));
 			String updateQuery = "";
 			geoType = (geoType == 0) ? 11 : geoType;
+			loc = (loc == null) ? "null" : loc;
 			
 			// ############ Geocoding Type 11 #############
-			if ((loc == null || loc.trim().isEmpty()) && tz.equals("null")) {
+			if ((loc == null || loc.equals("null") || loc.trim().isEmpty()) && tz.equals("null")) {
 				updateQuery =  "update "+user_table+" set geocoding_type = 11 where user_id = "+uid;
 				st.addBatch(updateQuery);
+				geoType = 11;
 				counter++;
 			}
 

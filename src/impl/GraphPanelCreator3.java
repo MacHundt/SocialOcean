@@ -329,12 +329,12 @@ public class GraphPanelCreator3 {
 						foundUser = true;
 						creationdate = rs.getString("user_creationdate");
 						user_language = rs.getString("user_language");
+						desc_score = rs.getDouble("desc_score");
 						gender = rs.getString("gender");
 						user_statuses = rs.getInt("user_statusescount");
 						user_lists = rs.getInt("user_listedcount");
 						user_friends = rs.getInt("user_friendscount");
 						user_follower = rs.getInt("user_followerscount");
-						desc_score = rs.getDouble("desc_score");
 						lati = rs.getDouble("latitude");
 						longi = rs.getDouble("longitude");
 						geocode_type = rs.getInt("geocoding_type");
@@ -423,7 +423,7 @@ public class GraphPanelCreator3 {
 						pos = rs.getDouble(4);
 						neg = rs.getDouble(5);
 						category = rs.getString(6);
-						category = category.replace(" & ", "_").toLowerCase();
+						category = (category == null)? "other" : category.replace(" & ", "_").toLowerCase();
 						hasUrl = rs.getBoolean(7);
 						relationship = rs.getString(8);
 						lati = rs.getDouble(9);
@@ -431,6 +431,42 @@ public class GraphPanelCreator3 {
 					}
 					if (foundTweet) {
 						//create Edge
+						
+						// is followed?
+						if ( relationship.equals("Followed")) {
+							// add edge
+							Object edgeF = null;
+							String target = "";
+							// ADD Edge: source to Target
+							// get target from DB
+							query = "Select target from "+DBManager.getTweetdataTable()+" as t where t.tweet_id = "+tweet_id;
+							rs = tst.executeQuery(query);
+							while (rs.next()) {
+								target = rs.getString(1);
+							}
+
+							String edgesNames = "" + ((mxCell) nodeNames.get(source)).getId() + "_"
+									+ ((mxCell) nodeNames.get(target)).getId();
+							if (edgesMap.containsKey(edgesNames)) {
+								edgesMap.put(edgesNames, edgesMap.get(edgesNames) + 1);
+							} else {
+								edgesMap.put(edgesNames, new Integer(1));
+							}
+
+							edgeF = new MyEdge(tweet_id+"");
+							((MyEdge) edgeF).addCredibility(0);
+							((MyEdge) edgeF).addCategory("");
+							((MyEdge) edgeF).addSentiment("neu");
+							((MyEdge) edgeF).addDate(null);
+							((MyEdge) edgeF).setRelationsip("Followed");
+
+							graph.insertEdge(parent, null, edgeF, nodeNames.get(source), nodeNames.get(target), "FollowEdge"
+							// +
+							// "exitX=0.5;exitY=1;exitPerimeter=1;entryX=0;entryY=0;entryPerimeter=1;"
+							);
+						}
+						
+						
 						// GET Colors
 						String colorString = "";
 						if (l.getColorScheme().equals(Lucene.ColorScheme.CATEGORY)) {

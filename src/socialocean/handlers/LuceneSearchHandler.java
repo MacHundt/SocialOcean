@@ -72,6 +72,10 @@ public class LuceneSearchHandler {
 				};
 				lilt.start();
 				
+				l.createMapMarkers(data, true);
+				l.changeHistogramm(result.getHistoCounter());
+				l.initCountriesMap();
+				
 				GraphCreatorThread graphThread = new GraphCreatorThread(l) {
 					
 					@Override
@@ -82,9 +86,7 @@ public class LuceneSearchHandler {
 				};
 				graphThread.start();
 				
-				l.createMapMarkers(data, true);
-				l.changeHistogramm(result.getHistoCounter());
-				l.initCountriesMap();
+				
 				
 //				l.createGraphML_Mention(result, true);
 //				l.createGraphML_Retweet(result, true);

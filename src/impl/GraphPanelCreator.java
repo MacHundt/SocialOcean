@@ -465,9 +465,17 @@ public class GraphPanelCreator {
 		}
 		
 		clusterAndRecolor(edgeBetweennessSlider.getValue(), similarColors, true);
-		vv.validate();
-		vv.repaint();
-		vv.setVisible(true);
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			
+			@Override
+			public void run() {
+				vv.validate();
+				vv.repaint();
+				vv.setVisible(true);
+			}
+		});
+		
 		
 	}
 

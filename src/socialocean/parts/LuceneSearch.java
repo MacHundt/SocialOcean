@@ -55,11 +55,15 @@ public class LuceneSearch {
 	@Inject ECommandService commandService;
 	@Inject EHandlerService service;
 	@Inject EPartService partService;
-	MApplication app;
+	@Inject MApplication app;
 	
-	@Inject
-	public LuceneSearch(MApplication app) {
-		this.app = app;
+//	@Inject
+//	public LuceneSearch(MApplication app) {
+//		this.app = app;
+//	}
+	
+	public LuceneSearch() {
+		
 	}
 	
 	public String readTextFile(URL url) throws IOException {

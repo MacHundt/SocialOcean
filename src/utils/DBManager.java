@@ -18,8 +18,11 @@ public class DBManager {
 //	private static boolean local = true;
 //	private static String TWEETDATA = "tweetdata";
 //	private static String USERS = "users";
-	private static String TWEETDATA = "bb_tweets";
-	private static String USERS = "users";
+//	private static String TWEETDATA = "bb_tweets";
+//	private static String USERS = "users";
+	private static String TWEETDATA = "nodexl_my2k_tweets";
+	private static String USERS = "nodexl_my2k_users";
+
 	
 	private static boolean local = false;
 	private static boolean rcp = true;

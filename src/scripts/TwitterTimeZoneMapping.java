@@ -10,10 +10,10 @@ import utils.DBManager;
 
 public class TwitterTimeZoneMapping {
 
-	private static String table = "users";
-	// private static String tweet_table = "nodexl_ohsen_tweets";
+//	private static String table = "users";
+	 private static String table = "nodexl_my2k_users";
 
-	private static int fetchsize = 1000;
+	private static int fetchsize = 1;
 	private static int batchcounter = 0;
 	private static HashMap<String, String> TimezoneMapping = new HashMap<>();
 
@@ -35,10 +35,10 @@ public class TwitterTimeZoneMapping {
 				
 				// E --> Escape the string within ' '
 				twTimezone = twTimezone.replace("'", "\\'");
-				String query = "Select user_id, user_location from " + table + " where user_location = "
-						+ "E'" + twTimezone	+ "' and user_timezone = 'null'";
-				//String query = "Select user_id, user_timezone from " + table + " where user_timezone = "
-//						+ "E'" + twTimezone	+ "'";
+//				String query = "Select user_id, user_location from " + table + " where user_location = "
+//						+ "E'" + twTimezone	+ "' and user_timezone = 'null'";
+				String query = "Select user_id, user_timezone from " + table + " where user_timezone = "
+						+ "E'" + twTimezone	+ "'";
 				String updateQuery = "Update " + table + " set user_timezone = '";
 				c.setAutoCommit(false);
 				Statement st = c.createStatement();

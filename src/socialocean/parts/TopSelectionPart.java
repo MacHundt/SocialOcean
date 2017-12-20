@@ -21,6 +21,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SingleSelectionModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
@@ -154,6 +155,7 @@ public class TopSelectionPart {
 		results = new JTable(resultDataModel);
 		JScrollPane resultPane = new JScrollPane(results);
 		results.setFillsViewportHeight(true);
+		results.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		resultPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		resultPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 		split.setRightComponent(resultPane);
@@ -211,6 +213,9 @@ public class TopSelectionPart {
 					continue;
 				}
 				// get Selected Items from result Table
+				if (results.getSelectedRow() == -1 )
+					return;
+				
 				String query = currentSelectedField+":"+results.getModel().getValueAt(results.getSelectedRow(), resultColumns-1 );
 				System.out.println("Show "+results.getModel().getValueAt(results.getSelectedRow(), resultColumns-1));
 				l.printlnToConsole("Show "+results.getModel().getValueAt(results.getSelectedRow(), resultColumns-1));

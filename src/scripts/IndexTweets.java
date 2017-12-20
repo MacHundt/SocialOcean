@@ -38,8 +38,8 @@ public class IndexTweets {
 	private static int Fetchsize = 10000;
 	private static String countryTable = "countries_all";
 	
-//	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index_nodexl/";
-	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index_5/";
+	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index_nodexl/";
+//	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index_5/";
 
 	private static boolean LOCAL = false;
 	private static long mindate = Long.MAX_VALUE;
@@ -89,10 +89,10 @@ public class IndexTweets {
 					+ "latitude, "
 					+ "longitude, "
 					+ "hasurl, "
-					+ "user_id, "				// bb_tweets -- more unique than screen_name
+//					+ "user_id, "				// bb_tweets -- more unique than screen_name
 					+ "user_screenname, "
-					+ "tweet_source, "			// bb_tweets
-					+ "user_language, "			// bb_tweets
+//					+ "tweet_source, "			// bb_tweets
+//					+ "user_language, "			// bb_tweets
 					+ "positive, "
 					+ "negative, "
 					+ "category, "
@@ -107,7 +107,7 @@ public class IndexTweets {
 			int doc_counter = 0;
 			int counter = 0;
 			int stat = 1;
-			int topX = 0;
+			int topX = 5;
 			while (rs.next()) {
 				counter++;
 				
@@ -119,9 +119,9 @@ public class IndexTweets {
 				t.setLongitude(rs.getDouble("longitude"));
 				t.setHasurl(rs.getBoolean("hasurl"));
 				t.setUserScreenName(rs.getString("user_screenname")); 			
-				t.setUser_id(rs.getLong("user_id"));								// bb_tweets
-				t.setTweet_source(rs.getString("tweet_source"));					// bb_tweets
-				t.setLanguage(rs.getString("user_language"));					// bb_tweets  // text is english, but the user can select his profile language
+//				t.setUser_id(rs.getLong("user_id"));								// bb_tweets
+//				t.setTweet_source(rs.getString("tweet_source"));					// bb_tweets
+//				t.setLanguage(rs.getString("user_language"));					// bb_tweets  // text is english, but the user can select his profile language
 				t.setPositive(rs.getInt("positive"));
 				t.setNegative(rs.getInt("negative"));
 				t.setCategory((rs.getString("category") != null) ? rs.getString("category") : "other");
@@ -215,7 +215,6 @@ public class IndexTweets {
 				minCreationDate = rs.getString(1);
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -351,17 +350,17 @@ public class IndexTweets {
 				}
 
 			}
-			else {
-				continue;
-			}
+//			else {
+//				continue;
+//			}
 			
 			// geo
 			lati = t.getLatitude();
 			longi = t.getLongitude();
-			if (lati == 0 || longi == 0) {
-				no_geo++;
-				continue;
-			}
+//			if (lati == 0 || longi == 0) {
+//				no_geo++;
+//				continue;
+//			}
 
 			// TODO geo tweet location --> Get Country (ID oder name) of admin0 .. and admin1
 			if (lati != 0 || longi != 0) {
