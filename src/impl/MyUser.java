@@ -14,6 +14,9 @@ public class MyUser {
 	private double longitude;
 	
 	
+	private int degree = 0;
+	private double betweenness = 0.0;
+	
 	public MyUser(String id, String screenName) {
 		this.setId(id);
 		name = screenName;
@@ -76,5 +79,21 @@ public class MyUser {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public int getDegree() {
+		return degree;
+	}
+
+	public void addDegree(int degree) {
+		this.degree = degree;
+	}
+
+	public double getBetweennessScore() {
+		return betweenness;
+	}
+
+	public void addBetweennessScore(double betweenness) {
+		this.betweenness = betweenness;
 	}
 }

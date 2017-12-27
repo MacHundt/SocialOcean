@@ -1,5 +1,6 @@
 package impl;
 
+import java.awt.Color;
 import java.util.Date;
 
 public class MyEdge {
@@ -25,7 +26,10 @@ public class MyEdge {
 	private String category;
 	private Date date;
 	
+	private Color c = new Color(255,255,255);
+	
 	private double weight = 1.0;
+	private double betweennessScore = 0.0;
 	
 	private String toString = "";
 
@@ -192,6 +196,22 @@ public class MyEdge {
 	
 	public String getTarget() {
 		return target;
+	}
+
+	public double getBetweennessScore() {
+		return betweennessScore;
+	}
+
+	public void addBetweennessScore(double betweennessScore) {
+		this.betweennessScore = betweennessScore;
+	}
+
+	public Color getColor() {
+		return c;
+	}
+
+	public void addColor(Color c) {
+		this.c = c;
 	}
 	
 }
