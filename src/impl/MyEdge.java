@@ -26,7 +26,7 @@ public class MyEdge {
 	private String category;
 	private Date date;
 	
-	private Color c = new Color(255,255,255);
+	private int alpha = 255;
 	
 	private double weight = 1.0;
 	private double betweennessScore = 0.0;
@@ -206,12 +206,12 @@ public class MyEdge {
 		this.betweennessScore = betweennessScore;
 	}
 
-	public Color getColor() {
-		return c;
+	public int getAlpha() {
+		return alpha;
 	}
 
-	public void addColor(Color c) {
-		this.c = c;
+	public void addAlpha(int alpha) {
+		this.alpha = alpha;
 	}
 	
 }

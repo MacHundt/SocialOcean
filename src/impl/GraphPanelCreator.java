@@ -7,6 +7,8 @@ import java.awt.Dimension;
 import java.awt.Paint;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.sql.Connection;
@@ -28,7 +30,9 @@ import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JSlider;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
@@ -55,8 +59,6 @@ import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.SpringLayout2;
 import edu.uci.ics.jung.algorithms.scoring.BetweennessCentrality;
 import edu.uci.ics.jung.algorithms.scoring.DegreeScorer;
-import edu.uci.ics.jung.graph.DirectedGraph;
-import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.graph.UndirectedSparseMultigraph;
@@ -71,8 +73,24 @@ public class GraphPanelCreator {
 	private static VisualizationViewer<MyUser, MyEdge> vv;
 	private static UndirectedSparseMultigraph<MyUser, MyEdge> graph;
 	private static AggregateLayout<MyUser, MyEdge> layout;
+	private static Set<Set<MyUser>> clusterSet;
+	
+	
 	private static JSlider edgeBetweennessSlider;
 	private static JSlider clusterSizeSlider;
+	private static JRadioButton local;
+	private static JRadioButton global;
+	private static ButtonGroup group2;
+	
+	private static boolean isGlobal = true;
+	private static boolean isLocal = false;
+	
+	private static JRadioButton degree;
+	private static JRadioButton betweenness;
+	private static ButtonGroup group1;
+	
+	private static boolean isBetweenness = true;
+	private static boolean isDegree = false;
 	
 	private static LoadingCache<MyUser, Paint> vertexPaints =
 			CacheBuilder.newBuilder().build(
@@ -89,6 +107,9 @@ public class GraphPanelCreator {
 	private static int topK = 5;
 	static boolean ASC = true;
 	static boolean DESC = false;
+	
+	private static Color node = new Color(124,119,119);
+	private static Color edge = new Color(0,0,0);
 	
 //	public final static Color[] similarColors =	
 //		{
@@ -136,6 +157,7 @@ public class GraphPanelCreator {
 					if(vv.getPickedVertexState().isPicked(v)) {
 						return Color.YELLOW;
 					} else {
+//						return new Color(node.getRed(),node.getGreen(),node.getBlue(), v.getAlpha());
 						return Color.BLACK;
 					}
 				}
@@ -144,25 +166,12 @@ public class GraphPanelCreator {
 			
 			vv.getRenderContext().setEdgeDrawPaintTransformer(edgePaints);
 
-			vv.getRenderContext().setEdgeStrokeTransformer(new Function<MyEdge,Stroke>() {
-	                protected final Stroke THIN = new BasicStroke(1);
-	                protected final Stroke THICK= new BasicStroke(2);
-	                public Stroke apply(MyEdge e)
-	                {
-	                    Paint c = edgePaints.getUnchecked(e);
-	                    if (c == Color.YELLOW)
-	                        return THIN;
-	                    else 
-	                        return THICK;
-	                }
-	            });
-			
 			vv.getRenderContext().setArrowDrawPaintTransformer(new Function<MyEdge,Paint>() {
 				public Paint apply(MyEdge v) {
 					if(vv.getPickedEdgeState().isPicked(v)) {
 						return Color.YELLOW;
 					} else {
-						return v.getColor();
+						return new Color(edge.getRed(),edge.getGreen(),edge.getBlue(), v.getAlpha()); 
 					}
 				}
 				
@@ -173,11 +182,24 @@ public class GraphPanelCreator {
 					if(vv.getPickedEdgeState().isPicked(v)) {
 						return Color.YELLOW;
 					} else {
-						return v.getColor();
+						return new Color(edge.getRed(),edge.getGreen(),edge.getBlue(), v.getAlpha()); 
 					}
 				}
 				
 			});
+			
+			vv.getRenderContext().setEdgeStrokeTransformer(new Function<MyEdge,Stroke>() {
+                protected final Stroke THIN = new BasicStroke(1);
+                protected final Stroke THICK= new BasicStroke(2);
+                public Stroke apply(MyEdge e)
+                {
+                    Paint c = edgePaints.getUnchecked(e);
+                    if (c == Color.YELLOW)
+                        return THIN;
+                    else 
+                        return THICK;
+                }
+            });
 			
 			
 			
@@ -237,21 +259,115 @@ public class GraphPanelCreator {
 			});
 			
 			
-			// The edgeBetweenessSlider
-			edgeBetweennessSlider = new JSlider(JSlider.HORIZONTAL);
-	        edgeBetweennessSlider.setBackground(Color.WHITE);
-			edgeBetweennessSlider.setPreferredSize(new Dimension(210, 50));
-			edgeBetweennessSlider.setPaintTicks(true);
-			edgeBetweennessSlider.setMaximum(50);				// set Max again, after graph changed
-			edgeBetweennessSlider.setMinimum(0);
-			edgeBetweennessSlider.setValue(0);
-			edgeBetweennessSlider.setMajorTickSpacing(10);
-			edgeBetweennessSlider.setPaintLabels(true);
-			edgeBetweennessSlider.setPaintTicks(true);
+			final JPanel group1Panel = new JPanel();
+			group1Panel.setOpaque(true);
+			group1Panel.setLayout(new BoxLayout(group1Panel, BoxLayout.Y_AXIS));
 			
-			final JPanel eastControls = new JPanel();
-			eastControls.setOpaque(true);
-			eastControls.setLayout(new BoxLayout(eastControls, BoxLayout.Y_AXIS));
+			// Graph
+			group1 = new ButtonGroup();
+			betweenness = new JRadioButton("betweenness");
+			betweenness.setSelected(isBetweenness);
+			betweenness.setToolTipText("The betweenness score counts how often a node has to traverse this node, \nin order to reach all others by the shortest path. ");
+			degree = new JRadioButton("degree");
+			degree.setSelected(isDegree);
+			degree.setToolTipText("The degree score counts the amount of edges per node");
+			
+			group1.add(betweenness);
+			group1.add(degree);
+			
+			betweenness.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					isBetweenness = betweenness.isSelected();
+					isDegree = degree.isSelected();
+					recolorUsers();
+				}
+			});
+			
+			
+			degree.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					isBetweenness = betweenness.isSelected();
+					isDegree = degree.isSelected();
+					recolorUsers();
+				}
+			});
+			
+			
+			group1Panel.add(Box.createVerticalGlue());
+			group1Panel.add(betweenness);
+			group1Panel.add(degree);
+			final String uScore = "User Score: ";
+			final TitledBorder scoreBorder = BorderFactory.createTitledBorder(uScore);
+			group1Panel.setBorder(scoreBorder);
+			
+			
+			final JPanel group2Panel = new JPanel();
+			group2Panel.setOpaque(true);
+			group2Panel.setLayout(new BoxLayout(group2Panel, BoxLayout.Y_AXIS));
+			
+			
+			// Global - Local Switch
+			group2 = new ButtonGroup();
+			global = new JRadioButton("global");
+			global.setToolTipText("Min-Max scaling for whole graph");
+			global.setSelected(isGlobal);
+			local = new JRadioButton("local");
+			local.setToolTipText("Min-Max scaling for each connected component");
+			local.setSelected(isLocal);
+			
+			group2.add(global);
+			group2.add(local);
+			
+			global.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					isGlobal = global.isSelected();
+					isLocal = local.isSelected();
+					recolorUsers();
+				}
+			});
+			
+			
+			local.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					isGlobal = global.isSelected();
+					isLocal = local.isSelected();
+					recolorUsers();
+				}
+			});
+			
+			
+			group2Panel.add(Box.createVerticalGlue());
+			group2Panel.add(global);
+			group2Panel.add(local);
+			final String EXTENT = "Extent: ";
+			final TitledBorder extentBorder = BorderFactory.createTitledBorder(EXTENT);
+			group2Panel.setBorder(extentBorder);
+//			group2Panel.setToolTipText("GLOBAL = Min-Max scaling for whole graph, \nLOCAL = scaling for each connected component");
+			
+			// The edgeBetweenessSlider
+//			edgeBetweennessSlider = new JSlider(JSlider.HORIZONTAL);
+//	        edgeBetweennessSlider.setBackground(Color.WHITE);
+//			edgeBetweennessSlider.setPreferredSize(new Dimension(210, 50));
+//			edgeBetweennessSlider.setPaintTicks(true);
+//			edgeBetweennessSlider.setMaximum(50);				// set Max again, after graph changed
+//			edgeBetweennessSlider.setMinimum(0);
+//			edgeBetweennessSlider.setValue(0);
+//			edgeBetweennessSlider.setMajorTickSpacing(10);
+//			edgeBetweennessSlider.setPaintLabels(true);
+//			edgeBetweennessSlider.setPaintTicks(true);
+//			
+//			final JPanel eastControls = new JPanel();
+//			eastControls.setOpaque(true);
+//			eastControls.setLayout(new BoxLayout(eastControls, BoxLayout.Y_AXIS));
+			
 			
 //			eastControls.add(Box.createVerticalGlue());
 //			eastControls.add(edgeBetweennessSlider);
@@ -319,6 +435,9 @@ public class GraphPanelCreator {
 //					
 //				}
 //			});
+			
+			
+			
 
 
 			// Attach the listener that will print when the vertices selection changes.
@@ -351,13 +470,47 @@ public class GraphPanelCreator {
 			p.add(gm.getModeComboBox());
 			south.add(p);
 			south.add(clusterControls);
-			south.add(eastControls);
+//			south.add(eastControls);
+			south.add(group1Panel);
+			south.add(group2Panel);
 			graphPanel.add(south, BorderLayout.SOUTH);
 			
 			return graphPanel;
 		}
 		
 	}
+
+
+//	protected static void updateView() {
+//		
+//		if(graph.getVertexCount() != 0) {
+//			System.out.println("Change Node Color: Betweenness -"+isBetweenness+"  ---  Global - "+isGlobal);
+//			
+//			vertexPaints.cleanUp();
+//			
+//			for (MyUser u : graph.getVertices()) {
+//				// scale
+//				double a = 0.0;
+//				
+//				// LOCAL
+////				a = u.getBetweennessScore() / maxBet;			
+////				a = u.getDegree() / localDeg;
+//				// GLOABL
+//				a = u.getBetweennessScore() / UBScore;	
+////				a = u.getDegree() / maxDeg;
+//				
+//				
+//				// set Default ( no division by 0 )
+//				a = (a == 0.0) ? 2 : a * 255;
+//				a = Math.abs((Math.log(a) / Math.log(255)) * 255);
+//				u.addAlpha((int) a);
+//				
+//				Color co = new Color(node.getRed(),node.getGreen(),node.getBlue(), (int) a );
+//				vertexPaints.put(u, co);
+//			}
+//		}
+//		
+//	}
 
 
 	public static void createSimpleGraph(ScoreDoc[] result, IndexSearcher searcher, boolean withMention,
@@ -466,7 +619,7 @@ public class GraphPanelCreator {
 		}
 		
 //		clusterAndRecolor(edgeBetweennessSlider.getValue(), similarColors, true);
-		clusterAndRecolor(edgeBetweennessSlider.getValue(), true);
+		clusterAndRecolor(0, true);
 		
 		SwingUtilities.invokeLater(new Runnable() {
 			
@@ -644,6 +797,83 @@ public class GraphPanelCreator {
 		
 		return Math.abs(score);
 	}
+	
+	public static void recolorUsers() {
+		
+		if (graph.getEdgeCount() == 0)
+			return;
+		
+		if (clusterSet == null) {
+			return;
+		}
+		
+		double UBScore = 0.0;
+		int maxDeg = 0;
+		for (MyUser u : graph.getVertices()) {
+			int degScore = u.getDegree();
+			double betScore = u.getBetweennessScore();
+			u.addBetweennessScore(betScore);
+			u.addDegree(degScore);
+			if (betScore > UBScore)
+            {
+				UBScore = betScore;
+            }
+			if (degScore > maxDeg) {
+				maxDeg = degScore;
+			}
+		}
+		
+		vertexPaints.cleanUp();
+		
+		for (Iterator<Set<MyUser>> cIt = clusterSet.iterator(); cIt.hasNext();) {
+			Set<MyUser> vertices = cIt.next();
+			
+			double maxBet = 0.0;
+			int localDeg = 0;
+			for (MyUser u : vertices) {
+				if (u.getBetweennessScore() > maxBet)
+					maxBet = u.getBetweennessScore();
+				if (u.getDegree() > localDeg)
+					localDeg = u.getDegree();
+			}
+			
+			maxBet = (maxBet == 0) ? 1 : maxBet;
+			localDeg = (localDeg == 0) ? 1 : localDeg;
+			
+			for (MyUser u : vertices) {
+				// scale
+				double a = 0.0;
+				
+				// LOCAL
+				if (isLocal) {
+					if (isBetweenness)
+						a = u.getBetweennessScore() / maxBet;
+					else if (isDegree)
+						a = u.getDegree() / localDeg;
+				}
+				// GLOABL
+				else if(isGlobal) {
+					if (isBetweenness)
+						a = u.getBetweennessScore() / UBScore;	
+					else if (isDegree)
+						a = u.getDegree() / maxDeg;
+				}
+				
+				// set Default ( no division by 0 )
+				a = (a == 0.0) ? 2 : a * 255;
+				a = Math.abs((Math.log(a) / Math.log(255)) * 255);
+				u.addAlpha((int) a);
+				
+				Color co = new Color(node.getRed(),node.getGreen(),node.getBlue(), (int) a );
+				vertexPaints.put(u, co);
+			}
+			
+		}
+		
+		vv.repaint();
+		
+		
+	}
 
 
 	public static void clusterAndRecolor(int numEdgesToRemove, boolean groupClusters) {
@@ -696,7 +926,7 @@ public class GraphPanelCreator {
         
 		EdgeBetweennessClusterer<MyUser, MyEdge> clusterer =
 			new EdgeBetweennessClusterer<MyUser, MyEdge>(numEdgesToRemove);
-		Set<Set<MyUser>> clusterSet = clusterer.apply(g);
+		clusterSet = clusterer.apply(g);
 		List<MyEdge> edges = clusterer.getEdgesRemoved();
 		
 		List<MyUser> tooSmallClusterNodes = new ArrayList<>();
@@ -737,27 +967,34 @@ public class GraphPanelCreator {
 			}
 			
 			maxBet = (maxBet == 0) ? 1 : maxBet;
+			localDeg = (localDeg == 0) ? 1 : localDeg;
 			
 			for (MyUser u : vertices) {
 				// scale
 				double a = 0.0;
 				
 				// LOCAL
-//				a = u.getBetweennessScore() / maxBet;			
-//				a = u.getDegree() / localDeg;
+				if (isLocal) {
+					if (isBetweenness)
+						a = u.getBetweennessScore() / maxBet;
+					else if (isDegree)
+						a = u.getDegree() / localDeg;
+				}
 				// GLOABL
-//				a = u.getBetweennessScore() / UBScore;	
-				a = u.getDegree() / maxDeg;
-				
+				else if(isGlobal) {
+					if (isBetweenness)
+						a = u.getBetweennessScore() / UBScore;	
+					else if (isDegree)
+						a = u.getDegree() / maxDeg;
+				}
 				
 				// set Default ( no division by 0 )
 				a = (a == 0.0) ? 2 : a * 255;
 				a = Math.abs((Math.log(a) / Math.log(255)) * 255);
+				u.addAlpha((int) a);
 				
-				System.out.println(a);
-				
-				Color c = new Color(124,119,119, (int) a);
-				vertexPaints.put(u, c);
+				Color co = new Color(node.getRed(),node.getGreen(),node.getBlue(), (int) a );
+				vertexPaints.put(u, co);
 			}
 			
 			if(groupClusters == true) {
@@ -775,10 +1012,10 @@ public class GraphPanelCreator {
 				b = (b == 0.0) ? 5 : b * 255;
 				b = Math.abs((Math.log(b) / Math.log(255)) * 255);
 				
-				System.out.println(b);
+//				System.out.println(b);
 				
-				Color c = new Color(0,0,0, (int) b);
-				e.addColor(c);
+				Color c = new Color(edge.getRed(),edge.getGreen(),edge.getBlue(), (int) b);
+				e.addAlpha((int) b);
 				
 				edgePaints.put(e, c);
 			}

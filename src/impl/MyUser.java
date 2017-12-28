@@ -16,6 +16,7 @@ public class MyUser {
 	
 	private int degree = 0;
 	private double betweenness = 0.0;
+	private int alpha = 255;
 	
 	public MyUser(String id, String screenName) {
 		this.setId(id);
@@ -95,5 +96,13 @@ public class MyUser {
 
 	public void addBetweennessScore(double betweenness) {
 		this.betweenness = betweenness;
+	}
+
+	public int getAlpha() {
+		return alpha;
+	}
+
+	public void addAlpha(int alpha) {
+		this.alpha = alpha;
 	}
 }

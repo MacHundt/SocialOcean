@@ -1968,8 +1968,8 @@ public enum Lucene {
 		}
 		
 	}
-	
-	
+
+
 
 
 //	public <E> void showPickedEdges(Collection<E> pickedEdges) {
