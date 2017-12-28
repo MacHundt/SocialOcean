@@ -59,11 +59,13 @@ import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.SpringLayout2;
 import edu.uci.ics.jung.algorithms.scoring.BetweennessCentrality;
 import edu.uci.ics.jung.algorithms.scoring.DegreeScorer;
+import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.graph.UndirectedSparseMultigraph;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 import utils.DBManager;
 
 
@@ -164,6 +166,19 @@ public class GraphPanelCreator {
 				
 			});
 			
+			vv.getRenderContext().setVertexLabelTransformer(new Function<MyUser,String>(){
+				public String apply(MyUser v) {
+					if(vv.getPickedVertexState().isPicked(v)) {
+						return v.getName();
+					} else {
+						return "";
+					}
+				}
+				
+			});
+			
+			vv.getRenderer().getVertexLabelRenderer().setPosition(Position.AUTO);
+			
 			vv.getRenderContext().setEdgeDrawPaintTransformer(edgePaints);
 
 			vv.getRenderContext().setArrowDrawPaintTransformer(new Function<MyEdge,Paint>() {
@@ -188,6 +203,7 @@ public class GraphPanelCreator {
 				
 			});
 			
+			
 			vv.getRenderContext().setEdgeStrokeTransformer(new Function<MyEdge,Stroke>() {
                 protected final Stroke THIN = new BasicStroke(1);
                 protected final Stroke THICK= new BasicStroke(2);
@@ -200,7 +216,6 @@ public class GraphPanelCreator {
                         return THICK;
                 }
             });
-			
 			
 			
 			 // Probably the most important step for the pure rendering performance:
@@ -236,7 +251,6 @@ public class GraphPanelCreator {
 			
 			final TitledBorder csliderBorder = BorderFactory.createTitledBorder(clusterSize);
 			clusterControls.setBorder(csliderBorder);
-			//eastControls.add(eastSize);
 			clusterControls.add(Box.createVerticalGlue());
 			clusterControls.add(Box.createVerticalGlue());
 			clusterControls.add(clusterSizeSlider);
@@ -245,10 +259,7 @@ public class GraphPanelCreator {
 				public void stateChanged(ChangeEvent e) {
 					JSlider source = (JSlider) e.getSource();
 					if (!source.getValueIsAdjusting()) {
-						int numEdgesToRemove = source.getValue();
-//						clusterAndRecolor(layout, numEdgesToRemove, similarColors,
-//								groupVertices.isSelected());
-						clusterAndRecolor(numEdgesToRemove, true);
+						clusterAndRecolor(true);
 						csliderBorder.setTitle(
 								MINCLUSTER + clusterSizeSlider.getValue());
 						clusterControls.repaint();
@@ -350,121 +361,10 @@ public class GraphPanelCreator {
 			final String EXTENT = "Extent: ";
 			final TitledBorder extentBorder = BorderFactory.createTitledBorder(EXTENT);
 			group2Panel.setBorder(extentBorder);
-//			group2Panel.setToolTipText("GLOBAL = Min-Max scaling for whole graph, \nLOCAL = scaling for each connected component");
 			
-			// The edgeBetweenessSlider
-//			edgeBetweennessSlider = new JSlider(JSlider.HORIZONTAL);
-//	        edgeBetweennessSlider.setBackground(Color.WHITE);
-//			edgeBetweennessSlider.setPreferredSize(new Dimension(210, 50));
-//			edgeBetweennessSlider.setPaintTicks(true);
-//			edgeBetweennessSlider.setMaximum(50);				// set Max again, after graph changed
-//			edgeBetweennessSlider.setMinimum(0);
-//			edgeBetweennessSlider.setValue(0);
-//			edgeBetweennessSlider.setMajorTickSpacing(10);
-//			edgeBetweennessSlider.setPaintLabels(true);
-//			edgeBetweennessSlider.setPaintTicks(true);
-//			
-//			final JPanel eastControls = new JPanel();
-//			eastControls.setOpaque(true);
-//			eastControls.setLayout(new BoxLayout(eastControls, BoxLayout.Y_AXIS));
-			
-			
-//			eastControls.add(Box.createVerticalGlue());
-//			eastControls.add(edgeBetweennessSlider);
-//			
-//			final String COMMANDSTRING = "Edges removed for clusters: ";
-//			final String eastSize = COMMANDSTRING + edgeBetweennessSlider.getValue();
-//			final TitledBorder sliderBorder = BorderFactory.createTitledBorder(eastSize);
-//			eastControls.setBorder(sliderBorder);
-//			//eastControls.add(eastSize);
-//			eastControls.add(Box.createVerticalGlue());
-			
-//			final JToggleButton groupVertices = new JToggleButton("Group Clusters");
-//			groupVertices.addItemListener(new ItemListener() {
-//				public void itemStateChanged(ItemEvent e) {
-//						clusterAndRecolor(layout, edgeBetweennessSlider.getValue(), 
-//								similarColors, e.getStateChange() == ItemEvent.SELECTED);
-//						vv.repaint();
-//				}});
-
-
-//			edgeBetweennessSlider.addChangeListener(new ChangeListener() {
-//				public void stateChanged(ChangeEvent e) {
-//					JSlider source = (JSlider) e.getSource();
-//					if (!source.getValueIsAdjusting()) {
-//						int numEdgesToRemove = source.getValue();
-//						clusterAndRecolor(numEdgesToRemove, similarColors, true);
-//						sliderBorder.setTitle(
-//							COMMANDSTRING + edgeBetweennessSlider.getValue());
-//						eastControls.repaint();
-//						vv.validate();
-//						vv.repaint();
-//					}
-//				}
-//			});
-			
-			
-//			final PickedState<MyUser> pickedState = vv.getPickedVertexState();
-//			final PickedState<MyEdge> pickedEdge = vv.getPickedEdgeState();
-			
-//			vv.addChangeListener(new ChangeListener() {
-//				
-//				@Override
-//				public void stateChanged(ChangeEvent e) {
-//					Object o = e.getSource();
-//					System.out.println();
-//					// fires when zoom or pan changed
-//				}
-//			});
-//			vv.getPickSupport().
-			
-//			pickedEdge.addItemListener( new ItemListener() {
-//				
-//				@Override
-//				public void itemStateChanged(ItemEvent e) {
-//					Object subject = e.getItem();
-//			        // The graph eges
-//			        if (subject instanceof MyEdge) {
-//			        		MyEdge edge = (MyEdge) subject;
-//			        		if (pickedEdge.isPicked(edge)) {
-//	//			        		System.out.println("Edge " + edge.getId());
-//			        			// partService.showPart("socialocean.part.graph", PartState.ACTIVATE);
-//			        			
-//			        		}
-//			        }
-//					
-//				}
-//			});
-			
-			
-			
-
-
-			// Attach the listener that will print when the vertices selection changes.
-//			pickedState.addItemListener(new ItemListener() {
-//
-//			    @Override
-//			    public void itemStateChanged(ItemEvent e) {
-//			        Object subject = e.getItem();
-//			        if (subject instanceof MyUser) {
-//			        		MyUser vertex = (MyUser) subject;
-//			        		vertex.setNameVisible();
-//			            if (pickedState.isPicked(vertex)) {
-////			            		selectedVertexPaints.put(vertex, Color.red);
-////			                System.out.println("Vertex " + vertex.toString()+"_"+ vertex.getId()
-////			                    + " is now selected");
-//			            		// TODO Transform the Node
-//			            		
-//			            } 
-//			        }
-//			    }
-//			});
 			
 			graphPanel.add(new GraphZoomScrollPane(vv), BorderLayout.CENTER);
 			JPanel south = new JPanel();
-//			JPanel grid = new JPanel(new GridLayout(2,1));
-//			grid.add(groupVertices);
-//			south.add(grid);
 			JPanel p = new JPanel();
 			p.setBorder(BorderFactory.createTitledBorder("Mouse Mode"));
 			p.add(gm.getModeComboBox());
@@ -479,38 +379,6 @@ public class GraphPanelCreator {
 		}
 		
 	}
-
-
-//	protected static void updateView() {
-//		
-//		if(graph.getVertexCount() != 0) {
-//			System.out.println("Change Node Color: Betweenness -"+isBetweenness+"  ---  Global - "+isGlobal);
-//			
-//			vertexPaints.cleanUp();
-//			
-//			for (MyUser u : graph.getVertices()) {
-//				// scale
-//				double a = 0.0;
-//				
-//				// LOCAL
-////				a = u.getBetweennessScore() / maxBet;			
-////				a = u.getDegree() / localDeg;
-//				// GLOABL
-//				a = u.getBetweennessScore() / UBScore;	
-////				a = u.getDegree() / maxDeg;
-//				
-//				
-//				// set Default ( no division by 0 )
-//				a = (a == 0.0) ? 2 : a * 255;
-//				a = Math.abs((Math.log(a) / Math.log(255)) * 255);
-//				u.addAlpha((int) a);
-//				
-//				Color co = new Color(node.getRed(),node.getGreen(),node.getBlue(), (int) a );
-//				vertexPaints.put(u, co);
-//			}
-//		}
-//		
-//	}
 
 
 	public static void createSimpleGraph(ScoreDoc[] result, IndexSearcher searcher, boolean withMention,
@@ -534,7 +402,7 @@ public class GraphPanelCreator {
 //				String uId = (document.getField("uid")).stringValue();
 //				long tweetdate = Long.parseLong((document.getField("date")).stringValue());
 			
-				String id = (document.getField("id")).stringValue();
+				String id = (document.getField("id")).stringValue();						// tweet_id
 				String mentionString = (document.getField("mention")).stringValue();
 				String screenName = (document.getField("name")).stringValue().trim();
 
@@ -595,7 +463,7 @@ public class GraphPanelCreator {
 							edgesMap.put(edgesNames, new Integer(1));
 						}
 
-						edge = new MyEdge(id);
+						edge = new MyEdge(id); 
 						edge.changeToString(MyEdge.LabelType.SentiStrenth);
 
 						if (hasGeo)
@@ -603,7 +471,12 @@ public class GraphPanelCreator {
 						
 						// No self-Edges
 						if (!sourceID.getName().equals(nodeID.getName())) {
-							graph.addEdge(edge, sourceID, nodeID);
+							if (graph.containsEdge(edge)) {
+								// TODO add edges .. tweet_id to MyEdge
+								System.out.println("TEST");
+							}
+							else 
+								graph.addEdge(edge, sourceID, nodeID);
 						} 
 
 					}
@@ -619,7 +492,7 @@ public class GraphPanelCreator {
 		}
 		
 //		clusterAndRecolor(edgeBetweennessSlider.getValue(), similarColors, true);
-		clusterAndRecolor(0, true);
+		clusterAndRecolor(true);
 		
 		SwingUtilities.invokeLater(new Runnable() {
 			
@@ -798,6 +671,8 @@ public class GraphPanelCreator {
 		return Math.abs(score);
 	}
 	
+	
+	
 	public static void recolorUsers() {
 		
 		if (graph.getEdgeCount() == 0)
@@ -809,11 +684,18 @@ public class GraphPanelCreator {
 		
 		double UBScore = 0.0;
 		int maxDeg = 0;
+		double globalCentrality = 0.0;
+		long sum = 0;
 		for (MyUser u : graph.getVertices()) {
 			int degScore = u.getDegree();
 			double betScore = u.getBetweennessScore();
 			u.addBetweennessScore(betScore);
 			u.addDegree(degScore);
+			if (isBetweenness)
+				sum += betScore;
+			else if (isDegree)
+				sum += degScore;
+			
 			if (betScore > UBScore)
             {
 				UBScore = betScore;
@@ -823,6 +705,16 @@ public class GraphPanelCreator {
 			}
 		}
 		
+		if (isBetweenness) {
+			globalCentrality =  (UBScore / sum);
+		}
+		else if (isDegree) {
+			globalCentrality = (maxDeg / (double) sum);
+		}
+		
+//		System.out.println("Global_Centrality: "+globalCentrality);
+		
+		
 		vertexPaints.cleanUp();
 		
 		for (Iterator<Set<MyUser>> cIt = clusterSet.iterator(); cIt.hasNext();) {
@@ -830,7 +722,14 @@ public class GraphPanelCreator {
 			
 			double maxBet = 0.0;
 			int localDeg = 0;
+			long localSum = 0;
+			double localCentrality = 0.0;
 			for (MyUser u : vertices) {
+				if (isBetweenness) 
+					localSum += u.getBetweennessScore();
+				else if (isDegree) 
+					localSum += u.getDegree();
+				
 				if (u.getBetweennessScore() > maxBet)
 					maxBet = u.getBetweennessScore();
 				if (u.getDegree() > localDeg)
@@ -839,6 +738,15 @@ public class GraphPanelCreator {
 			
 			maxBet = (maxBet == 0) ? 1 : maxBet;
 			localDeg = (localDeg == 0) ? 1 : localDeg;
+			
+			if (isBetweenness) {
+				localCentrality =  (localSum == 0)? 0 : (maxBet / (double) localSum);
+			}
+			else if (isDegree) {
+				localCentrality = (localSum == 0)? 0 : (localDeg / (double) localSum);
+			}
+			
+//			System.out.println("Local_Centrality of Components: "+localCentrality);
 			
 			for (MyUser u : vertices) {
 				// scale
@@ -872,29 +780,22 @@ public class GraphPanelCreator {
 		
 		vv.repaint();
 		
-		
 	}
 
 
-	public static void clusterAndRecolor(int numEdgesToRemove, boolean groupClusters) {
-		//Now cluster the vertices by removing the top 50 edges with highest betweenness
-		//		if (numEdgesToRemove == 0) {
-		//			colorCluster( g.getVertices(), colors[0] );
-		//		} else {
+	public static void clusterAndRecolor(boolean groupClusters) {
 		
 		if (graph.getEdgeCount() == 0)
 			return;
 		
 		BetweennessCentrality<MyUser, MyEdge> bc = new BetweennessCentrality<MyUser, MyEdge>(graph);
-		MyEdge highest = null;
 		double EBscore = 0.0;
 		for (MyEdge e : graph.getEdges()) {
-			if (bc.getEdgeScore(e) > EBscore)
+			double score = bc.getEdgeScore(e);
+			if ( score > EBscore)
             {
-				EBscore = bc.getEdgeScore(e);
+				EBscore = score;
 				e.addBetweennessScore(EBscore);
-				highest = e;
-                
             }
 		}
 		
@@ -902,11 +803,18 @@ public class GraphPanelCreator {
 		
 		double UBScore = 0.0;
 		int maxDeg = 0;
+		double globalCentrality = 0.0;
+		long sum = 0;
 		for (MyUser u : graph.getVertices()) {
 			int degScore = deg.getVertexScore(u);
 			double betScore = bc.getVertexScore(u);
 			u.addBetweennessScore(betScore);
 			u.addDegree(degScore);
+			if (isBetweenness)
+				sum += betScore;
+			else if (isDegree)
+				sum += degScore;
+			
 			if (betScore > UBScore)
             {
 				UBScore = betScore;
@@ -916,16 +824,21 @@ public class GraphPanelCreator {
 			}
 		}
 		
-//		System.out.println("MaxBetweeness Score:" + highest.getBetweennessScore());
-//		System.out.println("MaxBetweeness User:" + UBScore);
-//		System.out.println("Max Degree User:" + maxDeg);
+		if (isBetweenness) {
+			globalCentrality =  (UBScore / sum);
+		}
+		else if (isDegree) {
+			globalCentrality = (maxDeg / (double) sum);
+		}
+		
+		System.out.println("Global_Centrality: "+globalCentrality);
+		
 		
 		Graph<MyUser, MyEdge> g = layout.getGraph();
         layout.removeAll();
 
-        
 		EdgeBetweennessClusterer<MyUser, MyEdge> clusterer =
-			new EdgeBetweennessClusterer<MyUser, MyEdge>(numEdgesToRemove);
+			new EdgeBetweennessClusterer<MyUser, MyEdge>(0);
 		clusterSet = clusterer.apply(g);
 		List<MyEdge> edges = clusterer.getEdgesRemoved();
 		
@@ -952,22 +865,41 @@ public class GraphPanelCreator {
 				}
 				continue;
 			}
-			System.out.println(i+"  >> Cluster with # Vertices: "+vertices.size());
+			System.out.print(i+"  >> Cluster with # Vertices: "+vertices.size());
 			
 //			Color c = colors[i % colors.length];
 //			colorCluster(vertices, c);
 			
 			double maxBet = 0.0;
 			int localDeg = 0;
+			long localSum = 0;
+			double localCentrality = 0.0;
 			for (MyUser u : vertices) {
+				if (isBetweenness) 
+					localSum += u.getBetweennessScore();
+				else if (isDegree) 
+					localSum += u.getDegree();
+				
 				if (u.getBetweennessScore() > maxBet)
 					maxBet = u.getBetweennessScore();
 				if (u.getDegree() > localDeg)
 					localDeg = u.getDegree();
 			}
 			
+			
+			
+			if (isBetweenness) {
+				localCentrality =  (localSum == 0)? 0 : (maxBet / (double) localSum);
+			}
+			else if (isDegree) {
+				localCentrality = (localSum == 0)? 0 : (localDeg / (double) localSum);
+			}
+			
 			maxBet = (maxBet == 0) ? 1 : maxBet;
 			localDeg = (localDeg == 0) ? 1 : localDeg;
+			
+			System.out.println(" >> Centrality: "+localCentrality);
+			
 			
 			for (MyUser u : vertices) {
 				// scale
@@ -982,8 +914,10 @@ public class GraphPanelCreator {
 				}
 				// GLOABL
 				else if(isGlobal) {
-					if (isBetweenness)
+					if (isBetweenness) {
 						a = u.getBetweennessScore() / UBScore;	
+						
+					}
 					else if (isDegree)
 						a = u.getDegree() / maxDeg;
 				}

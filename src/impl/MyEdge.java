@@ -34,7 +34,6 @@ public class MyEdge {
 	private String toString = "";
 
 	private String source;
-
 	private String target;
 	
 	public MyEdge(String id) {
