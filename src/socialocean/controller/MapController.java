@@ -97,6 +97,9 @@ public class MapController extends Observable {
 		ShapeWriter sw = new ShapeWriter(new GeoToCartesianTransformation(map));
 		GeometryFactory factory = new GeometryFactory();
 		Connection c = DBManager.getConnection();
+		
+		if (c == null)
+			return;
 
 		boolean user = false;
 
@@ -306,6 +309,10 @@ public class MapController extends Observable {
 		IndexSearcher searcher = l.getIndexSearcher();
 		GeometryFactory factory = new GeometryFactory();
 		Connection c = DBManager.getConnection();
+		
+		if (c == null)
+			return;
+		
 		try {
 
 			// HashMap<Point2D, List<Document>> pCluster = new HashMap<>();

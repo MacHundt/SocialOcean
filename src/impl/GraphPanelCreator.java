@@ -111,6 +111,9 @@ public class GraphPanelCreator {
 	static boolean DESC = false;
 	
 	private static Color node = new Color(124,119,119);
+	private static Color highCentrality = new Color(0, 0, 255);
+	private static double centrThreshold = 0.59;
+	
 	private static Color edge = new Color(0,0,0);
 	
 //	public final static Color[] similarColors =	
@@ -311,8 +314,8 @@ public class GraphPanelCreator {
 			group1Panel.add(Box.createVerticalGlue());
 			group1Panel.add(betweenness);
 			group1Panel.add(degree);
-			final String uScore = "User Score: ";
-			final TitledBorder scoreBorder = BorderFactory.createTitledBorder(uScore);
+			final String centrality = "Centrality: ";
+			final TitledBorder scoreBorder = BorderFactory.createTitledBorder(centrality);
 			group1Panel.setBorder(scoreBorder);
 			
 			
@@ -714,11 +717,17 @@ public class GraphPanelCreator {
 		
 //		System.out.println("Global_Centrality: "+globalCentrality);
 		
-		
 		vertexPaints.cleanUp();
 		
 		for (Iterator<Set<MyUser>> cIt = clusterSet.iterator(); cIt.hasNext();) {
 			Set<MyUser> vertices = cIt.next();
+			
+			Color nodeColor = node;
+			if (isGlobal) {
+				if (globalCentrality > centrThreshold) {
+					nodeColor = highCentrality;
+				}
+			}
 			
 			double maxBet = 0.0;
 			int localDeg = 0;
@@ -747,6 +756,12 @@ public class GraphPanelCreator {
 			}
 			
 //			System.out.println("Local_Centrality of Components: "+localCentrality);
+			if (isLocal) {
+				if (localCentrality > centrThreshold) {
+					nodeColor = highCentrality;
+				}
+			}
+			
 			
 			for (MyUser u : vertices) {
 				// scale
@@ -772,7 +787,7 @@ public class GraphPanelCreator {
 				a = Math.abs((Math.log(a) / Math.log(255)) * 255);
 				u.addAlpha((int) a);
 				
-				Color co = new Color(node.getRed(),node.getGreen(),node.getBlue(), (int) a );
+				Color co = new Color(nodeColor.getRed(),nodeColor.getGreen(),nodeColor.getBlue(), (int) a );
 				vertexPaints.put(u, co);
 			}
 			
@@ -832,6 +847,13 @@ public class GraphPanelCreator {
 		}
 		
 		System.out.println("Global_Centrality: "+globalCentrality);
+		
+		Color nodeColor = node;
+		if (isGlobal)
+			if (globalCentrality > centrThreshold) {
+				nodeColor = highCentrality;
+			}
+			
 		
 		
 		Graph<MyUser, MyEdge> g = layout.getGraph();
@@ -900,6 +922,13 @@ public class GraphPanelCreator {
 			
 			System.out.println(" >> Centrality: "+localCentrality);
 			
+			if (isLocal) {
+				nodeColor = node;
+				if (localCentrality > centrThreshold) {
+					nodeColor = highCentrality;
+				}
+			}
+			
 			
 			for (MyUser u : vertices) {
 				// scale
@@ -927,7 +956,7 @@ public class GraphPanelCreator {
 				a = Math.abs((Math.log(a) / Math.log(255)) * 255);
 				u.addAlpha((int) a);
 				
-				Color co = new Color(node.getRed(),node.getGreen(),node.getBlue(), (int) a );
+				Color co = new Color(nodeColor.getRed(), nodeColor.getGreen(), nodeColor.getBlue(), (int) a );
 				vertexPaints.put(u, co);
 			}
 			
@@ -965,6 +994,8 @@ public class GraphPanelCreator {
 //			layout.setSize(new Dimension(i*12, i*10 ));
 	}
 
+	
+	
 	private static void colorCluster(Set<MyUser> vertices, Color c) {
 		for (MyUser v : vertices) {
 			vertexPaints.put(v, c);

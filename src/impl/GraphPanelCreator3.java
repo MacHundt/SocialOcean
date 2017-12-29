@@ -288,6 +288,9 @@ public class GraphPanelCreator3 {
 	
 	public static <V,E> void createDetailGraph(Collection<V> nodes, Collection<E> edges, boolean withMention, boolean withFollows, boolean clear) {
 		
+		if (nodes.isEmpty())
+			return;
+		
 		Lucene l = Lucene.INSTANCE;
 		if (clear) {
 			clearGraph();
@@ -299,6 +302,9 @@ public class GraphPanelCreator3 {
 		HashMap<String, Integer> edgesMap = new HashMap<>();
 		
 		Connection c = DBManager.getConnection(false, true);
+		if (c == null)
+			return;
+		
 		// Get User information, create nodes
 		for (V n : nodes) {
 			if (n instanceof MyUser) {
