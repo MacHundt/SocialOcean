@@ -4,6 +4,7 @@ package socialocean.handlers;
 import javax.inject.Named;
 
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.eclipse.e4.core.di.annotations.CanExecute;
@@ -11,6 +12,7 @@ import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.core.di.annotations.Optional;
 
 import impl.GraphCreatorThread;
+import impl.MyLuceneAnalyser;
 import impl.TimeLineCreatorThread;
 import socialocean.model.Result;
 import utils.Lucene;
@@ -59,7 +61,14 @@ public class LuceneSearchHandler {
 		
 		// GET QUERY
 			try {
-				Query q = l.getParser().parse(query);
+				Query q = null;
+				if (query.contains("name:") || query.contains("mention:")) {
+					QueryParser parser = new QueryParser("name", new MyLuceneAnalyser());
+					q = parser.parse(query);
+				}
+				else 
+					 q = l.getParser().parse(query);
+				
 				Result result = l.query(q, type, true, true);
 				ScoreDoc[] data = result.getData();
 				TimeLineCreatorThread lilt = new TimeLineCreatorThread(l) {

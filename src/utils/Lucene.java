@@ -9,13 +9,11 @@ import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
@@ -30,7 +28,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Observer;
 import java.util.Properties;
 import java.util.TreeMap;
 
@@ -60,20 +57,18 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.swt.widgets.Display;
 import org.jxmapviewer.viewer.GeoPosition;
 
-import com.vividsolutions.jts.geom.Coordinate;
-
 import impl.GraphCreatorThread;
 import impl.GraphML_Helper;
 import impl.GraphPanelCreator;
 import impl.GraphPanelCreator3;
 import impl.MapPanelCreator;
 import impl.MyEdge;
+import impl.MyLuceneAnalyser;
 import impl.MyUser;
 import impl.ReIndexingThread;
 import impl.StoreToJSONThread;
 import impl.TimeLineCreatorThread;
 import interfaces.ILuceneQuerySearcher;
-import socialocean.controller.MapController;
 import socialocean.model.Result;
 import socialocean.parts.CategoriesPart;
 import socialocean.parts.Console;
@@ -269,6 +264,7 @@ public enum Lucene {
 
 		searcher = new IndexSearcher(reader);
 		analyzer = new StandardAnalyzer();
+//		analyzer = new MyLuceneAnalyser();
 		parser = new QueryParser(field, analyzer);
 		parser.setDateResolution(dateResolution);
 		this.querySearcher = querySearcher;
@@ -469,6 +465,8 @@ public enum Lucene {
 				}
 				// Time Selection
 				else if (query.toString().startsWith("date")) {
+//					queryResult = querySearcher.searchAll(query);
+//					mergeScoreDocs(queryResult);
 					timeRangeFilter(query);
 				}
 
@@ -492,7 +490,7 @@ public enum Lucene {
 					// -- AND
 
 					queryResult = querySearcher.searchAll(query);
-					if (queryResult.length < 100000 || last_result.size() < 100000)
+//					if (queryResult.length < 100000 || last_result.size() < 100000)
 						queryResult = cutScoreDocs(queryResult);
 
 					// String[] fields = getFieldsFromQueries()
@@ -523,8 +521,15 @@ public enum Lucene {
 
 				else {
 					newQuery = "(" + query.toString() + ")" + " AND (" + last_query + ")";
-					query = parser.parse(newQuery);
+					if (newQuery.contains("name:") || newQuery.contains("mention:")) {
+						// take MyLuceneParser
+						QueryParser parser = new QueryParser("name", new MyLuceneAnalyser());
+						query = parser.parse(newQuery);
+					}
+					else 
+						query = parser.parse(newQuery);
 					last_query = query.toString();
+					
 					queryResult = querySearcher.searchAll(query);
 				}
 
@@ -590,7 +595,6 @@ public enum Lucene {
 		// TODO go through last result and filter those in time range
 		
 		ArrayList<ScoreDoc> result = new ArrayList<>();
-		
 		for (ScoreDoc doc : last_result.getData()	) {
 			try {
 				Document d = reader.document(doc.doc);
@@ -1393,8 +1397,9 @@ public enum Lucene {
 				double lon = edge.getLongitude();
 				
 				if (lat !=0.0 || lon != 0.0) {
-					Coordinate c = new Coordinate(lat, lon);
-					GeoPosition g = new GeoPosition(c.x, c.y);
+//					Coordinate c = new Coordinate(lat, lon);
+//					GeoPosition g = new GeoPosition(c.x, c.y);
+					GeoPosition g = new GeoPosition(lat, lon);
 					points.add(g);
 					MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, senti, lat, lon));
 				}

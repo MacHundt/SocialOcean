@@ -9,16 +9,21 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -34,6 +39,9 @@ import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSlider;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerModel;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
@@ -43,6 +51,9 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.spatial.geopoint.document.GeoPointField;
+import org.cytoscape.CDMSuite.internal.CDMSuiteNetworkTaskFactory;
+import org.cytoscape.CDMSuite.internal.calculateSpectralModularity;
+import org.cytoscape.CDMSuite.internal.readInputFile;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
 
@@ -94,6 +105,8 @@ public class GraphPanelCreator {
 	private static boolean isBetweenness = true;
 	private static boolean isDegree = false;
 	
+	private static JSpinner densitySpinner;
+	
 	private static LoadingCache<MyUser, Paint> vertexPaints =
 			CacheBuilder.newBuilder().build(
 					CacheLoader.from(Functions.<Paint>constant(Color.white))); 
@@ -114,7 +127,13 @@ public class GraphPanelCreator {
 	private static Color highCentrality = new Color(0, 0, 255);
 	private static double centrThreshold = 0.59;
 	
+	private static Color highDensity = new Color(197,27,138);
+//	private static double denThreshold = 0.5;
+	
 	private static Color edge = new Color(0,0,0);
+	
+	private static DecimalFormat df = new DecimalFormat("#.00");
+	
 	
 //	public final static Color[] similarColors =	
 //		{
@@ -366,6 +385,48 @@ public class GraphPanelCreator {
 			group2Panel.setBorder(extentBorder);
 			
 			
+			final JPanel densityPanel = new JPanel();
+			densityPanel.setOpaque(true);
+			densityPanel.setLayout(new BoxLayout(densityPanel, BoxLayout.Y_AXIS));
+			
+			SpinnerNumberModel spinnerModel = new SpinnerNumberModel(0.5, 0.01, 1, 0.01);
+			densitySpinner = new JSpinner(spinnerModel);
+			
+			densitySpinner.addChangeListener(new ChangeListener() {
+				
+				@Override
+				public void stateChanged(ChangeEvent e) {
+					recolorUsers();
+				}
+			});
+			
+			densitySpinner.addMouseWheelListener(new MouseWheelListener() {
+				
+				@Override
+				public void mouseWheelMoved(MouseWheelEvent e) {
+					if (e.getWheelRotation() > 0 ) {
+						double value = (double)densitySpinner.getValue() + 0.01;
+						densitySpinner.setValue(value);
+						recolorUsers();
+					} else {
+						double value = (double)densitySpinner.getValue() - 0.01;
+						densitySpinner.setValue(value);
+						recolorUsers();
+					}
+				}
+			});
+			
+			densitySpinner.setToolTipText("Set the density threshold for a graph declared as dense.");
+			
+			densityPanel.add(Box.createVerticalGlue());
+			densityPanel.add(densitySpinner);
+			final String DENSITY = "Density: ";
+			final TitledBorder densityBorder = BorderFactory.createTitledBorder(DENSITY);
+			densityPanel.setBorder(densityBorder);
+			
+			
+			
+			
 			graphPanel.add(new GraphZoomScrollPane(vv), BorderLayout.CENTER);
 			JPanel south = new JPanel();
 			JPanel p = new JPanel();
@@ -376,6 +437,7 @@ public class GraphPanelCreator {
 //			south.add(eastControls);
 			south.add(group1Panel);
 			south.add(group2Panel);
+			south.add(densityPanel);
 			graphPanel.add(south, BorderLayout.SOUTH);
 			
 			return graphPanel;
@@ -719,8 +781,14 @@ public class GraphPanelCreator {
 		
 		vertexPaints.cleanUp();
 		
+		int isolateCounter = 0;
 		for (Iterator<Set<MyUser>> cIt = clusterSet.iterator(); cIt.hasNext();) {
+			
+			HashSet<MyEdge> uniqueEdges = new HashSet<>();
+			
 			Set<MyUser> vertices = cIt.next();
+			if (vertices.size() == 1) 
+				isolateCounter++;
 			
 			Color nodeColor = node;
 			if (isGlobal) {
@@ -734,6 +802,13 @@ public class GraphPanelCreator {
 			long localSum = 0;
 			double localCentrality = 0.0;
 			for (MyUser u : vertices) {
+				
+				Collection<MyEdge> local_edges = graph.getOutEdges(u);
+				if (local_edges != null )
+					for (MyEdge e : local_edges) {
+						uniqueEdges.add(e);
+					}
+				
 				if (isBetweenness) 
 					localSum += u.getBetweennessScore();
 				else if (isDegree) 
@@ -752,16 +827,22 @@ public class GraphPanelCreator {
 				localCentrality =  (localSum == 0)? 0 : (maxBet / (double) localSum);
 			}
 			else if (isDegree) {
-				localCentrality = (localSum == 0)? 0 : (localDeg / (double) localSum);
+				localCentrality = (localSum == 0) ? 0 : (localDeg / (double) localSum);
 			}
 			
+			double localDensity = 0.0;
+			if ( vertices.size() > 1 )
+				localDensity = (2 * uniqueEdges.size()) / (double) (vertices.size() * (vertices.size()-1));
 //			System.out.println("Local_Centrality of Components: "+localCentrality);
 			if (isLocal) {
 				if (localCentrality > centrThreshold) {
 					nodeColor = highCentrality;
+				} else {
+					if (localDensity >= (double)densitySpinner.getValue()) {
+						nodeColor = highDensity;
+					}
 				}
 			}
-			
 			
 			for (MyUser u : vertices) {
 				// scale
@@ -785,6 +866,7 @@ public class GraphPanelCreator {
 				// set Default ( no division by 0 )
 				a = (a == 0.0) ? 2 : a * 255;
 				a = Math.abs((Math.log(a) / Math.log(255)) * 255);
+				a = ( a > 255 ) ? 255 : a;
 				u.addAlpha((int) a);
 				
 				Color co = new Color(nodeColor.getRed(),nodeColor.getGreen(),nodeColor.getBlue(), (int) a );
@@ -814,6 +896,7 @@ public class GraphPanelCreator {
             }
 		}
 		
+		
 		DegreeScorer<MyUser> deg = new DegreeScorer<>(graph);
 		
 		double UBScore = 0.0;
@@ -837,6 +920,7 @@ public class GraphPanelCreator {
 			if (degScore > maxDeg) {
 				maxDeg = degScore;
 			}
+			
 		}
 		
 		if (isBetweenness) {
@@ -846,7 +930,10 @@ public class GraphPanelCreator {
 			globalCentrality = (maxDeg / (double) sum);
 		}
 		
-		System.out.println("Global_Centrality: "+globalCentrality);
+		double globalDensitiy = (2 * graph.getEdgeCount()) / (double) ((graph.getVertexCount() * (graph.getVertexCount()-1)));
+		
+		System.out.println("Global_Centrality: "+df.format(globalCentrality));
+		System.out.println("Global_Density: "+ df.format(globalDensitiy));
 		
 		Color nodeColor = node;
 		if (isGlobal)
@@ -868,15 +955,23 @@ public class GraphPanelCreator {
 		List<MyEdge> deleteEdges = new ArrayList<>();
 
 		int i = 0;
+		int isolateCounter = 0;
 		//Set the colors of each node so that each cluster's vertices have the same color
+		
+		
+		
 		for (Iterator<Set<MyUser>> cIt = clusterSet.iterator(); cIt.hasNext();) {
-
+			
+			HashSet<MyEdge> uniqueEdges = new HashSet<>();
+			
 			Set<MyUser> vertices = cIt.next();
+			if (vertices.size() == 1) 
+				isolateCounter++;
 				
 			if (vertices.size() < clusterSizeSlider.getValue()) {
 				for (MyUser n : vertices) {
 					tooSmallClusterNodes.add(n);
-					// revmove IN Edgtes
+					// revmove IN Edges
 					for (MyEdge inEdge : g.getInEdges(n)) {
 						deleteEdges.add(inEdge);
 					}
@@ -896,7 +991,29 @@ public class GraphPanelCreator {
 			int localDeg = 0;
 			long localSum = 0;
 			double localCentrality = 0.0;
+			
+			
 			for (MyUser u : vertices) {
+				
+				Collection<MyEdge> local_edges = graph.getOutEdges(u);
+				for (MyEdge e : local_edges) {
+					uniqueEdges.add(e);
+					if (edges.contains(e)) {
+						edgePaints.put(e, Color.cyan);
+					} else {
+						double b = 0.0;
+						b = e.getBetweennessScore() / EBscore;
+						b = (b == 0.0) ? 5 : b * 255;
+						b = Math.abs((Math.log(b) / Math.log(255)) * 255);
+
+						Color c = new Color(edge.getRed(), edge.getGreen(), edge.getBlue(), (int) b);
+						e.addAlpha((int) b);
+
+						edgePaints.put(e, c);
+					}
+				}
+				
+				
 				if (isBetweenness) 
 					localSum += u.getBetweennessScore();
 				else if (isDegree) 
@@ -908,8 +1025,6 @@ public class GraphPanelCreator {
 					localDeg = u.getDegree();
 			}
 			
-			
-			
 			if (isBetweenness) {
 				localCentrality =  (localSum == 0)? 0 : (maxBet / (double) localSum);
 			}
@@ -920,15 +1035,22 @@ public class GraphPanelCreator {
 			maxBet = (maxBet == 0) ? 1 : maxBet;
 			localDeg = (localDeg == 0) ? 1 : localDeg;
 			
-			System.out.println(" >> Centrality: "+localCentrality);
+			double localDensity = 0.0;
+			if ( vertices.size() > 1 )
+				localDensity = (2 * uniqueEdges.size()) / (double) (vertices.size() * (vertices.size()-1));
+			String denseOut = (localCentrality > centrThreshold ) ? "" : " >> Local_Density: "+df.format(localDensity );
+			System.out.println(" >> Centrality: "+df.format(localCentrality) + " " + denseOut );
 			
 			if (isLocal) {
 				nodeColor = node;
 				if (localCentrality > centrThreshold) {
 					nodeColor = highCentrality;
+				} else {
+					if (localDensity >= (double)densitySpinner.getValue()) {
+						nodeColor = highDensity;
+					}
 				}
 			}
-			
 			
 			for (MyUser u : vertices) {
 				// scale
@@ -954,6 +1076,7 @@ public class GraphPanelCreator {
 				// set Default ( no division by 0 )
 				a = (a == 0.0) ? 2 : a * 255;
 				a = Math.abs((Math.log(a) / Math.log(255)) * 255);
+				a = ( a > 255 ) ? 255 : a;
 				u.addAlpha((int) a);
 				
 				Color co = new Color(nodeColor.getRed(), nodeColor.getGreen(), nodeColor.getBlue(), (int) a );
@@ -964,25 +1087,31 @@ public class GraphPanelCreator {
 				groupCluster(layout, vertices);
 			}
 			i++;
+			
 		}
-		for (MyEdge e : g.getEdges()) {
-
-			if (edges.contains(e)) {
-				edgePaints.put(e, Color.cyan);
-			} else {
-				double b = 0.0;
-				b = e.getBetweennessScore() / EBscore;
-				b = (b == 0.0) ? 5 : b * 255;
-				b = Math.abs((Math.log(b) / Math.log(255)) * 255);
-				
-//				System.out.println(b);
-				
-				Color c = new Color(edge.getRed(),edge.getGreen(),edge.getBlue(), (int) b);
-				e.addAlpha((int) b);
-				
-				edgePaints.put(e, c);
-			}
-		}
+		
+		
+		
+//		for (MyEdge e : g.getEdges()) {
+//
+//			if (edges.contains(e)) {
+//				edgePaints.put(e, Color.cyan);
+//			} else {
+//				double b = 0.0;
+//				b = e.getBetweennessScore() / EBscore;
+//				b = (b == 0.0) ? 5 : b * 255;
+//				b = Math.abs((Math.log(b) / Math.log(255)) * 255);
+//				
+////				System.out.println(b);
+//				
+//				Color c = new Color(edge.getRed(),edge.getGreen(),edge.getBlue(), (int) b);
+//				e.addAlpha((int) b);
+//				
+//				edgePaints.put(e, c);
+//			}
+//		}
+		
+		System.out.println("Isolates: "+isolateCounter);
 		
 		removeCluster(tooSmallClusterNodes, deleteEdges, layout);
 

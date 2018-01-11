@@ -27,6 +27,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.eclipse.e4.ui.di.Focus;
@@ -37,6 +38,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 
 import impl.GraphCreatorThread;
+import impl.MyLuceneAnalyser;
 import impl.TimeLineCreatorThread;
 import socialocean.model.Result;
 import utils.Lucene;
@@ -228,7 +230,14 @@ public class TopSelectionPart {
 //				ScoreDoc[] result = null;
 //				Query q = null;
 				try {
-					Query q = l.getParser().parse(query);
+					Query q = null;
+					if (query.contains("name:") || query.contains("mention:")) {
+						QueryParser parser = new QueryParser("name", new MyLuceneAnalyser());
+						q = parser.parse(query);
+					}
+					else 
+						 q = l.getParser().parse(query);
+					
 					Result result = l.query(q, l.getQeryType(), true, true);
 					ScoreDoc[] data = result.getData();
 					TimeLineCreatorThread lilt = new TimeLineCreatorThread(l) {
