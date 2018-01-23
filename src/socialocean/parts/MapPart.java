@@ -57,7 +57,7 @@ public class MapPart {
 		Frame frame = SWT_AWT.new_Frame(mapComposite);
  		
 		rootContainer = new JApplet();
-		new JungGraphImpl();
+//		new JungGraphImpl();
 		JPanel panel = MapPanelCreator.getMapPanel();
 		
 		rootContainer.add(panel);

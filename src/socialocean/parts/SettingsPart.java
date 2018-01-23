@@ -13,7 +13,10 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+
 
 import impl.MapPanelCreator;
 import socialocean.model.Result;
@@ -21,8 +24,14 @@ import utils.Lucene;
 
 public class SettingsPart {
 	
+	Group group;
 	Button follows;
 	Button mentions;
+	Display display = Display.getCurrent();
+	org.eclipse.swt.graphics.Color blue = display.getSystemColor(SWT.COLOR_BLUE);
+	org.eclipse.swt.graphics.Color red = display.getSystemColor(SWT.COLOR_RED);
+	org.eclipse.swt.graphics.Color white = display.getSystemColor(SWT.COLOR_WHITE);
+	
 	private static Button countries;
 	
 	@Inject
@@ -33,7 +42,7 @@ public class SettingsPart {
 	public void postConstruct(Composite parent) {
 		parent.setLayout(new GridLayout(10, false));
 		
-		mentions = new Button(parent, SWT.CHECK);
+		mentions = new Button(parent, SWT.CHECK );
 		mentions.setText("mentions");
 		mentions.setSelection(true);
 		
@@ -61,7 +70,7 @@ public class SettingsPart {
 		mentions.setEnabled(true);
 		
 		
-		follows = new Button(parent, SWT.CHECK);
+		follows = new Button(parent, SWT.CHECK );
 		follows.setText("follows");
 		follows.setSelection(false);
 		follows.addSelectionListener(new SelectionListener() {
@@ -126,6 +135,10 @@ public class SettingsPart {
 				
 				Lucene l = Lucene.INSTANCE;
 				l.setColorScheme(combo.getText());
+				Result r = l.getLastResult();
+				if (r == null)
+					return;
+				
 				l.createMapMarkers(l.getLastResult().getData(), true);
 				l.changeHistogramm(l.getLastResult().getHistoCounter());
 				l.showInTimeLine(l.getLastResult().getTimeCounter());
@@ -141,8 +154,16 @@ public class SettingsPart {
 		});
 		
 		
-		Button tweets = new Button(parent, SWT.CHECK);
+		group = new Group(parent, SWT.NONE);
+		group.setEnabled(true);
+		group.setLayout(new GridLayout(2,true));
+		
+		
+		Button tweets = new Button(group, SWT.CHECK);
 		tweets.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
+		
+		tweets.setBackground(blue);
+		tweets.setForeground(white);
 		tweets.setText("Tweets");
 		tweets.setSelection(Lucene.SHOWTweet);
 		tweets.addSelectionListener(new SelectionListener() {
@@ -164,8 +185,11 @@ public class SettingsPart {
 		});
 		
 		
-		Button users = new Button(parent, SWT.CHECK);
+		Button users = new Button(group, SWT.CHECK);
 		users.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
+		
+		users.setBackground(red);
+		users.setForeground(white);
 		users.setText("Users");
 		users.setSelection(Lucene.SHOWUser);
 		users.addSelectionListener(new SelectionListener() {

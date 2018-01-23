@@ -68,7 +68,8 @@ public class MapController extends Observable {
 				if (selection != null) {
 					initCountries(selection);
 				}
-				initCountries();
+				else
+					initCountries();
 		}
 		return countriesToYard.get(zoomLvl);
 	}
@@ -746,7 +747,8 @@ public class MapController extends Observable {
 			if (selection != null) {
 				initGridCells(zoomLvl, selection);
 			}
-			initGridCells(zoomLvl);
+			else 
+				initGridCells(zoomLvl);
 		}
 
 		return cellsToYard.get(zoomLvl);

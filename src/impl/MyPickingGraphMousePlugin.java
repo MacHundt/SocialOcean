@@ -241,6 +241,7 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
     @SuppressWarnings("unchecked")
     public void mouseReleased(MouseEvent e) {
         VisualizationViewer<V,E> vv = (VisualizationViewer<V, E>)e.getSource();
+        GraphPanelCreator3.clearGraph();
         if(e.getModifiers() == modifiers) {
             if(down != null) {
                 Point2D out = e.getPoint();
@@ -345,6 +346,13 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
 
             Collection<V> picked = pickSupport.getVertices(layout, pickRectangle);
             Collection<E> pickedEdges = new ArrayList<>();
+            
+            Lucene l = Lucene.INSTANCE;
+            if (picked.isEmpty() && pickedEdges.isEmpty()) {
+            	
+            	l.showCurrentResult();
+            }
+            
             for(V v : picked) {
             		pickedVertexState.pick(v, true);
             		Collection<E> pickEdges = vv.getGraphLayout().getGraph().getOutEdges(v);
@@ -354,7 +362,6 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
             		}
             }
             
-            Lucene l = Lucene.INSTANCE;
             
             l.showDetailsOfSelection( picked, pickedEdges, clear);
 //            l.showCountriesOfSelection(picked, pickedEdges, clear);

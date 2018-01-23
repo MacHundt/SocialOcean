@@ -157,9 +157,10 @@ public class GraphPanelCreator3 {
 					// show all again
 					else if (selected == 0){
 						SELECTED = false;
-						Result lastResult = l.getLastResult();
-						l.createMapMarkers(lastResult.getData(), true);
-						l.changeHistogramm(lastResult.getHistoCounter());
+						MapPanelCreator.dataChanged();
+//						Result lastResult = l.getLastResult();
+//						l.createMapMarkers(lastResult.getData(), true);
+//						l.changeHistogramm(lastResult.getHistoCounter());
 					}
 				}
 				
@@ -294,7 +295,8 @@ public class GraphPanelCreator3 {
 		Lucene l = Lucene.INSTANCE;
 		if (clear) {
 			clearGraph();
-			l.clearMap();
+			l.clearWayPoints();
+//			l.clearMap();
 		}
 		
 		HashMap<String, Object> nodeNames = new HashMap<>(); // screenName -> id
@@ -1748,8 +1750,12 @@ public class GraphPanelCreator3 {
 			if (relationship.equals("Followed"))
 				((mxCell)edge).setStyle("FollowEdge");
 			else
-			((mxCell)edge).setStyle("edgeStyle=elbowEdgeStyle;elbow=horizontal;" + "STYLE_PERIMETER_SPACING;"+"strokeColor="+colorString);
+				((mxCell)edge).setStyle("edgeStyle=elbowEdgeStyle;elbow=horizontal;" + "strokeWidth=3;" 
+						+ "STYLE_PERIMETER_SPACING;"+"strokeColor="+colorString);
 			
+			// update node
+//			((mxCell)edge).getSource().setStyle(((mxCell)edge).getSource().getStyle());
+//			((mxCell)edge).getTarget().setStyle(((mxCell)edge).getTarget().getStyle());
 		}
 		
 		graph.getModel().endUpdate();

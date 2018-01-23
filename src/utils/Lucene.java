@@ -316,6 +316,10 @@ public enum Lucene {
 		last_result = null;
 		MapPanelCreator.clearWayPoints(true);
 	}
+	
+	public void clearWayPoints() {
+		MapPanelCreator.clearWayPoints(true);
+	}
 
 	public void printLuceneFields() {
 
