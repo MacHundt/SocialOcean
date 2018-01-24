@@ -8,8 +8,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -22,13 +27,13 @@ import org.eclipse.e4.core.commands.EHandlerService;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
 import org.eclipse.e4.ui.model.application.MApplication;
-import org.eclipse.e4.ui.model.application.impl.ApplicationImpl;
 import org.eclipse.e4.ui.model.application.ui.basic.MWindow;
-import org.eclipse.e4.ui.workbench.UIEvents.Application;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionEvent;
@@ -39,7 +44,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.ProgressBar;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import socialocean.handlers.LuceneSearchHandler;
@@ -50,6 +55,13 @@ public class LuceneSearch {
 	public static final String SEARCH_LUCENE_QUERY_COMMAND_ID = "socialocean.command.lucenesearch";
 	
 	private Text text;
+	private String textText = "Enter query";
+	private Text from;
+	private String timeFormat = "yyyy-MM-dd hh:mm:ss";
+	private Text to;
+	
+	private Pattern datePattern = Pattern.compile("[1-2][0-9]{3}-[0-1][0-9]-[0-3][0-9]");
+	private Pattern timePattern = Pattern.compile("[0-2][0-9]:[0-6][0-9]:[0-9][0-9]");
 //	private String luceneIndex = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/lucene_index";
 	
 	@Inject ECommandService commandService;
@@ -115,7 +127,7 @@ public class LuceneSearch {
 		
 		
 		Lucene l = Lucene.INSTANCE;
-		parent.setLayout(new GridLayout(10, false));
+		parent.setLayout(new GridLayout(14, false));
 		
 		
 		Button btnAdd = new Button(parent, SWT.CHECK );
@@ -171,7 +183,64 @@ public class LuceneSearch {
 		text = new Text(parent, SWT.BORDER);
 		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
 //		text.setFont(newFont);
-		text.setText("Enter query");
+		text.setText(textText);
+		text.setToolTipText("The default field is content. Format of query 'Field:Text'. ");
+		text.addFocusListener(new FocusListener() {
+			
+			@Override
+			public void focusLost(FocusEvent e) {
+				if (text.getText().isEmpty())
+					text.setText(textText);
+			}
+			
+			@Override
+			public void focusGained(FocusEvent e) {
+				text.setText("");
+			}
+		});
+		
+		
+		Label timeLabel = new Label(parent, SWT.NONE);
+		timeLabel.setText("Timerange:");
+		
+		from = new Text(parent, SWT.BORDER);
+		from.setText(timeFormat);
+		from.setToolTipText("Format: " + timeFormat);
+		from.addFocusListener(new FocusListener() {
+			
+			@Override
+			public void focusLost(FocusEvent arg0) {
+				if (from.getText().isEmpty())
+					from.setText(timeFormat);
+			}
+			
+			@Override
+			public void focusGained(FocusEvent arg0) {
+				from.setText("");
+			}
+		});
+		
+		
+		Label toLabel = new Label(parent, SWT.NONE);
+		toLabel.setText(" TO ");
+		
+		to = new Text(parent, SWT.BORDER);
+		to.setText(timeFormat);
+		to.setToolTipText("Format: " +timeFormat);
+		to.addFocusListener(new FocusListener() {
+			
+			@Override
+			public void focusLost(FocusEvent e) {
+				if (to.getText().isEmpty())
+					to.setText(timeFormat);
+			}
+			
+			@Override
+			public void focusGained(FocusEvent e) {
+				to.setText("");
+			}
+		});
+		
 		
 		Button btnSearch = new Button(parent, SWT.NONE);
 //		btnSearch.setFont(newFont);
@@ -179,8 +248,92 @@ public class LuceneSearch {
 			@Override
 			public void mouseDown(MouseEvent e) {
 				String query = text.getText();
-				if (query.isEmpty()) {
-					return;
+				String timeFrom = from.getText();
+				String timeTo = to.getText();
+				
+				boolean hasTimeRange = false;
+				if (!timeFrom.isEmpty() || !timeFrom.equals(timeFormat)){
+					if (!timeTo.isEmpty() || !timeTo.equals(timeFormat)) {
+						String[] fromTime =  timeFrom.split(" ");
+						String[] toTime = timeTo.split(" ");
+						// TODO check Time - valid?
+						if (fromTime.length == 2 && toTime.length == 2) {
+							if (Pattern.matches(datePattern.pattern(), fromTime[0]) && Pattern.matches(datePattern.pattern(), toTime[0])) {
+								if (Pattern.matches(timePattern.pattern(), fromTime[1]) && Pattern.matches(timePattern.pattern(), toTime[1])) {
+									System.out.println("TRUE Timestamps");
+									hasTimeRange = true;
+								}
+							}
+							else
+								System.out.println("FALSE Timestamps");
+						}
+						// TODO convert to UNIX long
+						// TODO add to query
+						
+					}
+				}
+				
+				if (hasTimeRange) {
+					// TODO add Timerange - if needed
+					
+					String[] fromTime =  timeFrom.split(" ");
+					String[] toTime = timeTo.split(" ");
+					
+					String[] fromDate = fromTime[0].split("-");
+					String[] fromTimetime = fromTime[1].split(":");
+					// DATE
+					int year = Integer.parseInt(fromDate[0]);
+					int month = Integer.parseInt(fromDate[1]);
+					int day = Integer.parseInt(fromDate[2]);
+					// TIME
+					int hour = Integer.parseInt(fromTimetime[0]);
+					int min = Integer.parseInt(fromTimetime[1]);
+					int sec = Integer.parseInt(fromTimetime[2]);
+					
+					LocalDate date = LocalDate.of(year, month, day);
+					LocalTime time = LocalTime.of(hour, min, sec);
+					
+					LocalDateTime dt = LocalDateTime.of(date, time);
+					long utc_from = dt.toEpochSecond(ZoneOffset.UTC);
+					
+					String[] toDate = toTime[0].split("-");
+					String[] toTimetime = toTime[1].split(":");
+					// DATE
+					year = Integer.parseInt(toDate[0]);
+					month = Integer.parseInt(toDate[1]);
+					day = Integer.parseInt(toDate[2]);
+					// TIME
+					hour = Integer.parseInt(toTimetime[0]);
+					min = Integer.parseInt(toTimetime[1]);
+					sec = Integer.parseInt(toTimetime[2]);
+					
+					date = LocalDate.of(year, month, day);
+					time = LocalTime.of(hour, min, sec);
+					
+					dt = LocalDateTime.of(date, time);
+					long utc_to = dt.toEpochSecond(ZoneOffset.UTC);
+					
+					if (utc_to > utc_from) {
+						System.out.println("Timerange: "+timeFrom+" TO "+timeTo);
+						// ADD to query String
+						if (query.isEmpty() || query.equals(textText))
+							query = "date:["+utc_from+" TO "+utc_to+"]";
+						else {
+							query = query + " AND date:["+utc_from+" TO "+utc_to+"]";
+						}
+					}
+					else {
+						Lucene l = Lucene.INSTANCE;
+						l.printlnToConsole("TO-Timespamp "+timeTo+ " is not bigger than FFROM-Timestamp"+timeFrom);
+						System.out.println("TO-Timespamp "+timeTo+ " is not bigger than FFROM-Timestamp"+timeFrom);
+					}
+				}
+				
+				// no timerange and no query
+				else {
+					if (query.isEmpty() || query.equals(textText)) {
+						return;
+					}
 				}
 				
 				@SuppressWarnings("restriction")
@@ -206,7 +359,9 @@ public class LuceneSearch {
                     return;
                 service.executeHandler( pcmd );
                 
-                text.setText("");
+                text.setText(textText);
+                from.setText(timeFormat);
+                to.setText(timeFormat);
 			}
 		});
 		btnSearch.setText("Search");
@@ -368,8 +523,7 @@ public class LuceneSearch {
 	
 	@Focus
 	public void onFocus() {
-		text.setFocus();
-		text.setText("");
+//		text.setFocus();
 	}
 	
 	

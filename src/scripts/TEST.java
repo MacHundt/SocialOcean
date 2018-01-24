@@ -15,6 +15,28 @@ public class TEST {
 		System.out.println(java.lang.Runtime.getRuntime().totalMemory());
 		System.out.println(java.lang.Runtime.getRuntime().availableProcessors());
 		
+		
+		String token = "Test:Me,";
+		token = token.replaceAll("[,:]", "");
+		System.out.println(token);
+		
+		String date = "2013-04-24";
+		Pattern datePattern = Pattern.compile("[1-2][0-9]{3}-[0-1][0-9]-[0-3][0-9]");
+		if (Pattern.matches(datePattern.pattern(), date)) {
+			System.out.println("TRUE");
+		}
+		else
+			System.out.println("FALSE");
+		
+		String time = "33:45:17";
+		Pattern timePattern = Pattern.compile("[0-2][0-9]:[0-6][0-9]:[0-9][0-9]");
+		if (Pattern.matches(timePattern.pattern(), time)) {
+			System.out.println("TRUE");
+		}
+		else
+			System.out.println("FALSE");
+		
+		
 		String tzid = "UTC";
 	    TimeZone tz = TimeZone.getTimeZone(ZoneOffset.UTC);
 

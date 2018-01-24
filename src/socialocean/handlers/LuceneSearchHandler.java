@@ -46,7 +46,8 @@ public class LuceneSearchHandler {
 		}
 		l.printlnToConsole("Query: "+type+" - '"+query+"'");
 		System.out.println("Query: "+type+" - '"+query+"'");
-//		// GEO Test
+
+		//		// GEO Test
 //		if (query.equals("geo")) {
 //			result = l.ADDGeoQuery(42.2279, 42.3969, -71.1908, -70.9235);
 //		}

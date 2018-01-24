@@ -528,6 +528,7 @@ public class GraphPanelCreator {
 							edgesMap.put(edgesNames, new Integer(1));
 						}
 
+						// Every Edge Unique!
 						edge = new MyEdge(id); 
 						edge.changeToString(MyEdge.LabelType.SentiStrenth);
 
@@ -538,7 +539,7 @@ public class GraphPanelCreator {
 						if (!sourceID.getName().equals(nodeID.getName())) {
 							if (graph.containsEdge(edge)) {
 								// TODO add edges .. tweet_id to MyEdge
-								System.out.println("TEST");
+								System.out.println("Edge: "+edge.getId()+" already exists ..");
 							}
 							else 
 								graph.addEdge(edge, sourceID, nodeID);
