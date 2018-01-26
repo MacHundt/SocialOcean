@@ -8,7 +8,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -21,6 +20,7 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
@@ -29,9 +29,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
 
-import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
-import org.eclipse.swt.widgets.Display;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.OSMTileFactoryInfo;
 import org.jxmapviewer.VirtualEarthTileFactoryInfo;
@@ -52,7 +50,6 @@ import socialocean.model.Result;
 import socialocean.painter.CountryPainter;
 import socialocean.painter.GlyphPainter;
 import socialocean.painter.GridPainter;
-import socialocean.parts.Console;
 import socialocean.parts.MapMenuPanel;
 import utils.FilesUtil;
 import utils.Lucene;
@@ -97,6 +94,9 @@ public class MapPanelCreator {
 	private static double[] geoSelection = new double[4];
 
 	private static Color grey = new Color(240, 240, 240, 50); // light grey, high opacity --> NORMAL
+	
+	private static int userTweetSwitch = 2;
+	
 
 	public static void loadTweetIcons() {
 		// ## LOAD Icons
@@ -174,13 +174,22 @@ public class MapPanelCreator {
 		
 
 		public void drawGrid() {
+			
+			boolean both = false;
+			if (Lucene.SHOWTweet && Lucene.SHOWUser) {
+				both = true;
+				userTweetSwitch--;
+			}
+			
+			
 			if (GraphPanelCreator3.SELECTED) {
 				painters.removeIf(
 					p -> p instanceof GlyphPainter || p instanceof GridPainter || p instanceof CountryPainter);
 				showWayPointsOnMap();
 				return;
 			}
-			else 
+			// remove, with both - only once!
+			else if (!both || (both && userTweetSwitch > 0))
 				painters.removeIf(
 						p -> p instanceof GlyphPainter || p instanceof GridPainter || p instanceof WaypointPainter
 						|| p instanceof CountryPainter);
@@ -207,7 +216,7 @@ public class MapPanelCreator {
 					// mapViewer.add(((TweetWayPoint)p).getButton());
 					
 				}
-			} else {
+			} else if (!both || (both && userTweetSwitch > 0)) {
 				mapViewer.removeAll();
 			}
 			
@@ -227,6 +236,11 @@ public class MapPanelCreator {
 			map.setOverlayPainter(painter);
 			map.revalidate();
 			map.repaint();
+			
+			if (userTweetSwitch <= 0) {
+				userTweetSwitch = 2;
+			}
+			
 		}
 
 	}
@@ -709,6 +723,11 @@ public class MapPanelCreator {
 		
 		
 	}
+	
+	public static void addDataChanged() {
+		mapCon.addDataChanged();
+	}
+	
 
 	public static void dataChanged() {
 		mapCon.dataChanged();

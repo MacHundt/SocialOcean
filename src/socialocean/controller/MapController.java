@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
+import java.util.concurrent.Semaphore;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
@@ -61,6 +62,7 @@ public class MapController extends Observable {
 	public MapController(JXMapViewer map) {
 		this.map = map;
 	}
+	
 
 	public Map<MapCountries, List<String>> getCountries(int zoomLvl) {
 		if (!countriesToYard.containsKey(zoomLvl)) {
@@ -77,7 +79,7 @@ public class MapController extends Observable {
 	
 	
 
-	public void setSelection(ArrayList<?> allItems) {
+	public synchronized void  setSelection(ArrayList<?> allItems) {
 		selection = allItems;
 	}
 	
@@ -230,7 +232,16 @@ public class MapController extends Observable {
 			default:
 				break;
 			}
-			key.setBackgroundColor(new Color(0, 0, 255, a));
+			if (user) {
+				
+			}
+			else {
+				// RED
+				if (user)
+					key.setBackgroundColor(new Color(255, 0, 0, a));
+				else 
+					key.setBackgroundColor(new Color(0, 0, 255, a));
+			}
 		}
 
 		// Set Color for states
@@ -257,7 +268,12 @@ public class MapController extends Observable {
 			default:
 				break;
 			}
-			key.setBackgroundColor(new Color(0, 0, 255, a));
+			
+			// RED
+			if (user)
+				key.setBackgroundColor(new Color(255, 0, 0, a));
+			else
+				key.setBackgroundColor(new Color(0, 0, 255, a));
 		}
 
 		System.out.println("Number of Countries: " + countries.size());
@@ -633,8 +649,14 @@ public class MapController extends Observable {
 		// Assign relevant tweet or user to their gridcells wrt all zoomlvls
 		ShapeWriter sw = new ShapeWriter(new GeoToCartesianTransformation(map));
 
-//		Map<MapGridRectangle, List<Document>> cells = new HashMap<>();
 		Map<MapGridRectangle, List<String>> cells = new HashMap<>();
+		ArrayList<MyUser> userCells = new ArrayList<>();
+		ArrayList<MyEdge> tweetCells = new ArrayList<>();
+		
+		boolean showBoth = false;
+		if (Lucene.SHOWTweet && Lucene.SHOWUser)
+			showBoth = true;
+		
 		
 		if (allItems.isEmpty()) {
 			return;
@@ -648,6 +670,10 @@ public class MapController extends Observable {
 			String point = "";
 			if (o instanceof MyEdge) {		// change Color
 				MyEdge e = (MyEdge) o;
+				if (showBoth) {
+					tweetCells.add(e);
+					continue;
+				}
 				id = e.getId();
 				if (!e.hasGeo())
 					continue;
@@ -658,6 +684,10 @@ public class MapController extends Observable {
 				
 			} else if (o instanceof MyUser) {
 				MyUser u = (MyUser) o;
+				if (showBoth) {
+					userCells.add(u);
+					continue;
+				}
 				id = u.getId();
 				if (!u.hasGeo())
 					continue;
@@ -690,60 +720,253 @@ public class MapController extends Observable {
 				if (!cells.containsKey(cell)) {
 					cells.put(cell, new ArrayList<>());
 				}
-				cells.get(cell).add(id);
+				else
+					cells.get(cell).add(id);
 				
 			} catch (ParseException e) {
 				e.printStackTrace();
 			}
 			
 		}
-
-		// Set Color of cell
-		double maxDocs = Math.log((double) allItems.size());
 		
-		double stepsize = maxDocs / 5;
-		for (MapGridRectangle key : cells.keySet()) {
-			double cellN = Math.log(cells.get(key).size());
-			int bucket = (int) Math.ceil(cellN / stepsize);
-			int a = 15;
-			switch (bucket) {
-			case 1:
-				a = 51;
-				break;
-			case 2:
-				a = 102;
-				break;
-			case 3:
-				a = 153;
-				break;
-			case 4:
-				a = 204;
-				break;
-			case 5:
-				a = 255;
-				break;
+		
+		if (showBoth) {
+			// do all for edges and users again:
+			for (MyUser u : userCells) {
+				String id = u.getId();
+				String point = "";
+				if (!u.hasGeo())
+					continue;
+				if (u.getLatitude() == 0.0 || u.getLongitude() == 0.0)
+					continue;
+					
+				point = "POINT (" + u.getLongitude() + " " + u.getLatitude() + ")";
+				
+				if (point.isEmpty())
+					continue;
+				
+				try {
+					com.vividsolutions.jts.geom.Geometry geometry = wkt.read(point);
+					// Geometry geometry = JtsGeometry.geomFromString("POINT ("+lon+" "+lat+")");
+					Shape s = sw.toShape(geometry);
+					Rectangle2D b = s.getBounds2D();
+					
+					double centerX = b.getCenterX();
+					double centerY = b.getCenterY();
+					
+					// Find the correct cell(s)
+					int cellX = (int) (centerX / cellSize);
+					int cellY = (int) (centerY / cellSize);
+					
+					MapGridRectangle cell = new MapGridRectangle(cellX * cellSize, cellY * cellSize, cellSize, cellSize);
+					if (!cells.containsKey(cell)) {
+						cells.put(cell, new ArrayList<>());
+					}
+					else
+						cells.get(cell).add(id);
+					
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+			}
+			// Set Color of cell
+			double maxDocs = Math.log((double) userCells.size());
+			
+			double stepsize = maxDocs / 5;
+			for (MapGridRectangle key : cells.keySet()) {
+				double cellN = Math.log(cells.get(key).size());
+				int bucket = (int) Math.ceil(cellN / stepsize);
+				int a = 15;
+				switch (bucket) {
+				case 1:
+					a = 51;
+					break;
+				case 2:
+					a = 102;
+					break;
+				case 3:
+					a = 153;
+					break;
+				case 4:
+					a = 204;
+					break;
+				case 5:
+					a = 255;
+					break;
 
-			default:
-				break;
+				default:
+					break;
+				}
+				
+				// RED
+				key.setBackgroundColor(new Color(255, 0, 0, a));
+			}
+
+//			cellsToYard.put(zoomLvl, cells);
+			
+			Map<MapGridRectangle, List<String>> edgeCells = new HashMap<>();
+			for (MyEdge u : tweetCells) {
+				String id = u.getId();
+				String point = "";
+				if (!u.hasGeo())
+					continue;
+				if (u.getLatitude() == 0.0 || u.getLongitude() == 0.0)
+					continue;
+					
+				point = "POINT (" + u.getLongitude() + " " + u.getLatitude() + ")";
+				
+				if (point.isEmpty())
+					continue;
+				
+				try {
+					com.vividsolutions.jts.geom.Geometry geometry = wkt.read(point);
+					// Geometry geometry = JtsGeometry.geomFromString("POINT ("+lon+" "+lat+")");
+					Shape s = sw.toShape(geometry);
+					Rectangle2D b = s.getBounds2D();
+					
+					double centerX = b.getCenterX();
+					double centerY = b.getCenterY();
+					
+					// Find the correct cell(s)
+					int cellX = (int) (centerX / cellSize);
+					int cellY = (int) (centerY / cellSize);
+					
+					MapGridRectangle cell = new MapGridRectangle(cellX * cellSize, cellY * cellSize, cellSize, cellSize);
+					if (!edgeCells.containsKey(cell)) {
+						edgeCells.put(cell, new ArrayList<>());
+					}
+					else
+						edgeCells.get(cell).add(id);
+					
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+			}
+			// Set Color of cell
+			maxDocs = Math.log((double) tweetCells.size());
+			
+			stepsize = maxDocs / 5;
+			for (MapGridRectangle key : edgeCells.keySet()) {
+				double cellN = Math.log(edgeCells.get(key).size());
+				int bucket = (int) Math.ceil(cellN / stepsize);
+				int a = 15;
+				switch (bucket) {
+				case 1:
+					a = 51;
+					break;
+				case 2:
+					a = 102;
+					break;
+				case 3:
+					a = 153;
+					break;
+				case 4:
+					a = 204;
+					break;
+				case 5:
+					a = 255;
+					break;
+
+				default:
+					break;
+				}
+				
+				// RED
+				key.setBackgroundColor(new Color(0, 0, 255, a));
 			}
 			
-			// RED
-			if (user)
-				key.setBackgroundColor(new Color(255, 0, 0, a));
-			else 
-				key.setBackgroundColor(new Color(0, 0, 255, a));
+			Map<MapGridRectangle, List<String>> mergedCells = new HashMap<>();
+			System.out.println("EdgeCells: "+edgeCells.size());
+			System.out.println("UserCells: " +cells.size());
+			
+			for ( MapGridRectangle userkey : cells.keySet()) {
+				mergedCells.put(userkey, cells.get(userkey));
+				for ( MapGridRectangle twkey : edgeCells.keySet() ) {
+					if (userkey.equals(twkey)) {
+						// merge rectangle color
+						Color uColor = userkey.getBackgroundColor();
+						int alpha = uColor.getAlpha();
+						Color twColor = twkey.getBackgroundColor();
+						int twalpha = twColor.getAlpha();
+//						int cRed = (tRed * tAlpha + bRed * (255 - tAlpha)) / 255;
+						int cRed = (uColor.getRed() * uColor.getAlpha() + twColor.getRed() * (255 - uColor.getAlpha())) / 255;
+						int cGreen = (uColor.getGreen() * uColor.getAlpha() + twColor.getGreen() * (255 - uColor.getAlpha())) / 255;
+						int cBlue = (uColor.getBlue() * uColor.getAlpha() + twColor.getBlue() * (255 - uColor.getAlpha())) / 255;
+						
+						twkey.setBackgroundColor(new Color(cRed, cGreen, cBlue, 200));
+//						edgeCells.get(twkey).addAll(cells.get(userkey));
+						mergedCells.put(twkey, edgeCells.get(twkey));
+						
+					}
+					else {
+						mergedCells.put(twkey, edgeCells.get(twkey));
+					}
+				}
+			}
+			
+			cellsToYard.put(zoomLvl, mergedCells);
+			
 		}
+		else {
 
-		// System.out.println("Number of Cells: " + cells.size());
-		// System.out.println("Cellsize: " + cellSize);
-		cellsToYard.put(zoomLvl, cells);
+			// Set Color of cell
+			double maxDocs = Math.log((double) allItems.size());
 
+			double stepsize = maxDocs / 5;
+			for (MapGridRectangle key : cells.keySet()) {
+				double cellN = Math.log(cells.get(key).size());
+				int bucket = (int) Math.ceil(cellN / stepsize);
+				int a = 15;
+				switch (bucket) {
+				case 1:
+					a = 51;
+					break;
+				case 2:
+					a = 102;
+					break;
+				case 3:
+					a = 153;
+					break;
+				case 4:
+					a = 204;
+					break;
+				case 5:
+					a = 255;
+					break;
+
+				default:
+					break;
+				}
+
+				// RED
+				if (user) {
+					key.setBackgroundColor(new Color(255, 0, 0, a));
+				} else {
+					key.setBackgroundColor(new Color(0, 0, 255, a));
+				}
+			}
+
+			// System.out.println("Number of Cells: " + cells.size());
+			// System.out.println("Cellsize: " + cellSize);
+			cellsToYard.put(zoomLvl, cells);
+		}
+		
 	}
 	
 	
 
 	public Map<MapGridRectangle, List<String>> getGridCells(int zoomLvl) {
-		if (!cellsToYard.containsKey(zoomLvl)) {
+		
+		if (Lucene.SHOWTweet && Lucene.SHOWUser) {
+			if (selection != null) {
+				initGridCells(zoomLvl, selection);
+			}
+			else 
+				initGridCells(zoomLvl);
+		}
+		
+		
+		else if (!cellsToYard.containsKey(zoomLvl)) {
 			if (selection != null) {
 				initGridCells(zoomLvl, selection);
 			}
@@ -874,9 +1097,18 @@ public class MapController extends Observable {
 		notifyObservers();
 
 	}
+	
+	
+	public void addDataChanged() {
+		
+		setChanged();
+		notifyObservers();
+	}
+	
+	
 
 	public void dataChanged() {
-
+		
 		resetGridCells();
 		if (Lucene.DATACHANGED)
 			resetCountry();

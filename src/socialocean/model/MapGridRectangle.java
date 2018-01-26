@@ -3,7 +3,7 @@ package socialocean.model;
 import java.awt.Color;
 import java.awt.Rectangle;
 
-public class MapGridRectangle extends Rectangle {
+public class MapGridRectangle extends Rectangle implements Comparable<MapGridRectangle>{
 
 	/**
 	 * 
@@ -24,5 +24,9 @@ public class MapGridRectangle extends Rectangle {
 		this.backgroundColor = backgroundcColor;
 	}
 
+	@Override
+	public int compareTo(MapGridRectangle o) {
+		return this.compareTo(o);
+	}
 
 }

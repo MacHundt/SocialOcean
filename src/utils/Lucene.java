@@ -69,6 +69,7 @@ import impl.ReIndexingThread;
 import impl.StoreToJSONThread;
 import impl.TimeLineCreatorThread;
 import interfaces.ILuceneQuerySearcher;
+import socialocean.controller.MapController;
 import socialocean.model.Result;
 import socialocean.parts.CategoriesPart;
 import socialocean.parts.Console;
@@ -998,6 +999,8 @@ public enum Lucene {
 		completeDataTime = tl_data;
 		if (!changedTimeSeries && time !=null)
 			time.changeDataSet(tl_data);
+		
+		last_query = "";
 
 	}
 	
@@ -1909,6 +1912,34 @@ public enum Lucene {
 
 
 	public void showClustersInMap(ArrayList<MyUser> allUser, ArrayList<MyEdge> allEdges) {
+		
+		if (SHOWUser && SHOWTweet) {
+			// paint both
+			ArrayList<Object> merged = new ArrayList<>();
+			for (MyUser u : allUser)
+				merged.add(u);
+			for (MyEdge e : allEdges)
+				merged.add(e);
+			
+			
+			if (SHOWHeatmap) {
+				MapPanelCreator.mapCon.resetGridCells();
+				MapPanelCreator.mapCon.setSelection(merged);
+				MapPanelCreator.dataChanged();
+//				MapPanelCreator.mapCon.setSelection(allEdges);
+//				MapPanelCreator.addDataChanged();
+				
+			}
+			if (SHOWCountries) {
+				MapPanelCreator.mapCon.resetGridCells();
+				MapPanelCreator.mapCon.setSelection(merged);
+				MapPanelCreator.dataChanged();
+//				MapPanelCreator.mapCon.setSelection(allEdges);
+//				MapPanelCreator.addDataChanged();
+			}
+			
+			return;
+		}
 		
 		
 		// User locations or Edges locations?

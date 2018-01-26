@@ -268,9 +268,9 @@ public class Histogram {
 					graphThread.start();
 					
 					// Show in MAP  --> Clear LIST = remove all Markers
+					l.initCountriesMap();
 					l.createMapMarkers(data, true);
 					l.changeHistogramm(result.getHistoCounter());
-					l.initCountriesMap();
 					
 //					l.createGraphML_Mention(result, true);
 					

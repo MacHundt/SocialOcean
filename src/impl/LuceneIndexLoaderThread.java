@@ -29,6 +29,8 @@ public abstract class LuceneIndexLoaderThread extends Thread {
 				l.showCatHisto();
 			if (changeTime)
 				l.createTimeLine(Lucene.TimeBin.HOURS);
+			
+			
 
 		} catch (Throwable e) {
 			System.err.println(l.getLucenIndexPath() + " >>>> is no Lucene Index folder");

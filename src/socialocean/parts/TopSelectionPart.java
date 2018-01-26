@@ -68,13 +68,13 @@ public class TopSelectionPart {
 			"content", 
 			"hasURL", 
 			"has@", 
-			"type", 
+//			"type", 				// for now, there are only tweets!
 			"neg", 
-			"source", 				// bb_tweets
+			"device", 				// bb_tweets
 			"pos", 
 			"mention", 
 			"sentiment", 
-			"source", 
+//			"source", 
 			"tags", 
 			"name", 
 			"country",				// test .. takes long

@@ -124,10 +124,12 @@ public class GraphPanelCreator {
 	static boolean DESC = false;
 	
 	private static Color node = new Color(124,119,119);
-	private static Color highCentrality = new Color(0, 0, 255);
+//	private static Color highCentrality = new Color(0, 0, 255);
+	private static Color highCentrality = new Color(102, 255, 51,200);
+	
 	private static double centrThreshold = 0.59;
 	
-	private static Color highDensity = new Color(197,27,138);
+	private static Color highDensity = new Color(197,27,138,200);
 //	private static double denThreshold = 0.5;
 	
 	private static Color edge = new Color(0,0,0);
@@ -295,6 +297,7 @@ public class GraphPanelCreator {
 			final JPanel group1Panel = new JPanel();
 			group1Panel.setOpaque(true);
 			group1Panel.setLayout(new BoxLayout(group1Panel, BoxLayout.Y_AXIS));
+			group1Panel.setBackground(highCentrality);
 			
 			// Graph
 			group1 = new ButtonGroup();
@@ -420,6 +423,7 @@ public class GraphPanelCreator {
 			
 			densityPanel.add(Box.createVerticalGlue());
 			densityPanel.add(densitySpinner);
+			densityPanel.setBackground(highDensity);
 			final String DENSITY = "Density: ";
 			final TitledBorder densityBorder = BorderFactory.createTitledBorder(DENSITY);
 			densityPanel.setBorder(densityBorder);
