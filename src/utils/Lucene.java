@@ -1400,6 +1400,7 @@ public enum Lucene {
 				String id = edge.getId();
 //				double sentiment = edge.getSentiment();
 				String senti = edge.getSentiment();
+				String cate = edge.getCategory();
 				double lat = edge.getLatitude();
 				double lon = edge.getLongitude();
 				
@@ -1408,7 +1409,11 @@ public enum Lucene {
 //					GeoPosition g = new GeoPosition(c.x, c.y);
 					GeoPosition g = new GeoPosition(lat, lon);
 					points.add(g);
-					MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, senti, lat, lon));
+					if (colorScheme.equals(Lucene.ColorScheme.CATEGORY)) {
+						MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, cate, lat, lon));
+					}
+					else
+						MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, senti, lat, lon));
 				}
 				
 //				String senti = "neutral";
@@ -1889,24 +1894,37 @@ public enum Lucene {
 		
 		Display.getDefault().asyncExec(new Runnable() {
 		    public void run() {
-		    	SettingsPart.selectCountries(false);
-//		    	SettingsPart.enableCountries(false);
+//		    	SettingsPart.selectCountries(false);
+		    	SettingsPart.enableCountries(true);
 		    }
 		});
 		
-		Thread initCountries = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				MapPanelCreator.mapCon.clearCountries();
-				MapPanelCreator.mapCon.getCountries(MapPanelCreator.getZoomLevel());
-			}
-		}, "InitCountries");
-		initCountries.start();
+//		DATACHANGED = true;
+//		SHOWCountries = false;
+////		MapPanelCreator.mapCon.
+//		
+//		Display.getDefault().asyncExec(new Runnable() {
+//		    public void run() {
+//		    	SettingsPart.selectCountries(false);
+////		    	SettingsPart.enableCountries(false);
+//		    }
+//		});
+//		
+//		Thread initCountries = new Thread(new Runnable() {
+//			@Override
+//			public void run() {
+//				MapPanelCreator.mapCon.clearCountries();
+//				MapPanelCreator.mapCon.getCountries(MapPanelCreator.getZoomLevel());
+//			}
+//		}, "InitCountries");
+//		initCountries.start();
 		
 	}
 
 
 	public <V, E> void showDetailsOfSelection(Collection<V> nodes, Collection<E> edges, boolean clear) {
+		SHOWCountries = false;
+		DATACHANGED = true;
 		GraphPanelCreator3.createDetailGraph(nodes, edges, withMention, withFollows, clear);
 	}
 
@@ -1931,7 +1949,7 @@ public enum Lucene {
 				
 			}
 			if (SHOWCountries) {
-				MapPanelCreator.mapCon.resetGridCells();
+				MapPanelCreator.mapCon.resetCountry();
 				MapPanelCreator.mapCon.setSelection(merged);
 				MapPanelCreator.dataChanged();
 //				MapPanelCreator.mapCon.setSelection(allEdges);
@@ -2008,7 +2026,6 @@ public enum Lucene {
 		}
 		
 	}
-
 
 
 

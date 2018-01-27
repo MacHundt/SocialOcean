@@ -260,7 +260,7 @@ public class TopSelectionPart {
 					graphThread.start();
 					
 					// Show in MAP  --> Clear LIST = remove all Markers
-					l.initCountriesMap();
+//					l.initCountriesMap();
 					l.createMapMarkers(data, true);
 					l.changeHistogramm(result.getHistoCounter());
 					

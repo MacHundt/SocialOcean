@@ -453,7 +453,7 @@ public class MapPanelCreator {
 
 						l.createMapMarkers(data, true);
 						l.changeHistogramm(result.getHistoCounter());
-						l.initCountriesMap();
+//						l.initCountriesMap();
 
 						// l.createGraphML_Mention(result, true);
 						// l.createGraphML_Retweet(result, true);
@@ -701,8 +701,10 @@ public class MapPanelCreator {
 		if (mapPanel == null) {
 			MapPanelCreator.getMapPanel();
 		}
-		if (clearList)
+		if (clearList) {
 			waypoints.clear();
+			mapCon.clearSelection();
+		}
 		
 		mapViewer.removeAll();
 		

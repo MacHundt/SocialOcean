@@ -135,13 +135,17 @@ public class SettingsPart {
 				
 				Lucene l = Lucene.INSTANCE;
 				l.setColorScheme(combo.getText());
-				Result r = l.getLastResult();
-				if (r == null)
-					return;
 				
-				l.createMapMarkers(l.getLastResult().getData(), true);
-				l.changeHistogramm(l.getLastResult().getHistoCounter());
-				l.showInTimeLine(l.getLastResult().getTimeCounter());
+				Histogram histo = Histogram.getInstance();
+				histo.changeBarColor();
+				
+//				Result r = l.getLastResult();
+//				if (r == null)
+//					return;
+				
+//				l.createMapMarkers(l.getLastResult().getData(), true);
+//				l.changeHistogramm(l.getLastResult().getHistoCounter());
+//				l.showInTimeLine(l.getLastResult().getTimeCounter());
 //				l.createGraphView();					// see ColorScheme
 				l.changeEdgeColor();
 				
@@ -268,9 +272,12 @@ public class SettingsPart {
 				System.out.println(countries.getText() + " is turned to: "+countries.getSelection());
 				Lucene l = Lucene.INSTANCE;
 				Lucene.SHOWCountries = countries.getSelection();
-				Result r = l.getLastResult();
-				if (r != null)
-					l.createMapMarkers(l.getLastResult().getData(), true);
+				Lucene.INITCountries = countries.getSelection();
+				MapPanelCreator.dataChanged();
+				
+//				Result r = l.getLastResult();
+//				if (r != null)
+//					l.createMapMarkers(l.getLastResult().getData(), true);
 			}
 			
 			

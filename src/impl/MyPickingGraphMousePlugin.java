@@ -28,6 +28,8 @@ import java.util.Collection;
 
 import javax.swing.JComponent;
 
+import org.eclipse.swt.widgets.Display;
+
 import edu.uci.ics.jung.algorithms.layout.GraphElementAccessor;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.visualization.Layer;
@@ -35,6 +37,7 @@ import edu.uci.ics.jung.visualization.VisualizationServer.Paintable;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.AbstractGraphMousePlugin;
 import edu.uci.ics.jung.visualization.picking.PickedState;
+import socialocean.parts.SettingsPart;
 import utils.Lucene;
 
 /** 
@@ -349,8 +352,14 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
             
             Lucene l = Lucene.INSTANCE;
             if (picked.isEmpty() && pickedEdges.isEmpty()) {
-            	
             	l.showCurrentResult();
+            	Display.getDefault().asyncExec(new Runnable() {
+        			public void run() {
+        				
+        				SettingsPart.selectCountries(false);
+        				SettingsPart.enableCountries(false);
+        			}
+        		});
             }
             
             for(V v : picked) {
@@ -361,7 +370,6 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
             			pickedEdges.add(ed);
             		}
             }
-            
             
             l.showDetailsOfSelection( picked, pickedEdges, clear);
 //            l.showCountriesOfSelection(picked, pickedEdges, clear);

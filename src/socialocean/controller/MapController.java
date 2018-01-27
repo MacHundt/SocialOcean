@@ -78,6 +78,13 @@ public class MapController extends Observable {
 	
 	
 	
+	public void clearSelection() {
+		selection = null;
+	}
+	
+	public boolean isSelection() {
+		return selection == null;
+	}
 
 	public synchronized void  setSelection(ArrayList<?> allItems) {
 		selection = allItems;

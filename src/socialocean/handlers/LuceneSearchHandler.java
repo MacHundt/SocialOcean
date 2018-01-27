@@ -84,7 +84,7 @@ public class LuceneSearchHandler {
 				
 				l.createMapMarkers(data, true);
 				l.changeHistogramm(result.getHistoCounter());
-				l.initCountriesMap();
+//				l.initCountriesMap();
 				
 				GraphCreatorThread graphThread = new GraphCreatorThread(l) {
 					

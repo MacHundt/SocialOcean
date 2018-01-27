@@ -40,7 +40,6 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSlider;
 import javax.swing.JSpinner;
-import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
@@ -51,9 +50,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.spatial.geopoint.document.GeoPointField;
-import org.cytoscape.CDMSuite.internal.CDMSuiteNetworkTaskFactory;
-import org.cytoscape.CDMSuite.internal.calculateSpectralModularity;
-import org.cytoscape.CDMSuite.internal.readInputFile;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
 
@@ -70,7 +66,6 @@ import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.SpringLayout2;
 import edu.uci.ics.jung.algorithms.scoring.BetweennessCentrality;
 import edu.uci.ics.jung.algorithms.scoring.DegreeScorer;
-import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.graph.UndirectedSparseMultigraph;
@@ -125,11 +120,14 @@ public class GraphPanelCreator {
 	
 	private static Color node = new Color(124,119,119);
 //	private static Color highCentrality = new Color(0, 0, 255);
-	private static Color highCentrality = new Color(102, 255, 51,200);
+	private static Color highCentrality = new Color(91, 46, 255,255);
+//	private static Color highCentrality = new Color(102, 255, 51,200);
+	private static Color group1Color = new Color(138, 136, 131);
 	
 	private static double centrThreshold = 0.59;
 	
-	private static Color highDensity = new Color(197,27,138,200);
+	private static Color highDensity = new Color(237,76,81,255);
+//	private static Color highDensity = new Color(197,27,138,200);
 //	private static double denThreshold = 0.5;
 	
 	private static Color edge = new Color(0,0,0);
@@ -298,6 +296,7 @@ public class GraphPanelCreator {
 			group1Panel.setOpaque(true);
 			group1Panel.setLayout(new BoxLayout(group1Panel, BoxLayout.Y_AXIS));
 			group1Panel.setBackground(highCentrality);
+//			group1Panel.setForeground(highCentrality);
 			
 			// Graph
 			group1 = new ButtonGroup();
@@ -344,6 +343,7 @@ public class GraphPanelCreator {
 			final JPanel group2Panel = new JPanel();
 			group2Panel.setOpaque(true);
 			group2Panel.setLayout(new BoxLayout(group2Panel, BoxLayout.Y_AXIS));
+			group2Panel.setBackground(highCentrality);
 			
 			
 			// Global - Local Switch
@@ -409,10 +409,14 @@ public class GraphPanelCreator {
 				public void mouseWheelMoved(MouseWheelEvent e) {
 					if (e.getWheelRotation() > 0 ) {
 						double value = (double)densitySpinner.getValue() + 0.01;
+						if (value >= 1)
+							value = 1;
 						densitySpinner.setValue(value);
 						recolorUsers();
 					} else {
 						double value = (double)densitySpinner.getValue() - 0.01;
+						if (value <= 0)
+							value = 0;
 						densitySpinner.setValue(value);
 						recolorUsers();
 					}
@@ -424,6 +428,7 @@ public class GraphPanelCreator {
 			densityPanel.add(Box.createVerticalGlue());
 			densityPanel.add(densitySpinner);
 			densityPanel.setBackground(highDensity);
+//			densityPanel.setForeground(highDensity);
 			final String DENSITY = "Density: ";
 			final TitledBorder densityBorder = BorderFactory.createTitledBorder(DENSITY);
 			densityPanel.setBorder(densityBorder);

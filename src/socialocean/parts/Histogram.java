@@ -50,6 +50,7 @@ public class Histogram {
 	}
 	
 	Chart chart;
+	ArrayList<HistogramEntry> arrEntry;
 	IBarSeries barSeries;
 	Color bar_color = new Color(Display.getDefault(), 164, 205, 253);
 	Color bar_color_selected = new Color(Display.getDefault(), 32, 48, 89);
@@ -142,7 +143,7 @@ public class Histogram {
 		// java8
 //		counter.values().stream().sorted();
 		
-		ArrayList<HistogramEntry> arrEntry = new ArrayList<>(counter.size()); 
+		arrEntry = new ArrayList<>(counter.size()); 
 		for (HistogramEntry e : counter.values())
 			arrEntry.add(e);
 		Collections.sort(arrEntry, Collections.reverseOrder());
@@ -219,6 +220,20 @@ public class Histogram {
 		
 	}
 	
+	
+	public void changeBarColor() {
+		Lucene l = Lucene.INSTANCE;
+		if (l.getColorScheme().equals(Lucene.ColorScheme.CATEGORY)) {
+			chart.getPlotArea().addListener(SWT.Paint, event -> changeBarColors(arrEntry, event, true));
+		}
+		else {
+			chart.getPlotArea().addListener(SWT.Paint, event -> changeBarColors(arrEntry, event, false));
+		}
+		chart.redraw();
+	}
+	
+	
+	
 	protected void mouseDoubleClicked(String[] categories, Event event) {
 		
 		Rectangle rec = event.getBounds();
@@ -268,7 +283,7 @@ public class Histogram {
 					graphThread.start();
 					
 					// Show in MAP  --> Clear LIST = remove all Markers
-					l.initCountriesMap();
+//					l.initCountriesMap();
 					l.createMapMarkers(data, true);
 					l.changeHistogramm(result.getHistoCounter());
 					

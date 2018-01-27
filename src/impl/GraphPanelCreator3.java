@@ -49,6 +49,7 @@ import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxEvent;
 import com.mxgraph.util.mxEventObject;
 import com.mxgraph.util.mxEventSource.mxIEventListener;
+import com.mxgraph.util.mxPoint;
 import com.mxgraph.view.mxEdgeStyle;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxStylesheet;
@@ -75,6 +76,9 @@ public class GraphPanelCreator3 {
 	
 	private static ArrayList<MyEdge> edges = new ArrayList<>();
 	public static boolean SELECTED = false;
+	
+	private static ArrayList<MyEdge> allEdges = new ArrayList<>();
+	private static ArrayList<MyUser> allUser = new ArrayList<>();
 	
 	
 	public static JPanel getGraphPanel() {
@@ -157,7 +161,8 @@ public class GraphPanelCreator3 {
 					// show all again
 					else if (selected == 0){
 						SELECTED = false;
-						MapPanelCreator.dataChanged();
+						l.clearMap();
+						l.showClustersInMap(allUser, allEdges);
 //						Result lastResult = l.getLastResult();
 //						l.createMapMarkers(lastResult.getData(), true);
 //						l.changeHistogramm(lastResult.getHistoCounter());
@@ -190,27 +195,8 @@ public class GraphPanelCreator3 {
 							}
 						}
 							
-//						System.out.println("cell="+graph.getLabel(cell));
 					}
 				}
-				
-			
-//				@Override
-//				public void mousePressed(MouseEvent e) {
-//				
-//					if (e.getButton() == 3) {
-////						pan.mousePressed(e);
-//						
-//						if (pressedPoint == null)
-//							pressedPoint = new mxPoint(e.getPoint());
-//						else
-//							pressedPoint = new mxPoint(
-//									Math.abs(lastRootView.getX() + e.getX()), 
-//									Math.abs(lastRootView.getY() + e.getY())
-//									);
-//						
-//					}
-//				}
 				
 			});
 			
@@ -281,6 +267,8 @@ public class GraphPanelCreator3 {
 	public static void clearGraph()	{
 		
 		graph.getModel().beginUpdate();
+		allEdges.clear();
+		allUser.clear();
 		Object[] remove = graph.getChildVertices(parent);
 		graph.removeCells(remove, true);
 		graph.getModel().endUpdate();
@@ -600,8 +588,8 @@ public class GraphPanelCreator3 {
 		Object[] allnodes = graph.getChildVertices(parent);
 //		Object[] alledges = graph.getAllEdges(allnodes);
 		
-		ArrayList<MyEdge> allEdges = new ArrayList<>();
-		ArrayList<MyUser> allUser = new ArrayList<>();
+		allEdges = new ArrayList<>();
+		allUser = new ArrayList<>();
 		
 		for (Object o : allnodes) {
 			if (o instanceof mxCell) {
@@ -633,7 +621,8 @@ public class GraphPanelCreator3 {
 		// TODO show Edges // Users in Map .. Heatmap, Countries -- take allEdges // allUsers as parameter!!
 		l.showClustersInMap(allUser, allEdges);
 		
-
+		l.initCountriesMap();
+		
 	}
 	
 	
@@ -1589,10 +1578,15 @@ public class GraphPanelCreator3 {
 	private static void morphGraph(mxGraph graph, mxGraphComponent graphComponent) {
 		// define layout
 		mxIGraphLayout layout = new mxFastOrganicLayout(graph);
-
+		
+		graph.setAutoOrigin(true);
+		graph.setAutoSizeCells(true);
+		graph.setBorder(65);
+//		graph.setOrigin(new mxPoint(200, 80));
 		// layout using morphing
 		graph.getModel().beginUpdate();
 		try {
+//			layout.moveCell(graph.getDefaultParent(), 50, 50);
 			layout.execute(graph.getDefaultParent());
 		} finally {
 			
