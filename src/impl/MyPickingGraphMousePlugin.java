@@ -183,6 +183,7 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
         GraphElementAccessor<V,E> pickSupport = vv.getPickSupport();
         PickedState<V> pickedVertexState = vv.getPickedVertexState();
         PickedState<E> pickedEdgeState = vv.getPickedEdgeState();
+        Lucene l = Lucene.INSTANCE;
         if(pickSupport != null && pickedVertexState != null) {
             Layout<V,E> layout = vv.getGraphLayout();
             if(e.getModifiers() == modifiers) {
@@ -199,9 +200,8 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
                     	nodes.clear();
                     	edges.clear();
                     	nodes.add(vertex);
-                    	Lucene l = Lucene.INSTANCE;
+                    	
                         l.showDetailsOfSelection( nodes, edges, true);
-                        
                     }
                     // layout.getLocation applies the layout Function so
                     // q is transformed by the layout Function only
@@ -218,15 +218,26 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
                     nodes.clear();
                 	edges.clear();
                 	edges.add(edge);
-                	Lucene l = Lucene.INSTANCE;
                     l.showDetailsOfSelection( nodes, edges, true);
                 } else {
                     vv.addPostRenderPaintable(lensPaintable);
                 	pickedEdgeState.clear();
                     pickedVertexState.clear();
                 	nodes.clear();
-                	edges.clear();
-                }
+					edges.clear();
+					
+//					l.clearMap();
+
+//					l.showCurrentResult();
+//					Display.getDefault().asyncExec(new Runnable() {
+//						public void run() {
+//
+//							SettingsPart.selectCountries(false);
+//							SettingsPart.enableCountries(false);
+//						}
+//					});
+
+				}
                 
             } else if(e.getModifiers() == addToSelectionModifiers) {
                 vv.addPostRenderPaintable(lensPaintable);
@@ -250,14 +261,12 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
                         offsety = (float) (gp.getY()-q.getY());
                         
                     	nodes.add(vertex);
-                    	Lucene l = Lucene.INSTANCE;
                         l.showDetailsOfSelection( nodes, edges, true);
                         
                     }
                 } else if((edge = pickSupport.getEdge(layout, ip.getX(), ip.getY())) != null) {
                     pickedEdgeState.pick(edge, !pickedEdgeState.isPicked(edge));
                    	edges.add(edge);
-                	Lucene l = Lucene.INSTANCE;
                     l.showDetailsOfSelection( nodes, edges, true);
                 }
             }
@@ -370,7 +379,8 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
         
         Rectangle2D pickRectangle = new Rectangle2D.Double();
         pickRectangle.setFrameFromDiagonal(down,out);
-         
+        Lucene l = Lucene.INSTANCE;
+        
         if(pickedVertexState != null) {
             if(clear) {
             	pickedVertexState.clear();
@@ -382,7 +392,7 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
             Collection<V> picked = pickSupport.getVertices(layout, pickRectangle);
             Collection<E> pickedEdges = new ArrayList<>();
             
-            Lucene l = Lucene.INSTANCE;
+            
             if (picked.isEmpty() && pickedEdges.isEmpty()) {
             	l.showCurrentResult();
             	Display.getDefault().asyncExec(new Runnable() {
@@ -396,14 +406,17 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
             
 			for (V v : picked) {
 				pickedVertexState.pick(v, true);
+				nodes.add(v);
 				Collection<E> pickEdges = vv.getGraphLayout().getGraph().getOutEdges(v);
 				for (E ed : pickEdges) {
 					pickedEdgeState.pick(ed, true);
 					pickedEdges.add(ed);
+					edges.add(ed);
 				}
 			}
             
-            l.showDetailsOfSelection( picked, pickedEdges, clear);
+//            l.showDetailsOfSelection( picked, pickedEdges, clear);
+            l.showDetailsOfSelection( nodes, edges, clear);
 //            l.showCountriesOfSelection(picked, pickedEdges, clear);
         }
     }

@@ -70,6 +70,7 @@ import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.graph.UndirectedSparseMultigraph;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
+import edu.uci.ics.jung.visualization.Layer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 import utils.DBManager;
@@ -576,6 +577,14 @@ public class GraphPanelCreator {
 				vv.validate();
 				vv.repaint();
 				vv.setVisible(true);
+				
+//				System.out.println(vv.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.LAYOUT).getScale());
+//				System.out.println(vv.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.VIEW).getScale());
+//				System.out.println(vv.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.VIEW).getScaleX());
+//				System.out.println(vv.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.VIEW).getScaleY());
+				
+				vv.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.VIEW).setScale(0.2, 0.2, vv.getCenter());
+				
 			}
 		});
 		
