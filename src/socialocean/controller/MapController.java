@@ -339,16 +339,12 @@ public class MapController extends Observable {
 		
 		try {
 
-			// HashMap<Point2D, List<Document>> pCluster = new HashMap<>();
-
 			// for every tweet .. check countries
 			for (ScoreDoc entry : result.getData()) {
 
 				int docID = entry.doc;
 				Document document = searcher.doc(docID);
 
-				// System.out.println(document.getField("id").stringValue());
-				
 				// no geo
 				IndexableField f = document.getField("geo");
 				if (f == null)
@@ -360,17 +356,6 @@ public class MapController extends Observable {
 
 				if (lat == 0.0 || lon == 0.0)
 					continue;
-
-				// String sLat = (lat+"").substring(0, (lat+"").indexOf(".")+4);
-				// String sLon = (lon+"").substring(0, (lon+"").indexOf(".")+4);
-				//
-				// Point2D p = new Point2D.Double(Double.parseDouble(sLon),
-				// Double.parseDouble(sLat));
-				//
-				// if (pCluster.get(p) == null) {
-				// pCluster.put(p, new ArrayList<Document>());
-				// }
-				// pCluster.get(p).add(document);
 
 				HashMap<String, Geometry> geometryMap = null;
 				Geometry geometry = null;
@@ -436,31 +421,6 @@ public class MapController extends Observable {
 				states.get(state).add(document.getField("id").stringValue());
 				
 			}
-
-			// for (Entry<Point2D, List<Document>> e : pCluster.entrySet()) {
-			//
-			// Geometry geometry = getCountryGeometry(e.getKey().getY(), e.getKey().getX(),
-			// c);
-			// // Shape s = sw.toShape(geometry);
-			//
-			// // point not in country
-			// if (geometry == null) {
-			// continue;
-			// }
-			//
-			// Polygon[] polygons = new Polygon[geometry.getNumGeometries()];
-			// for (int i=0 ; i< geometry.getNumGeometries(); i++) {
-			// polygons[i] = (Polygon) geometry.getGeometryN(i);
-			// }
-			//
-			// MapCountries country = new MapCountries(polygons, factory);
-			//
-			// if (!countries.containsKey(country)) {
-			// countries.put(country, new ArrayList<>());
-			// }
-			// countries.get(country).addAll(e.getValue());
-			// }
-
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -547,34 +507,6 @@ public class MapController extends Observable {
 
 	}
 
-	// private com.vividsolutions.jts.geom.Geometry
-	// getCountryGeometryFromID(Connection c, int gid) {
-	// com.vividsolutions.jts.geom.Geometry geo = null;
-	// WKTReader wkt = new WKTReader();
-	// try {
-	// Statement stmt = c.createStatement();
-	//// String query = "Select name, continent, economy, income_grp,
-	// ST_astext(geom) " +
-	//// "from countries_admin0 " +
-	//// "where gid ="+gid;
-	// String query = "Select name, ST_astext(geom) " +
-	// "from countries_admin0 " +
-	// "where gid ="+gid;
-	//
-	// ResultSet rs = stmt.executeQuery(query);
-	// while (rs.next()) {
-	// geo = wkt.read(rs.getString(2));
-	//
-	// }
-	//
-	//
-	// } catch (SQLException | ParseException e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// }
-	//
-	// return geo;
-	// }
 
 	private HashMap<String, Geometry> getCountryProvinceGeometry(double lat, double lon, Connection c) {
 		HashMap<String, Geometry> countryGeoms = new HashMap<>(1);

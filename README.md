@@ -53,7 +53,7 @@ You have to ensure all required plug-ins selected. If not, you have to add all r
 If this doesn't work, go to:
 
 	targetPlatform --> SocialOcean.target --> Environment --> Target Environment
-and change the settings and click *Set as Target Platform*.
+and change the settings and click <*Set as Target Platform*>.
 
 **Example data**  
 The folder *example* includes a Lucene Index and a Postgres backup file.

@@ -61,19 +61,6 @@ public class OpenHandler {
 		try {
 			// ## LOAD Settings File
 			Properties prop = new Properties();
-			
-//			URL url = null;
-//			try {
-//				url = new URL("platform:/plugin/" + "SocialOcean/" + "settings/config.properties");
-//
-//			} catch (MalformedURLException e1) {
-//				e1.printStackTrace();
-//			}
-//			url = FileLocator.toFileURL(url);
-//			input = new FileInputStream(new File(url.getPath()));
-			// System.out.println(prop.getProperty("lucene_index"));
-//			lucenIndex = prop.getProperty("lucene_index");
-			
 			input = new FileInputStream(new File(lucenIndex+"/settings.properties"));
 			prop.load(input);
 			
@@ -99,7 +86,6 @@ public class OpenHandler {
 			
 			
 		} catch (IOException e1) {
-//			e1.printStackTrace();
 			System.err.println(lucenIndex +" >>>> has no settings.propertyies file");
 			return;
 		} finally {
@@ -107,7 +93,6 @@ public class OpenHandler {
 				try {
 					input.close();
 				} catch (IOException e) {
-//					e.printStackTrace();
 					return;
 				}
 			}

@@ -49,12 +49,10 @@ import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxEvent;
 import com.mxgraph.util.mxEventObject;
 import com.mxgraph.util.mxEventSource.mxIEventListener;
-import com.mxgraph.util.mxPoint;
 import com.mxgraph.view.mxEdgeStyle;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxStylesheet;
 
-import socialocean.model.Result;
 import socialocean.parts.Histogram;
 import utils.DBManager;
 import utils.Lucene;
@@ -1287,14 +1285,11 @@ public class GraphPanelCreator3 {
 							sf.setLenient(true);
 							date = sf.parse(cd);
 							// Date dt = new Date
-							// String cd = rs.getString(8).split(" ")[0];
 							Date dt = new Date(date.getYear(), date.getMonth(), date.getDate());
-							time = dt.getTime(); // the bigger the 'older' the
-													// user
+							time = dt.getTime(); // the bigger the 'older' the user
 							friends = rs.getInt(7);
 							followers = rs.getInt(8);
 							tweetCount = rs.getInt(9);
-
 						}
 
 						// ID did not exist
@@ -1319,7 +1314,6 @@ public class GraphPanelCreator3 {
 							nodeID = graph.insertVertex(parent, null, nodeID, 0, 0, 40, 40,
 									"ROUNDED;strokeColor=white;fillColor=white");
 							nodeNames.put(target, nodeID);
-							// TODO // create properties Object
 
 						} else {
 							nodeID = nodeNames.get(target);
@@ -1401,9 +1395,6 @@ public class GraphPanelCreator3 {
 				if (o != null && o.length >= 4) {
 					filtered.add(o);
 				}
-	//			else {
-	//				graph.removeCells(o, true);
-	//			}
 			}
 			
 			// DESC
@@ -1416,65 +1407,11 @@ public class GraphPanelCreator3 {
 			});
 			
 //			Object[] most = filtered.get(0);
-			
 //			filterOutComponents(cc, 2);
 		}
+		
 		morphGraph(graph, graphComponent);
 		
-		
-//		remove(graphComponent);
-		
-		
-		// show biggest component
-//		graphPanel.removeAll(); 
-//		mxGraph graphMost = new mxGraph();
-////		Object parentMost = graphMost.getDefaultParent();
-//		graphMost.setDefaultParent(parent);
-//		MyGraphComponent graphComponent = new MyGraphComponent(graphMost);
-//		graphPanel.add(graphComponent);
-//		
-//		graphComponent.addMouseWheelListener(new MouseWheelListener() {
-//			
-//			@Override
-//			public void mouseWheelMoved(MouseWheelEvent e) {
-//				double scale = graph.getView().getScale();
-//				if (e.getWheelRotation() < 0) {
-//					graph.getView().setScale(scale + (scale*0.1)); 
-//				} else {
-//					graph.getView().setScale(scale - (scale*0.1));
-//				}
-//			}
-//		});
-		
-//		// add vertices
-//		for (Object o : most) {
-//			graphMost.insertVertex(parent, null, o, 0, 0, 40, 40, "ROUNDED;strokeColor=white;fillColor=white");
-//		}
-		// add edges
-//		for (Object o : most ) {
-//			System.out.println("TODO Add "+graph.getModel().getEdgeCount(o)+" Edges");
-//			for (int i = 0; i < graph.getModel().getEdgeCount(o); i++) {
-//				
-//				graph.addCell(graph.getModel().getEdgeAt(o, i));
-////				graph.addEdge(graph.getModel().getEdgeAt(o, i), parentMost, o, graph.getModel().gC, i);
-//			}
-//		}
-//		Object[] edges = graph.getAllEdges(most);
-//		try {
-//			graphMost.addAllEdges(edges); 
-////			for (Object e : edges) {
-////				graph.getModel().ge
-////			}
-//		} catch (Exception e) {
-//			System.out.println("Node not found .. could not add Edge");
-//		}
-//		
-//		graphComponent.setVisible(true);
-//
-//		morphGraph(graphMost, graphComponent);
-//		
-//		graphPanel.repaint();
-//		graphPanel.revalidate();
 	}
 	
 	
@@ -1520,22 +1457,8 @@ public class GraphPanelCreator3 {
 						((MyEdge) edge).addDate(null);
 						((MyEdge) edge).setRelationsip("Followed");
 
-						// NO Geo for Follows
-						// if (hasGeo)
-						// ((MyEdge) edge).addPoint(lat, lon);
-
-						mxStylesheet stylesheet = graph.getStylesheet();
-
-						String co = mxEdgeStyle.EntityRelation.toString();
-
-						// TODO // create an Edge Object for Properties
-						// graph.insertEdge(parent, null, edge, nodeNames.get(name),
-						// nodeNames.get(target),
-						// "edgeStyle=elbowEdgeStyle;elbow=horizontal;"+"STYLE_GRADIENTCOLOR"+"STYLE_DASH_PATTERN"
 						graph.insertEdge(parent, null, edge, nodeNames.get(name), nodeNames.get(target), "FollowEdge"
 
-						// +
-						// "exitX=0.5;exitY=1;exitPerimeter=1;entryX=0;entryY=0;entryPerimeter=1;"
 						);
 					}
 				}

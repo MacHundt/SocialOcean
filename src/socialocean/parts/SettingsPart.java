@@ -17,7 +17,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 
-
 import impl.MapPanelCreator;
 import socialocean.model.Result;
 import utils.Lucene;
@@ -127,27 +126,19 @@ public class SettingsPart {
 			
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-//				System.out.println(combo.getText());
-				// TODO change colorShema
-				// --> Color Tweets
-				// --> Color Nodes
-				// --> Color Histogram	-- DONE
-				
 				Lucene l = Lucene.INSTANCE;
 				l.setColorScheme(combo.getText());
-				
 				Histogram histo = Histogram.getInstance();
 				histo.changeBarColor();
+				l.changeEdgeColor();
 				
 //				Result r = l.getLastResult();
 //				if (r == null)
 //					return;
-				
 //				l.createMapMarkers(l.getLastResult().getData(), true);
 //				l.changeHistogramm(l.getLastResult().getHistoCounter());
 //				l.showInTimeLine(l.getLastResult().getTimeCounter());
 //				l.createGraphView();					// see ColorScheme
-				l.changeEdgeColor();
 				
 			}
 			

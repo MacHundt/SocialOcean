@@ -69,7 +69,6 @@ import impl.ReIndexingThread;
 import impl.StoreToJSONThread;
 import impl.TimeLineCreatorThread;
 import interfaces.ILuceneQuerySearcher;
-import socialocean.controller.MapController;
 import socialocean.model.Result;
 import socialocean.parts.CategoriesPart;
 import socialocean.parts.Console;
@@ -180,68 +179,6 @@ public enum Lucene {
 	public void initLucene(String index, ILuceneQuerySearcher querySearcher) throws Exception {
 
 		luceneIndex = index;
-		
-		// ### JSch ###
-		// JSch jsch = new JSch();
-		// Session session = jsch.getSession("socialocean",
-		// "charon01.inf.uni-konstanz.de", 2212);
-		// // username and password will be given via UserInfo interface.
-		// session.setPassword(pass);
-		// session.connect(); // throws exception
-		//
-		// Channel channel = session.openChannel("sftp");
-		// channel.connect();
-		// ChannelSftp c = (ChannelSftp) channel;
-		//
-		// String h = c.getHome();
-
-		// ### commons-vfs2 ###
-		// FileSystemOptions fsOptions = new FileSystemOptions();
-		// SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(fsOptions,
-		// "no");
-		// FileSystemManager fsManager = VFS.getManager();
-		//// sftp://socialocean@charon01.inf.uni-konstanz.de:2212/public/LuceneIndex/lucene_index
-		// String uri =
-		// "sftp://socialocean@charon01.inf.uni-konstanz.de:2212/public/LuceneIndex/lucene_index";
-		// FileObject fo = fsManager.resolveFile(uri, fsOptions);
-
-		// URL url = new URL
-		// ("ftp://socialocean:"+pass+"@charon01.inf.uni-konstanz.de/LuceneIndex/lucene_index");
-		// URLConnection urlc = url.openConnection();
-		// InputStream is = urlc.getInputStream();
-		// BufferedInputStream bis = new BufferedInputStream(is);
-		// String path = urlc.getURL().getPath();
-		// URI path2 = url.toURI();
-		// reader = DirectoryReader.open(FSDirectory.open(Paths.get(path2)));
-
-		// ### commons-net -- doesn't work
-		// FTPSClient client = new FTPSClient();
-		//
-		// client.connect("charon01.inf.uni-konstanz.de", 2212);
-		// client.login("socialocean", pass);
-		//
-		// if (client.isConnected()) {
-		// // Obtain a list of filenames in the current working
-		// // directory. When no file found an empty array will
-		// // be returned.
-		// String[] names = client.listNames();
-		// for (String name : names) {
-		// System.out.println("Name = " + name);
-		// }
-		//
-		// FTPFile[] ftpDirs = client.listDirectories();
-		// FTPFile[] ftpFiles = client.listFiles();
-		// for (FTPFile ftpFile : ftpFiles) {
-		// // Check if FTPFile is a regular file
-		// if (ftpFile.getType() == FTPFile.FILE_TYPE) {
-		// System.out.println("FTPFile: " + ftpFile.getName() +
-		// "; " + FileUtils.byteCountToDisplaySize(
-		// ftpFile.getSize()));
-		// }
-		// }
-		// }
-		// client.logout();
-
 		reader = DirectoryReader.open(FSDirectory.open(Paths.get(luceneIndex)));
 		idxInfo = new IndexInfo(reader, luceneIndex);
 		fn = idxInfo.getFieldNames();
@@ -257,12 +194,6 @@ public enum Lucene {
 		mq.setDefaultOperator(mq.AND_OPERATOR);
 		isInitialized = true;
 		changedTimeSeries = false;
-
-		// pre_statement_min = con.prepareStatement("Select creationdate
-		// from tweetdata order by creationdate ASC Limit 1");
-		// pre_statement_max = con.prepareStatement("Select creationdate
-		// from tweetdata order by creationdate DESC Limit 1");
-
 		searcher = new IndexSearcher(reader);
 		analyzer = new StandardAnalyzer();
 //		analyzer = new MyLuceneAnalyser();
@@ -302,11 +233,6 @@ public enum Lucene {
 			history.clearHistory();
 		}
 		
-//		if (Console.isInitialized) {
-//			Console console = Console.getInstance();
-//			console.clear();
-//		}
-		
 		queryHistory.clear();
 		last_query = "";
 		currentPointer = 0;
@@ -330,20 +256,6 @@ public enum Lucene {
 		ValueComparator bvc = new ValueComparator(termCounts);
 		TreeMap<String, FieldTermCount> termCountsSorted = new TreeMap<String, FieldTermCount>(bvc);
 		termCountsSorted.putAll(termCounts);
-		// String[] sortedFields = termCountsSorted.keySet().toArray(new
-		// String[termCounts.size()]);
-		// String[] idxFieldsCopySorted = new String[idxFields.length];
-		// System.arraycopy(sortedFields, 0, idxFieldsCopySorted, 0,
-		// sortedFields.length);
-		// if (termCounts.size() < idxFieldsCopy.length) {
-		// int idx = sortedFields.length;
-		// for (String f : idxFields) {
-		// if (!termCounts.containsKey(f)) {
-		// idxFieldsCopySorted[idx] = f;
-		// idx += 1;
-		// }
-		// }
-		// }
 		System.out.println(String.format("\n%-10s %15s \t %-10s", "Name", "Term Count", "%"));
 		for (FieldTermCount ftc : termCountsSorted.values()) {
 			String formattedString = String.format("%-10s %15d \t %.2f %s", ftc.fieldname, ftc.termCount,
@@ -488,15 +400,12 @@ public enum Lucene {
 				if (query.toString().startsWith("GeoPointInBBoxQuery")
 						|| last_query.startsWith("GeoPointInBBoxQuery")) {
 					// FUSE and Geo is a selection!
-					// 1) case: last_query is empty --> nothing to FUSE, we are
-					// not here
-					// 2) case: last_result AND new_result -- get the CUT
-					// manually when fields overlap!
-					// -- AND
-
+					// 1) case: 
+//						last_query is empty --> nothing to FUSE, we are not here
+					// 2) case: 
+//						last_result AND new_result -- get the CUT manually when fields overlap!
 					queryResult = querySearcher.searchAll(query);
-//					if (queryResult.length < 100000 || last_result.size() < 100000)
-						queryResult = cutScoreDocs(queryResult);
+					queryResult = cutScoreDocs(queryResult);
 
 					// String[] fields = getFieldsFromQueries()
 					// String[] usedFields = {"tags", "geo"};
@@ -520,33 +429,20 @@ public enum Lucene {
 				else if (query.toString().startsWith("date")) {
 					timeRangeFilter(query);
 				}
-
-				// TODO FUSE -- when sources types are different
-				// TODO FUSE --
-
+				
+				
 				else {
 					newQuery = "(" + query.toString() + ")" + " AND (" + last_query + ")";
 					if (newQuery.contains("name:") || newQuery.contains("mention:")) {
 						// take MyLuceneParser
 						QueryParser parser = new QueryParser("name", new MyLuceneAnalyser());
 						query = parser.parse(newQuery);
-					}
-					else 
+					} else
 						query = parser.parse(newQuery);
 					last_query = query.toString();
-					
+
 					queryResult = querySearcher.searchAll(query);
 				}
-
-				// System.out.println("FUSE: \nLastQuery: "+
-				// queryHistory.get(queryHistory.size()-1).toString() +""
-				// + "\nQuery: "+ query.toString());
-				//
-				// Builder bq = new Builder();
-				// bq.add(queryHistory.get(queryHistory.size()-1), Occur.MUST);
-				// bq.add(query, Occur.FILTER);
-				// result = querySearcher.searchAll(bq.build());
-
 			}
 
 			// NORMAL
@@ -615,7 +511,6 @@ public enum Lucene {
 		ScoreDoc[] out = new ScoreDoc[result.size()];
 		return result.toArray(out);
 	}
-
 	
 	
 //	public ScoreDoc[] timeRangeFilter(ScoreDoc[] last_result, long from, long to) {
@@ -665,7 +560,6 @@ public enum Lucene {
 			return result;
 
 		// NAIV --> selection / filter Find x in y
-
 		ArrayList<ScoreDoc> finding = new ArrayList<>();
 		for (ScoreDoc x : last_result.getData()) {
 			for (ScoreDoc y : result) {
@@ -684,6 +578,8 @@ public enum Lucene {
 		return out;
 	}
 
+	
+	
 	public ScoreDoc[] mergeScoreDocs(ScoreDoc[] result) {
 
 		if (last_result == null)
@@ -705,11 +601,6 @@ public enum Lucene {
 		return searcher;
 	}
 
-	public void FUSEQueries(ArrayList<Integer> queryIndexes) {
-
-		// fuse queries from the query result array
-		// delete the indexes - add a new, inc serial
-	}
 
 	/**
 	 * This method searches for the <code>topX</code> documents on a single
@@ -830,24 +721,19 @@ public enum Lucene {
 			resulTable[i][1] = new Integer(ts.docFreq);
 		}
 
-		// TODO Histogram Part must be created!
 		Histogram histogram = Histogram.getInstance();
-//		CategoriesPart categories = CategoriesPart.getInstance();
-
 		histogram.setInitialData(resulTable);
 		histogram.viewInitialDataSet();
+//		CategoriesPart categories = CategoriesPart.getInstance();
 //		categories.chnageDataSet(resulTable);
 		
 	}
 
 	public void changeHistogramm(HashMap<String, HistogramEntry> histoCounter) {
-
 		if (!Histogram.isInitialized & !CategoriesPart.isInitialized)
 			return;
 		Histogram histogram = Histogram.getInstance();
-		
 		histogram.changeDataSet(histoCounter);
-		
 	}
 	
 
@@ -857,7 +743,6 @@ public enum Lucene {
 	 */
 	public void initMaxDate(String maxDate) {
 		// maxDate = "2013-01-08 01:15:00";
-
 		String[] datetime_String = maxDate.split(" ");
 		String date_Str = datetime_String[0];
 		String time_Str = datetime_String[1];
@@ -881,7 +766,6 @@ public enum Lucene {
 			hasStopTime = true;
 
 			System.out.println(dt_max.toEpochSecond(ZoneOffset.UTC) + " = " + dt_max.toString());
-
 		}
 	}
 
@@ -1001,11 +885,7 @@ public enum Lucene {
 			time.changeDataSet(tl_data);
 		
 		last_query = "";
-
 	}
-	
-	
-	
 	
 
 	public ArrayList<TimeLineHelper> createTimeBins(TimeBin binsize, ScoreDoc[] result) {
@@ -1042,11 +922,9 @@ public enum Lucene {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
 		}
 
 		long temp_utc = minDate;
-//		long temp_utc = utc_time_min;
 		long stepSize = 0;
 		
 		HashMap<Long, Integer> buckets = new HashMap<>();
@@ -1076,41 +954,10 @@ public enum Lucene {
 			}
 			
 			buckets.put(temp_utc, 0);
-			
 //			ScoreDoc[] rs = searchTimeRange(temp_utc, utc_plus, false, false);
 			dt_temp = dt_plus;
 			temp_utc = utc_plus;
 		}
-		
-		
-//		while (temp_utc <= utc_time_max) {
-//			LocalDateTime dt_plus = dt_temp;
-//			switch (binsize) {
-//			case SECONDS:
-//				dt_plus = dt_temp.plusSeconds(1);
-//				break;
-//			case MINUTES:
-//				dt_plus = dt_temp.plusMinutes(1);
-//				break;
-//			case HOURS:
-//				dt_plus = dt_temp.plusHours(1);
-//				break;
-//			case DAYS:
-//				dt_plus = dt_temp.plusDays(1);
-//				break;
-//			}
-//			long utc_plus = dt_plus.toEpochSecond(ZoneOffset.UTC);
-//			if (stepSize == 0) {
-//				stepSize = utc_plus - temp_utc;
-//			}
-//			
-//			buckets.put(temp_utc, 0);
-//			
-////			ScoreDoc[] rs = searchTimeRange(temp_utc, utc_plus, false, false);
-//			dt_temp = dt_plus;
-//			temp_utc = utc_plus;
-//		}
-		
 		
 		// ADD To Bins
 		for (ScoreDoc doc : result) {
@@ -1133,7 +980,6 @@ public enum Lucene {
 		}
 		
 		for (Long key:  buckets.keySet()) {
-//			buckets.put(key, randomVal);
 			tl_data.add(new TimeLineHelper(longTOLocalDateTime(key), buckets.get(key)));
 		}
 		
@@ -1151,7 +997,7 @@ public enum Lucene {
 	
 	
 	private long getBucket(HashMap<Long, Integer> buckets, long stepSize, long time) {
-		// TODO Go through all buckets:
+		// Go through all buckets:
 		// is within key + stepSize --> return bucket key
 		for (Long key : buckets.keySet()) {
 			if (time >= key && time < (key+stepSize))
@@ -1160,13 +1006,9 @@ public enum Lucene {
 		return -1;
 	}
 
+	
 	private LocalDateTime longTOLocalDateTime(long minDate) {
-		
-//		LocalDateTime dt = LocalDateTime.of(date, time);
-////		System.out.println(dt.toEpochSecond(ZoneOffset.UTC));
-//		long utc_time = dt.toEpochSecond(ZoneOffset.UTC);
 		LocalDateTime time = LocalDateTime.ofEpochSecond(minDate, 0, ZoneOffset.UTC);
-		
 		return time;
 	}
 	
@@ -1182,10 +1024,6 @@ public enum Lucene {
 		GraphPanelCreator.createSimpleGraph(result, searcher, withMention, withFollows);
 	}
 	
-	
-//	public void createSimpleGraphView(ScoreDoc[] result) {
-//		GraphPanelCreator3.createSimpleGraph(result, searcher, withMention, withFollows);
-//	}
 	
 	
 	public void changeEdgeColor() {
@@ -1211,10 +1049,7 @@ public enum Lucene {
 			Query nquery = parser.parse(newQuery);
 			ScoreDoc[] fusedMention = querySearcher.searchAll(nquery);
 
-//			String name = "mention" + last_query + ".graphml";
-//			name = name.replace(":", "_");
 			String name = "mention_graph.graphml";
-			
 			ArrayList<ScoreDoc> a = new ArrayList<>();
 			
 //			 GraphML_Helper.createGraphML_Mention(fusedMention, searcher,
@@ -1277,67 +1112,6 @@ public enum Lucene {
 			if (clearList)
 				MapPanelCreator.clearWayPoints(clearList);
 			
-//			if (result.length > 17000) {
-//
-//				// Cluster -- Do something: -- LEVEL of Detail <---> Zoom
-//				// Or only show those that I see on the Display
-//				System.out.println("( to many )");
-//				return;
-//			}
-
-			// Connection c = DBManager.getConnection();
-			// try {
-			// Statement stmt = c.createStatement();
-			//
-			// for (ScoreDoc entry : result) {
-			// int docID = entry.doc;
-			// try {
-			// Document document = searcher.doc(docID);
-			//// System.out.println(document.getField("id").stringValue());
-			// long hashgeo =
-			// (document.getField("geo")).numericValue().longValue();
-			// double lat = GeoPointField.decodeLatitude(hashgeo);
-			// double lon = GeoPointField.decodeLongitude(hashgeo);
-			// String id = (document.getField("id")).stringValue();
-			// String type = (document.getField("type")).stringValue();
-			// String query = "";
-			// double sentiment = 0;
-			// switch(type) {
-			// case "twitter":
-			// query = "Select t.sentiment from tweetdata as t where t.tweetid =
-			// "+Long.parseLong(id);
-			// break;
-			// case "flickr" :
-			// query = "Select t.sentiment from flickrdata as t where
-			// t.\"photoID\" = "+Long.parseLong(id);
-			//
-			// break;
-			// default:
-			// query = "Select t.sentiment from tweetdata as t where t.tweetid =
-			// "+Long.parseLong(id);
-			// }
-			//
-			// // Get Sentiment from Database // Lucene is faster
-			// ResultSet rs = stmt.executeQuery(query);
-			//
-			// while (rs.next()) {
-			//// System.out.println("senti: "+rs.getInt(1));
-			// sentiment = rs.getInt(1);
-			// }
-			//
-			// MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(docID+"",
-			// sentiment, lat, lon));
-			//
-			// } catch (IOException e1) {
-			// // TODO Auto-generated catch block
-			// e1.printStackTrace();
-			// }
-			// }
-			// } catch (SQLException e) {
-			// // TODO Auto-generated catch block
-			// e.printStackTrace();
-			// }
-
 			for (ScoreDoc entry : result) {
 				int docID = entry.doc;
 				try {
@@ -1355,10 +1129,6 @@ public enum Lucene {
 					String id = (document.getField("id")).stringValue();
 					// String type = (document.getField("type")).stringValue();
 					String query = "";
-					// double sentiment =
-					// Double.parseDouble((document.getField("sentiment")).stringValue());
-					// MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(docID
-					// + "", sentiment, lat, lon));
 					String sentiment = (document.getField("sentiment")).stringValue();
 					String category = (document.getField("category")).stringValue();
 					
@@ -1371,14 +1141,12 @@ public enum Lucene {
 					}
 
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 			}
 
 			MapPanelCreator.mapCon.setSelection(null);
 			MapPanelCreator.dataChanged();
-//			MapPanelCreator.showWayPointsOnMap();
 		}
 
 	}
@@ -1398,15 +1166,12 @@ public enum Lucene {
 			
 			for (MyEdge edge : edges) {
 				String id = edge.getId();
-//				double sentiment = edge.getSentiment();
 				String senti = edge.getSentiment();
 				String cate = edge.getCategory();
 				double lat = edge.getLatitude();
 				double lon = edge.getLongitude();
 				
 				if (lat !=0.0 || lon != 0.0) {
-//					Coordinate c = new Coordinate(lat, lon);
-//					GeoPosition g = new GeoPosition(c.x, c.y);
 					GeoPosition g = new GeoPosition(lat, lon);
 					points.add(g);
 					if (colorScheme.equals(Lucene.ColorScheme.CATEGORY)) {
@@ -1512,15 +1277,12 @@ public enum Lucene {
 			}
 			
 			buckets.put(temp_utc, 0);
-			
-//			ScoreDoc[] rs = searchTimeRange(temp_utc, utc_plus, false, false);
 			dt_temp = dt_plus;
 			temp_utc = utc_plus;
 		}
 		
 				
 		for (Long key:  buckets.keySet()) {
-//			buckets.put(key, randomVal);
 			tl_data.add(new TimeLineHelper(longTOLocalDateTime(key), buckets.get(key)));
 		}
 
@@ -1630,7 +1392,6 @@ public enum Lucene {
 			@Override
 			public void execute() {
 				createGraphView(data);
-//				createSimpleGraphView(data);
 			}
 		};
 		graphThread.start();
@@ -1704,18 +1465,15 @@ public enum Lucene {
 	}
 
 	public void setWithMentions(boolean selection) {
-		
 		withMention = selection;
-		
-		
 	}
 
+	
 	public void setWithFollows(boolean selection) {
-		
 		withFollows = selection;
-		
 	}
 
+	
 	public void exporttoJSON(String name) {
 		
 		File newIndex = new File(luceneIndex+"/"+name);
@@ -1742,7 +1500,6 @@ public enum Lucene {
 			StoreToJSONThread indexer = new StoreToJSONThread(this, last_result.getData(), c, stmt, newIndex.getAbsolutePath());
 			indexer.start();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	
@@ -1759,7 +1516,6 @@ public enum Lucene {
 		// MAP indexCount to name
 		
 		String ind = luceneIndex;
-		
 		String tempPath = ind.substring(0, ind.lastIndexOf("/")+1);
 		
 		if (!tempPath.endsWith("temp/")) {
@@ -1847,32 +1603,6 @@ public enum Lucene {
 	}
 	
 	
-//	private String getContent(String tweetid) {
-//		String content = "";
-//		Connection c = DBManager.getConnection();
-//    		try {
-//			Statement stmt = c.createStatement();
-//			String table = DBManager.getTweetdataTable();
-//			
-////			String query = "select t.\"tweetScreenName\", t.\"tweetContent\", t.creationdate, t.sentiment, t.category, t.\"containsUrl\"  from "+table+" as t where t.tweetid = "+text;
-//			String query = "select t.tweet_content from "+table+" as t where t.tweet_id = "+tweetid;
-//			ResultSet rs = stmt.executeQuery(query);
-//			while (rs.next()) {
-//				content = rs.getString("tweet_content");
-//			}
-//			
-//			stmt.close();
-//			c.close();
-//		} catch (SQLException e1) {
-//			e1.printStackTrace();
-//		}
-//    	
-//    	return content;
-//	}
-	
-	
-	
-
 	public void clearGraph() {
 		
 		GraphPanelCreator3.clearGraph();	
@@ -1890,7 +1620,6 @@ public enum Lucene {
 	public void initCountriesMap() {
 		DATACHANGED = true;
 		SHOWCountries = false;
-//		MapPanelCreator.mapCon.
 		
 		Display.getDefault().asyncExec(new Runnable() {
 		    public void run() {
@@ -1944,21 +1673,14 @@ public enum Lucene {
 				MapPanelCreator.mapCon.resetGridCells();
 				MapPanelCreator.mapCon.setSelection(merged);
 				MapPanelCreator.dataChanged();
-//				MapPanelCreator.mapCon.setSelection(allEdges);
-//				MapPanelCreator.addDataChanged();
-				
 			}
 			if (SHOWCountries) {
 				MapPanelCreator.mapCon.resetCountry();
 				MapPanelCreator.mapCon.setSelection(merged);
 				MapPanelCreator.dataChanged();
-//				MapPanelCreator.mapCon.setSelection(allEdges);
-//				MapPanelCreator.addDataChanged();
 			}
-			
 			return;
 		}
-		
 		
 		// User locations or Edges locations?
 		if (SHOWUser) {
@@ -1996,9 +1718,7 @@ public enum Lucene {
 				MapPanelCreator.mapCon.setSelection(allEdges);
 				MapPanelCreator.dataChanged();
 			}
-				
 		}
-		
 	}
 
 
@@ -2015,28 +1735,13 @@ public enum Lucene {
 			if (image != null)
 				ImageIO.write(image, "png", new File(path+"/"+name+"/screenshot.png"));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (HeadlessException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (AWTException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
 	}
-
-
-
-//	public <E> void showPickedEdges(Collection<E> pickedEdges) {
-//		
-//		for (E ed : pickedEdges) {
-//			if (ed instanceof MyEdge) {
-//				MyEdge edge = (MyEdge) ed;
-//				System.out.println("EDGE: "+edge.getId());
-//			}
-//		}
-//	}
 
 }

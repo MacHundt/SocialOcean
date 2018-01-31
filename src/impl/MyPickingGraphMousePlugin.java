@@ -101,6 +101,12 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
     protected Color lensColor = Color.cyan;
     
     /**
+     * store picked edges and nodes
+     */
+    ArrayList<V> nodes = new ArrayList<>();
+	ArrayList<E> edges = new ArrayList<>();
+    
+    /**
 	 * create an instance with default settings
 	 */
 	public MyPickingGraphMousePlugin() {
@@ -189,6 +195,13 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
                     if(pickedVertexState.isPicked(vertex) == false) {
                     	pickedVertexState.clear();
                     	pickedVertexState.pick(vertex, true);
+                    	
+                    	nodes.clear();
+                    	edges.clear();
+                    	nodes.add(vertex);
+                    	Lucene l = Lucene.INSTANCE;
+                        l.showDetailsOfSelection( nodes, edges, true);
+                        
                     }
                     // layout.getLocation applies the layout Function so
                     // q is transformed by the layout Function only
@@ -201,10 +214,18 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
                 } else if((edge = pickSupport.getEdge(layout, ip.getX(), ip.getY())) != null) {
                     pickedEdgeState.clear();
                     pickedEdgeState.pick(edge, true);
+                	
+                    nodes.clear();
+                	edges.clear();
+                	edges.add(edge);
+                	Lucene l = Lucene.INSTANCE;
+                    l.showDetailsOfSelection( nodes, edges, true);
                 } else {
                     vv.addPostRenderPaintable(lensPaintable);
                 	pickedEdgeState.clear();
                     pickedVertexState.clear();
+                	nodes.clear();
+                	edges.clear();
                 }
                 
             } else if(e.getModifiers() == addToSelectionModifiers) {
@@ -216,6 +237,7 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
                     boolean wasThere = pickedVertexState.pick(vertex, !pickedVertexState.isPicked(vertex));
                     if(wasThere) {
                         vertex = null;
+                        nodes.remove(vertex);
                     } else {
 
                         // layout.getLocation applies the layout Function so
@@ -226,9 +248,17 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
 
                         offsetx = (float) (gp.getX()-q.getX());
                         offsety = (float) (gp.getY()-q.getY());
+                        
+                    	nodes.add(vertex);
+                    	Lucene l = Lucene.INSTANCE;
+                        l.showDetailsOfSelection( nodes, edges, true);
+                        
                     }
                 } else if((edge = pickSupport.getEdge(layout, ip.getX(), ip.getY())) != null) {
                     pickedEdgeState.pick(edge, !pickedEdgeState.isPicked(edge));
+                   	edges.add(edge);
+                	Lucene l = Lucene.INSTANCE;
+                    l.showDetailsOfSelection( nodes, edges, true);
                 }
             }
         }
@@ -344,6 +374,8 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
         if(pickedVertexState != null) {
             if(clear) {
             	pickedVertexState.clear();
+            	nodes.clear();
+            	edges.clear();
             }
             GraphElementAccessor<V,E> pickSupport = vv.getPickSupport();
 
@@ -362,14 +394,14 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
         		});
             }
             
-            for(V v : picked) {
-            		pickedVertexState.pick(v, true);
-            		Collection<E> pickEdges = vv.getGraphLayout().getGraph().getOutEdges(v);
-            		for (E ed : pickEdges) {
-            			pickedEdgeState.pick(ed, true);
-            			pickedEdges.add(ed);
-            		}
-            }
+			for (V v : picked) {
+				pickedVertexState.pick(v, true);
+				Collection<E> pickEdges = vv.getGraphLayout().getGraph().getOutEdges(v);
+				for (E ed : pickEdges) {
+					pickedEdgeState.pick(ed, true);
+					pickedEdges.add(ed);
+				}
+			}
             
             l.showDetailsOfSelection( picked, pickedEdges, clear);
 //            l.showCountriesOfSelection(picked, pickedEdges, clear);

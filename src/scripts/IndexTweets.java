@@ -38,9 +38,12 @@ public class IndexTweets {
 	private static int Fetchsize = 10000;
 	private static String countryTable = "countries_all";
 	
-	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index_nodexl/";
-//	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index_5/";
+//	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index_nodexl/";
+	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index_50/";
 
+	private static int topX = 50;
+	private static boolean onlyTopX = true;
+	
 	private static boolean LOCAL = false;
 	private static long mindate = Long.MAX_VALUE;
 	private static long maxdate = Long.MIN_VALUE;
@@ -91,8 +94,8 @@ public class IndexTweets {
 					+ "hasurl, "
 //					+ "user_id, "				// bb_tweets -- more unique than screen_name
 					+ "user_screenname, "
-//					+ "tweet_source, "			// bb_tweets
-//					+ "user_language, "			// bb_tweets
+					+ "tweet_source, "			// bb_tweets
+					+ "user_language, "			// bb_tweets
 					+ "positive, "
 					+ "negative, "
 					+ "category, "
@@ -107,7 +110,7 @@ public class IndexTweets {
 			int doc_counter = 0;
 			int counter = 0;
 			int stat = 1;
-			int topX = 5;
+			
 			while (rs.next()) {
 				counter++;
 				
@@ -118,10 +121,12 @@ public class IndexTweets {
 				t.setLatitude(rs.getDouble("latitude"));
 				t.setLongitude(rs.getDouble("longitude"));
 				t.setHasurl(rs.getBoolean("hasurl"));
+				if (rs.getString("user_screenname").contains(","))
+					System.out.println(rs.getString("user_screenname"));
 				t.setUserScreenName(rs.getString("user_screenname")); 			
 //				t.setUser_id(rs.getLong("user_id"));								// bb_tweets
-//				t.setTweet_source(rs.getString("tweet_source"));					// bb_tweets
-//				t.setLanguage(rs.getString("user_language"));					// bb_tweets  // text is english, but the user can select his profile language
+				t.setTweet_source(rs.getString("tweet_source"));					// bb_tweets
+				t.setLanguage(rs.getString("user_language"));					// bb_tweets  // text is english, but the user can select his profile language
 				t.setPositive(rs.getInt("positive"));
 				t.setNegative(rs.getInt("negative"));
 				t.setCategory((rs.getString("category") != null) ? rs.getString("category") : "other");
@@ -137,7 +142,7 @@ public class IndexTweets {
 					if (doc_counter % 100 == 0) {
 						System.out.println(". >>"+ Fetchsize*100*stat+" tweets processed");
 						stat++;
-						if (topX-- == 0)
+						if (topX-- == 0 && onlyTopX)
 							break;
 					}				
 					else {
@@ -256,7 +261,7 @@ public class IndexTweets {
 			if (indexOfLastSlash != -1) {
 				source = source.substring(indexOfLastSlash+1);
 			}
-			doc.add(new StringField("source", source, Field.Store.YES));
+			doc.add(new StringField("device", source, Field.Store.YES));
 			
 			// User_ScreenName
 			doc.add(new StringField("name", t.getUserScreenName(), Field.Store.YES));
@@ -350,17 +355,17 @@ public class IndexTweets {
 				}
 
 			}
-//			else {
-//				continue;
-//			}
+			else {
+				continue;
+			}
 			
 			// geo
 			lati = t.getLatitude();
 			longi = t.getLongitude();
-//			if (lati == 0 || longi == 0) {
-//				no_geo++;
-//				continue;
-//			}
+			if (lati == 0 || longi == 0) {
+				no_geo++;
+				continue;
+			}
 
 			// TODO geo tweet location --> Get Country (ID oder name) of admin0 .. and admin1
 			if (lati != 0 || longi != 0) {
@@ -368,11 +373,12 @@ public class IndexTweets {
 				doc.add(geo);
 				
 				// add Country
-				String country = getCountry(lati, longi, stmt).replaceAll(" ", "_").toLowerCase();
-				doc.add(new StringField("country", country, Field.Store.YES));
+//				String country = getCountry(lati, longi, stmt).replaceAll(" ", "_").toLowerCase();
+//				doc.add(new StringField("country", country, Field.Store.YES));
 			}
 			
 
+			
 			if (writer.getConfig().getOpenMode() == OpenMode.CREATE) {
 				// New index, so we just add the document (no old document
 				// can be there):
@@ -428,10 +434,11 @@ public class IndexTweets {
 		String output = "";
 		for (String token : text_content.split(" ")) {
 			if (token.startsWith("@")) {
+				token = token.replaceAll("[,:]", "");
 				output += token.substring(1) + " ";
 			}
 		}
-		output = output.replace(":", "");
+//		output = output.replace(":", "");
 		return output.trim();
 	}
 
