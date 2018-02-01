@@ -1,6 +1,7 @@
  
 package socialocean.parts;
 
+import java.awt.Checkbox;
 import java.awt.Rectangle;
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,6 +20,11 @@ import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ParameterizedCommand;
@@ -43,8 +49,10 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import socialocean.handlers.LuceneSearchHandler;
@@ -400,8 +408,10 @@ public class LuceneSearch {
 				input.open();
 				
 				String name = input.getValue();
-				
 				input.close();
+				
+				if (name.equals("null") || name.isEmpty() || name == null)
+					return;
 				
 				// TODO Graph
 				// Clear all Results, Map, Graph
@@ -415,7 +425,7 @@ public class LuceneSearch {
 //				Progress progress = new Progress("Pro");
 //				progress.fill(parent);
 				
-				l.reindexLastResult(name);
+				l.reindexLastResult(name, true, true, null);
 				l.clearMap();
 				l.clearGraph();	
 			}
@@ -434,21 +444,95 @@ public class LuceneSearch {
 					return;
 				
 				InputDialog input = new InputDialog(parent.getShell(), "", "Enter a name", "", null);
+//				CustomInputDialog input = new CustomInputDialog(parent.getShell());
 				input.open();
-				
+//				CustomInputDialog.open();
 				String name = input.getValue();
-				
 				input.close();
 				
-				System.out.println("Export to JSON");
-				l.printlnToConsole("Export to JSON");
+				if (name.equals("null") || name.isEmpty() || name == null)
+					return;
 				
-				l.exporttoJSON(name);
+				System.out.println("Export to JSON");
+//				l.printlnToConsole("Export to JSON");
+				
+				String luceneIndex = l.getLucenIndexPath();
+				// in temp folder? --> temp to export
+				String tempPath = luceneIndex.substring(0, luceneIndex.lastIndexOf("/")+1);
+				if (tempPath.endsWith("temp/")) {
+					tempPath = tempPath.replace("temp/", "export/");
+					File theDir = new File(tempPath);
+
+					// if the directory does not exist, create it
+					if (!theDir.exists()) {
+					    System.out.println("\tcreating directory: " + theDir.getName());
+					    boolean result = false;
+
+					    try{
+					        theDir.mkdir();
+					        result = true;
+					    } 
+					    catch(SecurityException se){
+					        //handle it
+					    }        
+					    if(result) {    
+					        System.out.println("\tDIR created");  
+					    }
+					}
+				}
+				
+				// nor in temp folder, not in export folder --> create export
+				if (!tempPath.endsWith("export/")) {
+					tempPath +="export/";
+					File theDir = new File(tempPath);
+
+					// if the directory does not exist, create it
+					if (!theDir.exists()) {
+					    System.out.println("\tcreating directory: " + theDir.getName());
+					    boolean result = false;
+
+					    try{
+					        theDir.mkdir();
+					        result = true;
+					    } 
+					    catch(SecurityException se){
+					        //handle it
+					    }        
+					    if(result) {    
+					        System.out.println("\tDIR created");  
+					    }
+					}
+				}
+				
+				
+				File newIndex = new File(tempPath+name);
+				if (!newIndex.exists()) {
+				    System.out.println("\tcreating directory: " + newIndex.getName());
+				    boolean result = false;
+
+				    try{
+				    	newIndex.mkdir();
+				        result = true;
+				    } 
+				    catch(SecurityException se){
+				        //handle it
+				    }        
+				    if(result) {    
+				        System.out.println("\tDIR created");  
+				    }
+				}
+				
+				System.out.println("\tcreated directory '" + newIndex + "' ... DONE");
+				l.printlnToConsole("\tcreated directory '"+newIndex+"' ... DONE");
 				
 				MWindow window = app.getChildren().get(0);
 				Rectangle appBounds = new Rectangle(window.getX(), window.getY(), window.getWidth(), window.getHeight());
+				l.takeScreenshot(name, appBounds, newIndex.getAbsolutePath());
 				
-				l.takeScreenshot(name, appBounds);
+				l.exporttoJSON(newIndex, name);
+				l.reindexLastResult(name, false, false, newIndex);
+				
+//				l.createGraphML_Mention(l.getLastResult().getData(), true, name, newIndex);
 				
 			}
 		});
@@ -531,5 +615,33 @@ public class LuceneSearch {
 	public void save() {
 		
 	}
+	
+//	private class CustomInputDialog extends Dialog {
+//
+//		private Shell dialog;
+//		
+//		public CustomInputDialog(Shell parent) {
+//			super(parent);
+//		}
+//		
+//		public void close() {
+//			dialog.close();
+//		}
+//
+//		public String open() {
+//			Shell parent = getParent();
+//			dialog = new Shell(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+//			dialog.setSize(100, 100);
+//			dialog.setText("Java Source and Support");
+//			dialog.open();
+//			Display display = parent.getDisplay();
+//			while (!dialog.isDisposed()) {
+//				if (!display.readAndDispatch())
+//					display.sleep();
+//			}
+//			return "After Dialog";
+//		}
+//		
+//	}
 	
 }

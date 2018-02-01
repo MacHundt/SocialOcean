@@ -1,5 +1,6 @@
 package impl;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
@@ -8,10 +9,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -21,8 +18,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import javax.swing.text.DateFormatter;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -35,7 +30,6 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
 import utils.DBManager;
-import utils.FilesUtil;
 
 public class GraphML_Helper {
 
@@ -54,7 +48,7 @@ public class GraphML_Helper {
 	 * @param directed 
 	 * @throws ParseException 
 	 */
-	public static void createGraphML_Mention(ScoreDoc[] result, IndexSearcher searcher, boolean directed, String filename)  {
+	public static void createGraphML_Mention(ScoreDoc[] result, IndexSearcher searcher, boolean directed, String filename, File exportDir)  {
 
 		// result -> FUSE with Has@ -> Doc -> ID -> DB -> Content (get all @)
 		// TODO if not clear list  -> try -- LOAD old graph file and 
@@ -125,7 +119,7 @@ public class GraphML_Helper {
 				case "twitter":
 					query = "Select "
 							+ "t.user_screenname, t.tweet_content, t.sentiment, t.category, t.hasurl, t.tweet_replytousername, "
-							+ "t.userlistedcount, t.user_creationdate, t.user_friendscount , "
+							+ "t.user_listedcount, t.user_creationdate, t.user_friendscount , "
 							+ "t.user_followerscount, t.user_statusescount  from "+table+" as t where t.tweet_id = "
 							+ Long.parseLong(id);
 					break;
@@ -143,7 +137,13 @@ public class GraphML_Helper {
 					isEmpty = false;
 					screenName = rs.getString(1);
 					content = rs.getString(2);
-					sentiment = rs.getInt(3);
+					sentiment = 0;
+					String sent = rs.getString(3);
+					if (sent.equals("pos"))
+						sentiment = 1;
+					else if (sent.equals("neg"))
+						sentiment = -1;
+					
 					category = rs.getString(4);
 					hasUrl = rs.getBoolean(5);
 					isRetreet = (rs.getString(6).equals("null")) ? false : true;
@@ -211,7 +211,7 @@ public class GraphML_Helper {
 					// get the tweet
 					case "twitter":
 						query = "Select "
-								+ "t.user_screenname, t.cscore, t.user_location, t.user_timezone, t.user_language, t.user_utcoffset, "
+								+ "t.user_screenname, t.desc_score, t.user_location, t.user_timezone, t.user_language, t.user_utcoffset, "
 								+ "t.user_listedcount, t.user_creationdate, t.user_friendscount , "
 								+ "t.user_followerscount, t.user_statusescount  from "+userTable+" as t where t.user_screenname = '"
 								+ target+"'";
@@ -332,8 +332,8 @@ public class GraphML_Helper {
 		
 		
 		try {
-			writeGraphML(graphMLDoc, filename);
-			System.out.println("writen GraphFile to '"+filename+"'");
+			writeGraphML(graphMLDoc, filename, exportDir);
+			System.out.println("writen GraphFile to '"+exportDir.getAbsolutePath()+"/"+filename+"'");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -416,11 +416,12 @@ public class GraphML_Helper {
 	}
 	
 	
-	private static void writeGraphML(org.dom4j.Document graphMLDoc, String name) throws IOException {
+	private static void writeGraphML(org.dom4j.Document graphMLDoc, String name, File dir) throws IOException {
 		
-		String path = FilesUtil.getPathOfRefFile();
-		path = path.replaceAll(FilesUtil.getReferenceFile(), "graphs/"+name);
-
+//		String path = FilesUtil.getPathOfRefFile();
+//		path = path.replaceAll(FilesUtil.getReferenceFile(), "graphs/"+name);
+		
+		String path = dir.getAbsolutePath()+"/"+name;
 		OutputFormat format = OutputFormat.createPrettyPrint();
 		// lets write to a file
 		XMLWriter writer = new XMLWriter(new FileWriter(path), format);

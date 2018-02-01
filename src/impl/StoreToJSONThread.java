@@ -30,14 +30,16 @@ public class StoreToJSONThread extends Thread{
 	private Connection c;
 	private Statement stmt;
 	private String indexPath = "";
+	private String name = "";
 	
 	public StoreToJSONThread(Lucene l, ScoreDoc[] data, 
-			Connection c, Statement stmt, String path)  {
+			Connection c, Statement stmt, String path, String name)  {
 		this.l = l;
 		this.data = data;
 		this.c = c;
 		this.stmt = stmt;
 		indexPath = path;
+		this.name = name;
 	}
 	
 	public final void run() {
@@ -46,7 +48,7 @@ public class StoreToJSONThread extends Thread{
 		long maxdate = Long.MIN_VALUE;
 		
 		// create an output file
-		File json = new File(indexPath + "/data.json");
+		File json = new File(indexPath + "/"+name+".json");
 		FileWriter jsWr = null;
 		try {
 			jsWr = new FileWriter(json);

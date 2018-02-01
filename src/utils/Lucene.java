@@ -1043,18 +1043,18 @@ public enum Lucene {
 	 *            booean
 	 * @throws ParseException
 	 */
-	public void createGraphML_Mention(ScoreDoc[] result, boolean clearList) {
+	public void createGraphML_Mention(ScoreDoc[] result, boolean clearList, String name, File exportDir) {
 		try {
 			String newQuery = "(has@:true)" + " AND (" + last_query + ")";
 			Query nquery = parser.parse(newQuery);
 			ScoreDoc[] fusedMention = querySearcher.searchAll(nquery);
 
-			String name = "mention_graph.graphml";
+			name = name+".graphml";
 			ArrayList<ScoreDoc> a = new ArrayList<>();
 			
 //			 GraphML_Helper.createGraphML_Mention(fusedMention, searcher,
 //			 true, "/Users/michaelhundt/Desktop/"+name);
-			 GraphML_Helper.createGraphML_Mention(fusedMention, searcher,true, name);
+			 GraphML_Helper.createGraphML_Mention(fusedMention, searcher, true, name, exportDir);
 			// GraphML_Helper.createGraphML_Mention(fusedMention, searcher,
 			// true, "./graphs/"+name);
 
@@ -1474,30 +1474,13 @@ public enum Lucene {
 	}
 
 	
-	public void exporttoJSON(String name) {
-		
-		File newIndex = new File(luceneIndex+"/"+name);
-		if (!newIndex.exists()) {
-		    System.out.println("\tcreating directory: " + newIndex.getName());
-		    boolean result = false;
-
-		    try{
-		    	newIndex.mkdir();
-		        result = true;
-		    } 
-		    catch(SecurityException se){
-		        //handle it
-		    }        
-		    if(result) {    
-		        System.out.println("\tDIR created");  
-		    }
-		}
+	public void exporttoJSON(File exportDir, String name) {
 		
 		Connection c = DBManager.getConnection();
 		Statement stmt;
 		try {
 			stmt = c.createStatement();
-			StoreToJSONThread indexer = new StoreToJSONThread(this, last_result.getData(), c, stmt, newIndex.getAbsolutePath());
+			StoreToJSONThread indexer = new StoreToJSONThread(this, last_result.getData(), c, stmt, name, exportDir.getAbsolutePath());
 			indexer.start();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -1510,57 +1493,58 @@ public enum Lucene {
 	 * 
 	 * @param name of the lucene index directory
 	 */
-	public void reindexLastResult(String name)  {
+	public void reindexLastResult(String name, boolean reload, boolean temp, File exportDir)  {
 		
 		reIndexCount++;
 		// MAP indexCount to name
-		
+		File newIndex = null;
 		String ind = luceneIndex;
 		String tempPath = ind.substring(0, ind.lastIndexOf("/")+1);
-		
-		if (!tempPath.endsWith("temp/")) {
-			tempPath +="temp/";
-			File theDir = new File(tempPath);
+		// NOT temp --> take exportDir path
+		if (!temp ) {
+			newIndex = exportDir;
+		}
+		// NOT temp/ ending && temp = true  --> create temp folder
+		else {
+			if (!tempPath.endsWith("temp/") && temp) {
+				tempPath += "temp/";
+				File theDir = new File(tempPath);
 
-			// if the directory does not exist, create it
-			if (!theDir.exists()) {
-			    System.out.println("\tcreating directory: " + theDir.getName());
-			    boolean result = false;
+				// if the directory does not exist, create it
+				if (!theDir.exists()) {
+					System.out.println("\tcreating directory: " + theDir.getName());
+					boolean result = false;
 
-			    try{
-			        theDir.mkdir();
-			        result = true;
-			    } 
-			    catch(SecurityException se){
-			        //handle it
-			    }        
-			    if(result) {    
-			        System.out.println("\tDIR created");  
-			    }
+					try {
+						theDir.mkdir();
+						result = true;
+					} catch (SecurityException se) {
+						// handle it
+					}
+					if (result) {
+						System.out.println("\tDIR created");
+					}
+				}
 			}
-		}
-		
-		
-		File newIndex = new File(tempPath+""+name);
-		if (!newIndex.exists()) {
-		    System.out.println("\tcreating directory: " + newIndex.getName());
-		    boolean result = false;
 
-		    try{
-		    	newIndex.mkdir();
-		        result = true;
-		    } 
-		    catch(SecurityException se){
-		        //handle it
-		    }        
-		    if(result) {    
-		        System.out.println("\tDIR created");  
-		    }
+			newIndex = new File(tempPath + "" + name);
+			if (!newIndex.exists()) {
+				System.out.println("\tcreating directory: " + newIndex.getName());
+				boolean result = false;
+
+				try {
+					newIndex.mkdir();
+					result = true;
+				} catch (SecurityException se) {
+					// handle it
+				}
+				if (result) {
+					System.out.println("\tDIR created");
+				}
+			}
+			System.out.println("\tcreated directory '" + newIndex + "' ... DONE");
+			printlnToConsole("\tcreated directory '"+newIndex+"' ... DONE");
 		}
-		
-		System.out.println("\tcreated directory '" + newIndex + "' ... DONE");
-		printlnToConsole("\tcreated directory '"+newIndex+"' ... DONE");
-		
 		
 		try {
 			Directory dir = FSDirectory.open(Paths.get(newIndex.getAbsolutePath()));
@@ -1592,7 +1576,7 @@ public enum Lucene {
 			Statement stmt = c.createStatement();
 		
 			ReIndexingThread indexer = new ReIndexingThread(this, last_result.getData(), c, stmt, writer, 
-					true, newIndex.getAbsolutePath());
+					reload, newIndex.getAbsolutePath());
 			indexer.start();
 			
 		} catch (IOException | SQLException e1 ) {
@@ -1722,9 +1706,8 @@ public enum Lucene {
 	}
 
 
-	public void takeScreenshot(String name, Rectangle appBounds) {
+	public void takeScreenshot(String name, Rectangle appBounds, String path) {
 		
-		String path = getLucenIndexPath();
 		try {
 			BufferedImage image = null;
 			if ( appBounds == null)
@@ -1733,7 +1716,7 @@ public enum Lucene {
 				image = new Robot().createScreenCapture(appBounds);
 			
 			if (image != null)
-				ImageIO.write(image, "png", new File(path+"/"+name+"/screenshot.png"));
+				ImageIO.write(image, "png", new File(path+"/"+name+".png"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (HeadlessException e) {
