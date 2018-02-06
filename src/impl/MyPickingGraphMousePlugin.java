@@ -416,6 +416,7 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
 			}
             
 //            l.showDetailsOfSelection( picked, pickedEdges, clear);
+			
             l.showDetailsOfSelection( nodes, edges, clear);
 //            l.showCountriesOfSelection(picked, pickedEdges, clear);
         }

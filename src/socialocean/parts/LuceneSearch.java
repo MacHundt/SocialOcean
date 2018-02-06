@@ -529,8 +529,8 @@ public class LuceneSearch {
 				Rectangle appBounds = new Rectangle(window.getX(), window.getY(), window.getWidth(), window.getHeight());
 				l.takeScreenshot(name, appBounds, newIndex.getAbsolutePath());
 				
-				l.exporttoJSON(newIndex, name);
 				l.reindexLastResult(name, false, false, newIndex);
+				l.exporttoJSON(newIndex, name);
 				
 //				l.createGraphML_Mention(l.getLastResult().getData(), true, name, newIndex);
 				

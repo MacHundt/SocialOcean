@@ -1480,7 +1480,7 @@ public enum Lucene {
 		Statement stmt;
 		try {
 			stmt = c.createStatement();
-			StoreToJSONThread indexer = new StoreToJSONThread(this, last_result.getData(), c, stmt, name, exportDir.getAbsolutePath());
+			StoreToJSONThread indexer = new StoreToJSONThread(this, last_result.getData(), c, stmt,  exportDir.getAbsolutePath(), name);
 			indexer.start();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -1636,9 +1636,14 @@ public enum Lucene {
 
 
 	public <V, E> void showDetailsOfSelection(Collection<V> nodes, Collection<E> edges, boolean clear) {
-		SHOWCountries = false;
 		DATACHANGED = true;
 		GraphPanelCreator3.createDetailGraph(nodes, edges, withMention, withFollows, clear);
+		
+		Display.getDefault().asyncExec(new Runnable() {
+		    public void run() {
+		    	SettingsPart.selectCountries(false);
+		    }
+		});
 	}
 
 
@@ -1668,7 +1673,7 @@ public enum Lucene {
 		
 		// User locations or Edges locations?
 		if (SHOWUser) {
-			if (allUser.isEmpty()) {
+			if (allEdges.isEmpty() && allUser.isEmpty()) {
 				// take last_result
 				MapPanelCreator.mapCon.setSelection(null);
 				showCurrentResult();
@@ -1687,7 +1692,7 @@ public enum Lucene {
 		}
 		
 		else if (SHOWTweet) {
-			if (allEdges.isEmpty()) {
+			if (allEdges.isEmpty() && allUser.isEmpty()) {
 				MapPanelCreator.mapCon.setSelection(null);
 				showCurrentResult();
 				return;

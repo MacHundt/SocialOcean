@@ -517,7 +517,7 @@ public class GraphPanelCreator {
 						if (target.isEmpty())
 							continue;
 
-						target = target.replace(":", "").trim();
+						target = target.replaceAll("[:']", "").trim();
 
 						if (!nodeNames.containsKey(target)) {
 							nodeID = new MyUser("n" + nodesCounter++, target);
@@ -904,42 +904,45 @@ public class GraphPanelCreator {
 		if (graph.getEdgeCount() == 0)
 			return;
 		
-		BetweennessCentrality<MyUser, MyEdge> bc = new BetweennessCentrality<MyUser, MyEdge>(graph);
-		double EBscore = 0.0;
-		for (MyEdge e : graph.getEdges()) {
-			double score = bc.getEdgeScore(e);
-			if ( score > EBscore)
-            {
-				EBscore = score;
-				e.addBetweennessScore(EBscore);
-            }
-		}
-		
-		
-		DegreeScorer<MyUser> deg = new DegreeScorer<>(graph);
+		boolean tooMuch = false;
+		if (graph.getEdgeCount() > 15000 & graph.getVertexCount() > 10000)
+			tooMuch = true;
 		
 		double UBScore = 0.0;
+		double EBscore = 0.0;
 		int maxDeg = 0;
 		double globalCentrality = 0.0;
 		long sum = 0;
-		for (MyUser u : graph.getVertices()) {
-			int degScore = deg.getVertexScore(u);
-			double betScore = bc.getVertexScore(u);
-			u.addBetweennessScore(betScore);
-			u.addDegree(degScore);
-			if (isBetweenness)
-				sum += betScore;
-			else if (isDegree)
-				sum += degScore;
-			
-			if (betScore > UBScore)
-            {
-				UBScore = betScore;
-            }
-			if (degScore > maxDeg) {
-				maxDeg = degScore;
+		
+		if (!tooMuch) {
+			BetweennessCentrality<MyUser, MyEdge> bc = new BetweennessCentrality<MyUser, MyEdge>(graph);
+			for (MyEdge e : graph.getEdges()) {
+				double score = bc.getEdgeScore(e);
+				if (score > EBscore) {
+					EBscore = score;
+					e.addBetweennessScore(EBscore);
+				}
 			}
-			
+
+			DegreeScorer<MyUser> deg = new DegreeScorer<>(graph);
+
+			for (MyUser u : graph.getVertices()) {
+				int degScore = deg.getVertexScore(u);
+				double betScore = bc.getVertexScore(u);
+				u.addBetweennessScore(betScore);
+				u.addDegree(degScore);
+				if (isBetweenness)
+					sum += betScore;
+				else if (isDegree)
+					sum += degScore;
+
+				if (betScore > UBScore) {
+					UBScore = betScore;
+				}
+				if (degScore > maxDeg) {
+					maxDeg = degScore;
+				}
+			}
 		}
 		
 		if (isBetweenness) {

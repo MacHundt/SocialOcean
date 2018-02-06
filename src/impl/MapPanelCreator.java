@@ -13,6 +13,9 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -20,8 +23,13 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
-import java.util.concurrent.Semaphore;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -61,6 +69,8 @@ public class MapPanelCreator {
 	private static JXMapViewer mapViewer = null;
 	public static int maxZoom = 19;
 	public static int zoom = 16;
+	
+	private static String Thunder_API = "8ab08504fd7e4a3bb4953f1080448e26";
 	
 	private static int tileThreads = 4;
 
@@ -285,6 +295,92 @@ public class MapPanelCreator {
 					return url;
 				}
 			};
+			
+//			http://c.tiles.wmflabs.org/hillshading/${z}/${x}/${y}.png
+			TileFactoryInfo hillshading = new TileFactoryInfo("" + "Hillshading", 2, // min
+					18, // max allowed zoom level
+					maxZoom, // max zoom level
+					256, // tile size (must be square!!)
+					true, true, // x/y orientation is normal
+					"http://c.tiles.wmflabs.org/hillshading", // baseURL
+					"x", "y", "z") {
+				public String getTileUrl(int x, int y, int zoom) {
+					zoom = maxZoom - zoom;
+					String url = this.baseURL + "/" + zoom + "/" + x + "/" + y + ".png";
+					return url;
+				}
+			};
+			
+			 /* Start of Fix */
+	        TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+	            public java.security.cert.X509Certificate[] getAcceptedIssuers() { return null; }
+	            public void checkClientTrusted(X509Certificate[] certs, String authType) { }
+	            public void checkServerTrusted(X509Certificate[] certs, String authType) { }
+
+	        } };
+
+	        SSLContext sc;
+			try {
+				sc = SSLContext.getInstance("SSL");
+				sc.init(null, trustAllCerts, new java.security.SecureRandom());
+				HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+			} catch (NoSuchAlgorithmException | KeyManagementException e1) {
+				e1.printStackTrace();
+			}
+
+	        // Create all-trusting host name verifier
+	        HostnameVerifier allHostsValid = new HostnameVerifier() {
+	            public boolean verify(String hostname, SSLSession session) { return true; }
+	        };
+	        // Install the all-trusting host verifier
+	        HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+	        /* End of the fix*/
+			
+//			https://{s}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=8ab08504fd7e4a3bb4953f1080448e26
+			TileFactoryInfo outdoor = new TileFactoryInfo("" + "Thunderforest_Outdoor", 2, // min
+					18, // max allowed zoom level
+					maxZoom, // max zoom level
+					256, // tile size (must be square!!)
+					true, true, // x/y orientation is normal
+					"https://tile.thunderforest.com/outdoors", // baseURL
+					"x", "y", "z") {
+				public String getTileUrl(int x, int y, int zoom) {
+					zoom = maxZoom - zoom;
+					String url = this.baseURL + "/" + zoom + "/" + x + "/" + y + ".png?apikey="+Thunder_API+"&ssl=true";
+					return url;
+				}
+			};
+			
+//			https://{s}.tile.thunderforest.com/transport/{z}/{x}/{y}.png?apikey=<insert-your-apikey-here>
+			TileFactoryInfo transport = new TileFactoryInfo("" + "Thunderforest_Transport", 2, // min
+					18, // max allowed zoom level
+					maxZoom, // max zoom level
+					256, // tile size (must be square!!)
+					true, true, // x/y orientation is normal
+					"https://tile.thunderforest.com/transport", // baseURL
+					"x", "y", "z") {
+				public String getTileUrl(int x, int y, int zoom) {
+					zoom = maxZoom - zoom;
+					String url = this.baseURL + "/" + zoom + "/" + x + "/" + y + ".png?apikey="+Thunder_API+"&ssl=true";
+					return url;
+				}
+			};
+			
+//			https://{s}.tile.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey=<insert-your-apikey-here>
+			TileFactoryInfo landscape = new TileFactoryInfo("" + "Thunderforest_Landscape", 2, // min
+					18, // max allowed zoom level
+					maxZoom, // max zoom level
+					256, // tile size (must be square!!)
+					true, true, // x/y orientation is normal
+					"https://tile.thunderforest.com/landscape", // baseURL
+					"x", "y", "z") {
+				public String getTileUrl(int x, int y, int zoom) {
+					zoom = maxZoom - zoom;
+					String url = this.baseURL + "/" + zoom + "/" + x + "/" + y + ".png?apikey="+Thunder_API+"&ssl=true";
+					return url;
+				}
+			};
+
 
 			// TileFactoryInfo osm_grey = new TileFactoryInfo(""
 			// + "Osm Grey", 2, // min
@@ -306,9 +402,13 @@ public class MapPanelCreator {
 			// factories.add(new DefaultTileFactory(osm_grey));
 
 			factories.add(new DefaultTileFactory(stamen));
+			factories.add(new DefaultTileFactory(googlemaps));
+			factories.add(new DefaultTileFactory(landscape));
+			factories.add(new DefaultTileFactory(transport));
+//			factories.add(new DefaultTileFactory(outdoor));
+			factories.add(new DefaultTileFactory(hillshading));
 			factories.add(new DefaultTileFactory(osmInfo));
 			factories.add(new DefaultTileFactory(veInfo));
-			factories.add(new DefaultTileFactory(googlemaps));
 
 			// faster Tile loading
 			for (TileFactory tf : factories)

@@ -28,8 +28,8 @@ public class TopicClassification {
 	private JointClassification jc;
 
 	// List of categories
-	private String[] CATEGORIES = { "Computers & Technology", "Education", "Family", "Food", "Health", "Marketing",
-			"Music", "News & Media", "Other", "Pets", "Politics", "Recreation & Sports" };
+	private String[] CATEGORIES = { "Computers_Technology", "Education", "Family", "Food", "Health", "Marketing",
+			"Music", "News_Media", "Other", "Pets", "Politics", "Recreation_Sports" };
 
 	private static int NGRAM_SIZE = 6;
 
@@ -42,7 +42,7 @@ public class TopicClassification {
 
 		for (int s = 1; s <= 1; s++) {
 
-			File TRAINING_DIR = new File("/Users/michaelhundt/Desktop/Applikation/TrainedData/DataSet" + s);
+			File TRAINING_DIR = new File("/Users/michaelhundt/Documents/TrainData/Lingpipe/NewsCategory/TrainedData/DataSet" + s);
 			classifier = DynamicLMClassifier.createNGramProcess(CATEGORIES, NGRAM_SIZE);
 
 			for (int i = 0; i < CATEGORIES.length; ++i) {

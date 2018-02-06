@@ -1,6 +1,5 @@
 package impl;
 
-import java.awt.Color;
 import java.util.Date;
 
 public class MyEdge {

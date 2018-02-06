@@ -15,17 +15,25 @@ public class MapCountries extends MultiPolygon{
 
 
 	private Color backgroundColor = null;
+	private String name = "";
 	
-	public MapCountries(Polygon[] polygons, GeometryFactory factory) {
+	public MapCountries(Polygon[] polygons, GeometryFactory factory, String name) {
 		super(polygons, factory);
+		this.name = name;
 	}
 	
 	public Color getBackgroundColor() {
 		return backgroundColor;
 	}
+	
+	public String getName() {
+		return name;
+	}
 
 	public void setBackgroundColor(Color backgroundcColor) {
 		this.backgroundColor = backgroundcColor;
 	}
+	
+	
 
 }
