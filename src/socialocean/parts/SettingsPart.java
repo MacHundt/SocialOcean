@@ -229,9 +229,26 @@ public class SettingsPart {
 				Lucene l = Lucene.INSTANCE;
 				Lucene.SHOWHeatmap = heatmap.getSelection();
 				MapPanelCreator.showHeatmapMenu();
-				Result r = l.getLastResult();
-				if (r != null)
-					l.createMapMarkers(l.getLastResult().getData(), true);
+				
+				// remove GridCells
+				if (!heatmap.getSelection()) {
+					MapPanelCreator.mapCon.resetGridCells();
+					MapPanelCreator.mapCon.addDataChanged();
+				}
+				
+				else {
+					//show selection
+					if (MapPanelCreator.mapCon.isSelection()) {
+						l.showSelectionInMap();
+					}
+					else {
+						//show last result
+						Result r = l.getLastResult();
+						if (r != null)
+							l.createMapMarkers(l.getLastResult().getData(), true);
+					}
+				}
+				
 			}
 			
 			

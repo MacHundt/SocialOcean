@@ -75,8 +75,8 @@ public class GraphPanelCreator3 {
 	private static ArrayList<MyEdge> edges = new ArrayList<>();
 	public static boolean SELECTED = false;
 	
-	private static ArrayList<MyEdge> allEdges = new ArrayList<>();
-	private static ArrayList<MyUser> allUser = new ArrayList<>();
+	public static ArrayList<MyEdge> allEdges = new ArrayList<>();
+	public static ArrayList<MyUser> allUser = new ArrayList<>();
 	
 	
 	public static JPanel getGraphPanel() {

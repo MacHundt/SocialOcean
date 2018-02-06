@@ -83,7 +83,10 @@ public class MapController extends Observable {
 	}
 	
 	public boolean isSelection() {
-		return selection == null;
+		if (selection == null || selection.isEmpty()) {
+			return false;
+		}
+		return true;
 	}
 
 	public synchronized void  setSelection(ArrayList<?> allItems) {

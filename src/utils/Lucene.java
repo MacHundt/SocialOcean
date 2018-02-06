@@ -1645,6 +1645,12 @@ public enum Lucene {
 		    }
 		});
 	}
+	
+	
+	public void showSelectionInMap() {
+		showClustersInMap(GraphPanelCreator3.allUser, GraphPanelCreator3.allEdges);
+	}
+	
 
 
 	public void showClustersInMap(ArrayList<MyUser> allUser, ArrayList<MyEdge> allEdges) {
