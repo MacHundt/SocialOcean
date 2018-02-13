@@ -701,7 +701,8 @@ public class GraphPanelCreator {
 			stmt.close();
 			c.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			System.out.println("No Followed Edges!!");
+			return;
 		}
 
 	}
