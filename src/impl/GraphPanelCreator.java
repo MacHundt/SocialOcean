@@ -479,6 +479,7 @@ public class GraphPanelCreator {
 			
 				String id = (document.getField("id")).stringValue();						// tweet_id
 				String mentionString = (document.getField("mention")).stringValue();
+				boolean hasMention =  ((document.getField("has@")).stringValue() == "true") ? true : false;
 				String screenName = (document.getField("name")).stringValue().trim();
 
 				// EDGE information
@@ -511,6 +512,29 @@ public class GraphPanelCreator {
 				
 				// ADD target nodes
 				String[] mentions = mentionString.split(" ");
+				
+				if (!hasMention && mentionString.isEmpty()) {
+					// Self-Edge for every tweet without mention
+					MyEdge edge = null;
+					// ADD Edge: source to Target
+					String edgesNames = "" + sourceID.getId() + "_" + sourceID.getId();
+					if (edgesMap.containsKey(edgesNames)) {
+						edgesMap.put(edgesNames, edgesMap.get(edgesNames) + 1);
+					} else {
+						edgesMap.put(edgesNames, new Integer(1));
+					}
+
+					// Every Edge Unique!
+					edge = new MyEdge(id);
+					edge.changeToString(MyEdge.LabelType.SentiStrenth);
+
+					if (hasGeo)
+						edge.addPoint(lat, lon);
+
+					// Self-Edge
+					graph.addEdge(edge, sourceID, sourceID);
+				}
+				
 				if (withMention) {
 					for (String target : mentions) {
 
@@ -545,11 +569,11 @@ public class GraphPanelCreator {
 						if (hasGeo)
 							edge.addPoint(lat, lon);
 						
-						// No self-Edges
+						// No self-mention-Edges
 						if (!sourceID.getName().equals(nodeID.getName())) {
 							if (graph.containsEdge(edge)) {
 								// TODO add edges .. tweet_id to MyEdge
-								System.out.println("Edge: "+edge.getId()+" already exists ..");
+								System.out.println("Self-Mention-Edge: "+edge.getId()+" already exists ..");
 							}
 							else 
 								graph.addEdge(edge, sourceID, nodeID);

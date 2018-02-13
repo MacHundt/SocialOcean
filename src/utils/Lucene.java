@@ -1164,6 +1164,10 @@ public enum Lucene {
 			
 			HashSet<GeoPosition> points = new HashSet<>();
 			
+			Lucene l = Lucene.INSTANCE;
+			
+			ArrayList<MyEdge> noGeoEdge = new ArrayList<>();
+			
 			for (MyEdge edge : edges) {
 				String id = edge.getId();
 				String senti = edge.getSentiment();
@@ -1180,6 +1184,10 @@ public enum Lucene {
 					else
 						MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, senti, lat, lon));
 				}
+				else {
+					// if no geo location: print content to console
+					noGeoEdge.add(edge);
+				}
 				
 //				String senti = "neutral";
 //				if (sentiment > 0)
@@ -1188,6 +1196,11 @@ public enum Lucene {
 //					senti = "negative";
 				
 			}
+			
+			if (noGeoEdge.size() > 0)
+				System.out.println("Edges with no geo: "+ noGeoEdge.size());
+			//TODO Do something with these edges ...
+			//OR print ALL selected edges in a Table?  -> add a new Part?
 			
 			MapPanelCreator.zoomToBestFit(points);
 			MapPanelCreator.showWayPointsOnMap();

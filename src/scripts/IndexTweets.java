@@ -433,6 +433,8 @@ public class IndexTweets {
 	private static String getMentionsFromTweets(String text_content) {
 		String output = "";
 		for (String token : text_content.split(" ")) {
+			// Make a retweet to a simple mention:
+			// RT @peter:  -> @peter 
 			if (token.startsWith("@")) {
 				token = token.replaceAll("[,:]", "");
 				output += token.substring(1) + " ";

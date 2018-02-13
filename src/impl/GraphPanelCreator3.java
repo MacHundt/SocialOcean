@@ -183,12 +183,14 @@ public class GraphPanelCreator3 {
 					{
 						if(cell instanceof mxCell) {
 							if (((mxCell)cell).getValue() instanceof MyUser) {
-								String name = ((MyUser)((mxCell)cell).getValue()).toString();
+								MyUser user = ((MyUser)((mxCell)cell).getValue());
+								String name = user.toString();
 //								System.out.println("User: "+name);
 							}
 							
 							if (((mxCell)cell).getValue() instanceof MyEdge) {
-								String content = ((MyEdge)((mxCell)cell).getValue()).getContent();
+								MyEdge edge = ((MyEdge)((mxCell)cell).getValue());
+								String content = edge.getContent();
 //								System.out.println("Edge: "+content);
 							}
 						}
@@ -299,89 +301,92 @@ public class GraphPanelCreator3 {
 				MyUser user = (MyUser) n;
 				String user_name = user.getName();
 				String id = user.getId();
+				
+				createUserNode(user_name, id, c, nodeNames, sources);
 
-				try {
-					String creationdate = "";
-					String user_language = "";
-					String gender = "unknown";
-
-					int user_statuses = 0;
-					int user_lists = 0;
-					int user_friends = 0;
-					int user_follower = 0;
-					double desc_score = 0.0;
-
-					double lati = 0.0;
-					double longi = 0.0;
-					int geocode_type = 10;
-
-					boolean foundUser = false;
-					Statement st = c.createStatement();
-					String query = "Select * from "+DBManager.getUserTable()+" where user_screenname = '" + user_name + "';";
-					ResultSet rs = st.executeQuery(query);
-					while (rs.next()) {
-						foundUser = true;
-						creationdate = rs.getString("user_creationdate");
-						user_language = rs.getString("user_language");
-						desc_score = rs.getDouble("desc_score");
-						gender = rs.getString("gender");
-						user_statuses = rs.getInt("user_statusescount");
-						user_lists = rs.getInt("user_listedcount");
-						user_friends = rs.getInt("user_friendscount");
-						user_follower = rs.getInt("user_followerscount");
-						lati = rs.getDouble("latitude");
-						longi = rs.getDouble("longitude");
-						geocode_type = rs.getInt("geocoding_type");
-					}
-					// a sourceUser --> many details
-					if (foundUser) {
-						// ADD source node
-						Object nodeID = null;
-						if (!nodeNames.containsKey(user_name)) {
-							nodeID = new MyUser(id, user_name);
-							((MyUser)nodeID).addLanguage(user_language);
-							((MyUser)nodeID).addCredibility(desc_score);
-							((MyUser)nodeID).addGender(gender);
-							
-							if (lati != 0.0 || longi != 0.0) {
-								((MyUser)nodeID).addPoint(lati, longi);
-							}
-							
-							((MyUser)nodeID).setNameVisible();
-
-							nodeID = graph.insertVertex(parent, null, nodeID, 0, 0, 40, 40,
-									"ROUNDED;strokeColor=white;fillColor=white");
-							nodeNames.put(user_name, nodeID);
-							sources.put(user_name, nodeID);
-
-						} else {
-							nodeID = nodeNames.get(user_name);
-						}
-					} else {
-//						NO source node -- add just the screenname
-						Object nodeID = null;
-						if (!nodeNames.containsKey(user_name)) {
-							nodeID = new MyUser(id, user_name);
-							((MyUser)nodeID).setNameVisible();
-
-							nodeID = graph.insertVertex(parent, null, nodeID, 0, 0, 40, 40,
-									"ROUNDED;strokeColor=white;fillColor=white");
-							nodeNames.put(user_name, nodeID);
-							sources.put(user_name, nodeID);
-
-						} else {
-							nodeID = nodeNames.get(user_name);
-						}
-					}
-					
-					st.close();
-				} catch (SQLException e1) {
-					e1.printStackTrace();
-				}
+//				try {
+//					String creationdate = "";
+//					String user_language = "";
+//					String gender = "unknown";
+//
+//					int user_statuses = 0;
+//					int user_lists = 0;
+//					int user_friends = 0;
+//					int user_follower = 0;
+//					double desc_score = 0.0;
+//
+//					double lati = 0.0;
+//					double longi = 0.0;
+//					int geocode_type = 10;
+//
+//					boolean foundUser = false;
+//					Statement st = c.createStatement();
+//					String query = "Select * from "+DBManager.getUserTable()+" where user_screenname = '" + user_name + "';";
+//					ResultSet rs = st.executeQuery(query);
+//					while (rs.next()) {
+//						foundUser = true;
+//						creationdate = rs.getString("user_creationdate");
+//						user_language = rs.getString("user_language");
+//						desc_score = rs.getDouble("desc_score");
+//						gender = rs.getString("gender");
+//						user_statuses = rs.getInt("user_statusescount");
+//						user_lists = rs.getInt("user_listedcount");
+//						user_friends = rs.getInt("user_friendscount");
+//						user_follower = rs.getInt("user_followerscount");
+//						lati = rs.getDouble("latitude");
+//						longi = rs.getDouble("longitude");
+//						geocode_type = rs.getInt("geocoding_type");
+//					}
+//					// a sourceUser --> many details
+//					if (foundUser) {
+//						// ADD source node
+//						Object nodeID = null;
+//						if (!nodeNames.containsKey(user_name)) {
+//							nodeID = new MyUser(id, user_name);
+//							((MyUser)nodeID).addLanguage(user_language);
+//							((MyUser)nodeID).addCredibility(desc_score);
+//							((MyUser)nodeID).addGender(gender);
+//							
+//							if (lati != 0.0 || longi != 0.0) {
+//								((MyUser)nodeID).addPoint(lati, longi);
+//							}
+//							
+//							((MyUser)nodeID).setNameVisible();
+//
+//							nodeID = graph.insertVertex(parent, null, nodeID, 0, 0, 40, 40,
+//									"ROUNDED;strokeColor=white;fillColor=white");
+//							nodeNames.put(user_name, nodeID);
+//							sources.put(user_name, nodeID);
+//
+//						} else {
+//							nodeID = nodeNames.get(user_name);
+//						}
+//					} else {
+////						NO source node -- add just the screenname
+//						Object nodeID = null;
+//						if (!nodeNames.containsKey(user_name)) {
+//							nodeID = new MyUser(id, user_name);
+//							((MyUser)nodeID).setNameVisible();
+//
+//							nodeID = graph.insertVertex(parent, null, nodeID, 0, 0, 40, 40,
+//									"ROUNDED;strokeColor=white;fillColor=white");
+//							nodeNames.put(user_name, nodeID);
+//							sources.put(user_name, nodeID);
+//
+//						} else {
+//							nodeID = nodeNames.get(user_name);
+//						}
+//					}
+//					
+//					st.close();
+//				} catch (SQLException e1) {
+//					e1.printStackTrace();
+//				}
 
 			}
 		}
 		
+		int uCounter = 0;
 		for (E e : edges) {
 			if (e instanceof MyEdge) {
 				MyEdge edge = (MyEdge) e;
@@ -437,6 +442,14 @@ public class GraphPanelCreator3 {
 							rs = tst.executeQuery(query);
 							while (rs.next()) {
 								target = rs.getString(1);
+							}
+							
+							if (nodeNames.get(source) == null) {
+								createUserNode(source, "u"+uCounter++, c, nodeNames, sources);
+							}
+							
+							if (nodeNames.get(target) == null) {
+								createUserNode(target, "u"+uCounter++, c, nodeNames, sources);
 							}
 
 							String edgesNames = "" + ((mxCell) nodeNames.get(source)).getId() + "_"
@@ -514,7 +527,17 @@ public class GraphPanelCreator3 {
 								}
 
 								Object gedge = null;
+								Object ob = nodeNames.get(source);
+								
+								if (nodeNames.get(source) == null) {
+									createUserNode(source, "u"+uCounter++, c, nodeNames, sources);
+								}
+								
+								if (nodeNames.get(target) == null) {
+									createUserNode(target, "u"+uCounter++, c, nodeNames, sources);
+								}
 								Object sourceID = nodeNames.get(source);
+								
 								// ADD Edge: source to Target
 								String edgesNames = "" + ((mxCell) sourceID).getId() + "_" + ((mxCell) tnode).getId();
 								if (edgesMap.containsKey(edgesNames)) {
@@ -627,6 +650,96 @@ public class GraphPanelCreator3 {
 	
 	
 	
+	private static void createUserNode(String user_name, String id, Connection c, HashMap<String, Object> nodeNames,
+			HashMap<String, Object> sources) {
+		
+		try {
+			String creationdate = "";
+			String user_language = "";
+			String gender = "unknown";
+
+			int user_statuses = 0;
+			int user_lists = 0;
+			int user_friends = 0;
+			int user_follower = 0;
+			double desc_score = 0.0;
+
+			double lati = 0.0;
+			double longi = 0.0;
+			int geocode_type = 10;
+
+			boolean foundUser = false;
+			Statement st = c.createStatement();
+			String query = "Select * from "+DBManager.getUserTable()+" where user_screenname = '" + user_name + "';";
+			ResultSet rs = st.executeQuery(query);
+			while (rs.next()) {
+				foundUser = true;
+				creationdate = rs.getString("user_creationdate");
+				user_language = rs.getString("user_language");
+				desc_score = rs.getDouble("desc_score");
+				gender = rs.getString("gender");
+				user_statuses = rs.getInt("user_statusescount");
+				user_lists = rs.getInt("user_listedcount");
+				user_friends = rs.getInt("user_friendscount");
+				user_follower = rs.getInt("user_followerscount");
+				lati = rs.getDouble("latitude");
+				longi = rs.getDouble("longitude");
+				geocode_type = rs.getInt("geocoding_type");
+			}
+			// a sourceUser --> many details
+			if (foundUser) {
+				// ADD source node
+				Object nodeID = null;
+				if (!nodeNames.containsKey(user_name)) {
+					nodeID = new MyUser(id, user_name);
+					((MyUser)nodeID).addLanguage(user_language);
+					((MyUser)nodeID).addCredibility(desc_score);
+					((MyUser)nodeID).addGender(gender);
+					
+					if (lati != 0.0 || longi != 0.0) {
+						((MyUser)nodeID).addPoint(lati, longi);
+					}
+					
+					((MyUser)nodeID).setNameVisible();
+
+					nodeID = graph.insertVertex(parent, null, nodeID, 0, 0, 40, 40,
+							"ROUNDED;strokeColor=white;fillColor=white");
+					nodeNames.put(user_name, nodeID);
+					sources.put(user_name, nodeID);
+
+				} else {
+					nodeID = nodeNames.get(user_name);
+				}
+			} else {
+//				NO source node -- add just the screenname
+				Object nodeID = null;
+				if (!nodeNames.containsKey(user_name)) {
+					nodeID = new MyUser(id, user_name);
+					((MyUser)nodeID).setNameVisible();
+
+					nodeID = graph.insertVertex(parent, null, nodeID, 0, 0, 40, 40,
+							"ROUNDED;strokeColor=white;fillColor=white");
+					nodeNames.put(user_name, nodeID);
+					sources.put(user_name, nodeID);
+
+				} else {
+					nodeID = nodeNames.get(user_name);
+				}
+			}
+			
+			st.close();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+	}
+
+	
+	
+	private static MyUser getFullUser(String user_name, Connection c) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	public static void createSimpleGraph(ScoreDoc[] result, IndexSearcher searcher, boolean withMention, boolean withFollows) {
 		// CLEAR UP
 		Object[] remove = graph.getChildVertices(parent);
