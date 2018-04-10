@@ -6,11 +6,11 @@
          id="product"
          point="org.eclipse.core.runtime.products">
       <product
-            name="SocialOcean"
+            name="SocialBubble"
             application="org.eclipse.e4.ui.workbench.swt.E4Application">
          <property
                name="appName"
-               value="SocialOcean">
+               value="SocialBubble">
          </property>
       </product>
    </extension>
