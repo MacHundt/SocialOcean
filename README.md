@@ -52,23 +52,37 @@ The first two (1) und (2) scripts need the following database fields:
 	tweet_id, long
 	tweet_content,  String
 
-The indexing scripts (3) in the current form needs the following database fields:
+The indexing scripts (3) in the current form needs the following database fields from the **tweets** table:
 
--	tweet_id, 			long
--	tweet_creationdate,		String, timestamp of the form "yyyy-dd-MM hh:mm:ss", example: "2013-08-01 01:15:00"
--	tweet_content,			String
--	relationship,			String (Tweet, Followed)
--	latitude,			double
--	longitude, 			double
--	hasurl, 			boolean
--	source, 			String (=user_screenname)
--	positive, 			int (result of SentiStrength.jar)
--	negative, 			int (result of SentiStrength.jar)
--	category, 			String (from AddCategoryScript.java)
--	sentiment, 			String (from AddCategoryScript.java)
+-	_tweet_id_, 			**long**
+-	_tweet_creationdate_,		**String**, timestamp of the form "yyyy-dd-MM hh:mm:ss", example: "2013-08-01 01:15:00"
+-	_tweet_content_,			**String**
+-	_relationship_,			**String** (Tweet, Followed)
+-	_latitude_,			**double**
+-	_longitude_, 			**double**
+-	_hasurl_, 			**boolean**
+- _user___screenname_, 	**String** 
+-	_source_, 			**String**
+- _user___language_, **String**
+-	_positive_, 			**int** (result of SentiStrength.jar)
+-	_negative_, 			**int** (result of SentiStrength.jar)
+-	_category_, 			**String** (AddCategoryScript.java)
+-	_sentiment_, 			**String** (AddCategoryScript.java)
 
-and yields the following indexed Lucene fields:
+and the following fields from the **users** table:
 
+- _gender_, **String** (default: unknown)
+- _user___statusescount_, **int**
+- _user___followerscount_, **int**
+- _user___friendscount_, **int**
+- _user___listedcount_, **int**
+- _desc___score_, **double** ( [0,1] value that rates the text of the user description )
+- _latitude_, **double** (Geocoding.java of users location)\* 
+- _longitude_, **double** (Geocoding.java)\*
+
+\* import **reference data**: _cities1000_, _timezone\_shapes_
+
+It yields the following indexed Lucene fields:
 - **type**, StringField: what data type are you indexing. Here we use "twitter".
 - **id**, StringField: we store the individual tweet\_id
 - **relationship**, StringField: what kind of link
