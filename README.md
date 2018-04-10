@@ -69,7 +69,7 @@ The indexing scripts (3) in the current form needs the following database fields
 -	_category_, 			**String** (AddCategoryScript.java)
 -	_sentiment_, 			**String** (AddCategoryScript.java)
 
-and the following fields from the **users** table:
+And the following fields from the **users** table:
 
 - _gender_, **String** (default: unknown)
 - _user___statusescount_, **int**
@@ -78,27 +78,9 @@ and the following fields from the **users** table:
 - _user___listedcount_, **int**
 - _desc___score_, **double** ( [0,1] value that rates the text of the user description )
 - _latitude_, **double** (Geocoding.java of users location)\* 
-- _longitude_, **double** (Geocoding.java)\*
+- _longitude_, **double** (Geocoding.java)\*  
 
-\* import **reference data**: _cities1000_, _timezone\_shapes_
-
-It yields the following indexed Lucene fields:
-- **type**, StringField: what data type are you indexing. Here we use "twitter".
-- **id**, StringField: we store the individual tweet\_id
-- **relationship**, StringField: what kind of link
-- **category**, StringField
-- **hasURL**, StringField: boolean
-- **name**, StringField: the user\_screenname
-- **sentiment**, StringField (pos, neg, neu)
-- **neg**, StringField
-- **pos**, StringField
-- **tags**, TextField: all #tags
-- **mention**, TextField: all @mentions
-- **content**, TextField: the tweet content
-- **geo**, GeoPointField: taken from latitude and longitude
-
-Depending on the data sources you use, you could change and adapt these fields.
-
+\*import **reference data**: [_cities1000_](http://download.geonames.org/export/dump/) from geonames and [_timezone\_shapes_](https://github.com/evansiroky/timezone-boundary-builder/releases):  
 
 
 ## Useful Tools
