@@ -16,7 +16,7 @@ import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.widgets.Composite;
 import org.piccolo2d.extras.pswing.PSwingCanvas;
 
-import impl.GraphPanelCreator3;
+import impl.DetailedGraphCreator;
 import swingintegration.example.EmbeddedSwingComposite;
 import utils.Swing_SWT;
 
@@ -60,7 +60,7 @@ public class GraphPart {
  		
 		rootContainer = new JApplet();
 		
-		JPanel panel = GraphPanelCreator3.getGraphPanel();
+		JPanel panel = DetailedGraphCreator.getGraphPanel();
 		
 		
 //		canvasSwing = new PSwingCanvas();

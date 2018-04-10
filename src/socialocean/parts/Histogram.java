@@ -33,6 +33,7 @@ import impl.TimeLineCreatorThread;
 import socialocean.model.Result;
 import utils.HistogramEntry;
 import utils.Lucene;
+import utils.Lucene.ColorScheme;
 import utils.Lucene.TimeBin;
 
 
@@ -206,12 +207,12 @@ public class Histogram {
 				chart.redraw();
 				
 				Lucene l = Lucene.INSTANCE;
-				if (l.getColorScheme().equals(Lucene.ColorScheme.CATEGORY)) {
-					chart.getPlotArea().addListener(SWT.Paint, event -> changeBarColors(arrEntry, event, true));
-				}
-				else {
-					chart.getPlotArea().addListener(SWT.Paint, event -> changeBarColors(arrEntry, event, false));
-				}
+//				if (l.getColorScheme().equals(Lucene.ColorScheme.CATEGORY)) {
+					chart.getPlotArea().addListener(SWT.Paint, event -> changeBarColors(arrEntry, event, l.getColorScheme()));
+//				}
+//				else {
+//					chart.getPlotArea().addListener(SWT.Paint, event -> changeBarColors(arrEntry, event, false));
+//				}
 				chart.getPlotArea().addListener(SWT.MouseDoubleClick, event -> mouseDoubleClicked(categories, event));
 				
 			}
@@ -223,18 +224,20 @@ public class Histogram {
 	
 	public void changeBarColor() {
 		Lucene l = Lucene.INSTANCE;
-		if (l.getColorScheme().equals(Lucene.ColorScheme.CATEGORY)) {
-			chart.getPlotArea().addListener(SWT.Paint, event -> changeBarColors(arrEntry, event, true));
-		}
-		else {
-			chart.getPlotArea().addListener(SWT.Paint, event -> changeBarColors(arrEntry, event, false));
-		}
+//		if (l.getColorScheme().equals(Lucene.ColorScheme.CATEGORY)) {
+			chart.getPlotArea().addListener(SWT.Paint, event -> changeBarColors(arrEntry, event, l.getColorScheme()));
+//		}
+//		else {
+//			chart.getPlotArea().addListener(SWT.Paint, event -> changeBarColors(arrEntry, event, l.getColorScheme().toString().toLowerCase()));
+//		}
 		chart.redraw();
 	}
 	
 	
 	
 	protected void mouseDoubleClicked(String[] categories, Event event) {
+		
+		//TODO -- something is hanging up .. Check!
 		
 		Rectangle rec = event.getBounds();
 		Point p = new Point(rec.x, rec.y);
@@ -247,57 +250,51 @@ public class Histogram {
 			
 			String cat = categories[i++];
 			if (isPointinRec(p, barRec)) {
-				System.out.println(cat);
+				System.out.println("category:"+cat);
 				
-				String type = "FUSE";
-				Lucene l = Lucene.INSTANCE;
-				while (!l.isInitialized) {
-					return;
-				}
-				String query = "category:"+cat;
-				try {
-					Query q = l.getParser().parse(query);
-					Result result = l.query(q, type, true, true);
-					ScoreDoc[] data = result.getData();
-					if (data == null)
-						return;
-					
-					TimeLineCreatorThread lilt = new TimeLineCreatorThread(l) {
-						@Override
-						public void execute() {
-							result.setTimeCounter(l.createTimeBins(TimeBin.HOURS, data));
-							l.showInTimeLine(result.getTimeCounter());
-//							l.changeTimeLine(TimeBin.MINUTES);
-						}
-					};
-					lilt.start();
-					
-					GraphCreatorThread graphThread = new GraphCreatorThread(l) {
-						
-						@Override
-						public void execute() {
-							l.createGraphView(data);
-//							l.createSimpleGraphView(data);
-						}
-					};
-					graphThread.start();
-					
-					// Show in MAP  --> Clear LIST = remove all Markers
-//					l.initCountriesMap();
-					l.createMapMarkers(data, true);
-					l.changeHistogramm(result.getHistoCounter());
-					
-//					l.createGraphML_Mention(result, true);
-					
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				
-				
-//				Color c1 = new Color(event.display, 50, 50, 200);		// selection color
-//				gc.setBackground(c1);
-//				gc.drawRectangle(barRec.x,barRec.y , barRec.width, barRec.height);
+//				String type = "FUSE";
+//				Lucene l = Lucene.INSTANCE;
+//				while (!l.isInitialized) {
+//					return;
+//				}
+//				String query = "category:"+cat;
+//				try {
+//					Query q = l.getParser().parse(query);
+//					Result result = l.query(q, type, true, true);
+//					ScoreDoc[] data = result.getData();
+//					if (data == null)
+//						return;
+//					
+//					TimeLineCreatorThread lilt = new TimeLineCreatorThread(l) {
+//						@Override
+//						public void execute() {
+//							result.setTimeCounter(l.createTimeBins(TimeBin.HOURS, data));
+//							l.showInTimeLine(result.getTimeCounter());
+////							l.changeTimeLine(TimeBin.MINUTES);
+//						}
+//					};
+//					lilt.start();
+//					
+//					GraphCreatorThread graphThread = new GraphCreatorThread(l) {
+//						
+//						@Override
+//						public void execute() {
+//							l.createGraphView(data);
+////							l.createSimpleGraphView(data);
+//						}
+//					};
+//					graphThread.start();
+////					
+////					// Show in MAP  --> Clear LIST = remove all Markers
+//////					l.initCountriesMap();
+//					l.createMapMarkers(data, true);
+//					l.changeHistogramm(result.getHistoCounter());
+//					
+////					l.createGraphML_Mention(result, true);
+//					
+//				} catch (ParseException e) {
+//					e.printStackTrace();
+//				}
 				
 			}
 			
@@ -318,19 +315,23 @@ public class Histogram {
 	}
 
 
-	protected void changeBarColors(ArrayList<HistogramEntry> arrEntry, Event event, boolean catColor) {
+	protected void changeBarColors(ArrayList<HistogramEntry> arrEntry, Event event, ColorScheme colorScheme) {
 		GC gc = event.gc;
 		ISeries series = chart.getSeriesSet().getSeries()[0];
 		IBarSeries bars = (IBarSeries) series;
 		Rectangle[] barRecs = bars.getBounds();
 		
+		if (arrEntry == null || arrEntry.isEmpty())
+			return;
+		
 		int i = 0;
 		for (Rectangle barRec : barRecs) {
 			HistogramEntry entry = arrEntry.get(i++);
-			if (catColor)
+			if (colorScheme.equals(Lucene.ColorScheme.CATEGORY))
 				gc.setBackground(getCategoryColor(entry.getName()));
-			else
-				gc.setBackground(entry.getAvgSentimentColor());
+			else if (colorScheme.equals(Lucene.ColorScheme.SENTIMENT) || 
+					colorScheme.equals(Lucene.ColorScheme.SENTISTRENGTH))
+				gc.setBackground(entry.getAvgSentimentColor(colorScheme));
 			gc.fillRectangle(barRec.x,barRec.y , barRec.width, barRec.height);
 			
 		}
@@ -398,7 +399,7 @@ public class Histogram {
 	
 	@Focus
 	public void onFocus() {
-		chart.setFocus();
+//		chart.setFocus();
 	}
 
 
@@ -555,6 +556,53 @@ public class Histogram {
 //			color = pink;
 //			break;
 //		}
+		
+		return color;
+	}
+
+
+	public static Color getSentiStrengthColor(String s_strength) {
+Color color = new Color(Display.getDefault(), 0, 0, 0);
+		
+		Color pink = new Color(Display.getDefault(), 250, 22, 129);		// Default
+		
+		switch (s_strength.toLowerCase()) {
+		case "-1":
+			color = new Color(Display.getDefault(), 255,255,212);
+			break;
+		case "-2":
+			color = new Color(Display.getDefault(), 254,217,142);
+			break;
+		case "-3":
+			color = new Color(Display.getDefault(), 254,153,41);
+			break;
+		case "-4":
+			color = new Color(Display.getDefault(), 217,95,14);
+			break;
+		case "-5":
+			color = new Color(Display.getDefault(), 153,52,4);
+			break;
+		case "1":
+			color = new Color(Display.getDefault(), 255,255,204);
+			break;
+		case "2":
+			color = new Color(Display.getDefault(), 194,230,153);
+			break;
+		case "3":
+			color = new Color(Display.getDefault(), 120,198,121);
+			break;
+		case "4":
+			color = new Color(Display.getDefault(), 49,163,84);
+			break;
+		case "5":
+			color = new Color(Display.getDefault(), 0,104,55);
+			break;
+
+		default:
+			color = new Color(Display.getDefault(), 255,255,212);
+			break;
+		}
+		
 		
 		return color;
 	}

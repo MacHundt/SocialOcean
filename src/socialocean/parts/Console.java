@@ -39,15 +39,6 @@ public class Console {
 	}
 	
 	
-//	@Inject
-//	@Optional
-//	public void receiveActivePart(@Named(IServiceConstants.ACTIVE_PART) MPart activePart) {
-//		if (activePart != null) {
-//			outputConsole("Active part changed " + activePart.getLabel());
-//		}
-//	}
-	
-	
 	public void outputConsoleln(String output) {
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {

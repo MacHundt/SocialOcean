@@ -19,7 +19,7 @@ import org.eclipse.core.runtime.FileLocator;
 
 public class FilesUtil {
 	
-	private static String referenceFile = "graphs/graphURI.txt";;    // a reference File to get the path you need  // a hack :/
+	private static String referenceFile = "graphs/graphURI.txt";    // a reference File to get the path you need  // a hack :/
 	
 	public static String getReferenceFile() {
 		return referenceFile;
@@ -47,7 +47,6 @@ public class FilesUtil {
 			InputStream input = new FileInputStream(new File(url.getPath()));
 			image = ImageIO.read(input);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		

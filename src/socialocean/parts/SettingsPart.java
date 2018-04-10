@@ -96,6 +96,34 @@ public class SettingsPart {
 		
 		follows.setEnabled(true);
 		
+		Button onlyGeo = new Button(parent, SWT.CHECK );
+		onlyGeo.setText("only geo");
+		onlyGeo.setSelection(false);
+		onlyGeo.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent arg0) {
+				System.out.println(onlyGeo.getText() + " is turned to: "+onlyGeo.getSelection());
+				
+				Lucene l = Lucene.INSTANCE;
+				l.setOnlyGeo(onlyGeo.getSelection());
+				l.setWithFollows(onlyGeo.getSelection());
+				Result result = l.getLastResult();
+				if (result != null) {
+					l.createGraphView(l.getLastResult().getData());
+//					l.createSimpleGraphView(result.getData());
+					l.createMapMarkers(result.getData(), true);
+				}
+			}
+			
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent arg0) {
+			}
+		});
+		
+		follows.setEnabled(true);
+		
 //		Button btnPositiv = new Button(parent, SWT.CHECK);
 //		btnPositiv.setText("positiv");
 //		btnPositiv.setSelection(true);
@@ -119,6 +147,7 @@ public class SettingsPart {
 		Combo combo = new Combo(parent, SWT.NONE);
 		combo.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
 		combo.add("Sentiment");
+		combo.add("SentiStrength");
 		combo.add("Category");
 		combo.select(0);
 		

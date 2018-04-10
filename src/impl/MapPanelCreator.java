@@ -13,10 +13,12 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +39,12 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.spatial.geopoint.document.GeoPointField;
 import org.jxmapviewer.JXMapViewer;
 import org.jxmapviewer.OSMTileFactoryInfo;
 import org.jxmapviewer.VirtualEarthTileFactoryInfo;
@@ -80,29 +87,44 @@ public class MapPanelCreator {
 	private static Set<SwingWaypoint> waypoints = new HashSet<>();
 	private static WaypointPainter<SwingWaypoint> swingWaypointPainter = new SwingWaypointOverlayPainter();
 
-	private static ImageIcon tweetIcon_p;
-	private static ImageIcon tweetIcon_n;
-	private static ImageIcon tweetIcon_;
+	public static ImageIcon tweetIcon_p;
+	public static ImageIcon tweetIcon_n;
+	public static ImageIcon tweetIcon_;
 
-	private static ImageIcon tweetIcon_health;
-	private static ImageIcon tweetIcon_pets;
-	private static ImageIcon tweetIcon_music;
-	private static ImageIcon tweetIcon_family;
-	private static ImageIcon tweetIcon_politics;
-	private static ImageIcon tweetIcon_marketing;
-	private static ImageIcon tweetIcon_education;
-	private static ImageIcon tweetIcon_rec_sport;
-	private static ImageIcon tweetIcon_news;
-	private static ImageIcon tweetIcon_computer;
-	private static ImageIcon tweetIcon_food;
-	private static ImageIcon tweetIcon_other;
+	public static ImageIcon tweetIcon_health;
+	public static ImageIcon tweetIcon_pets;
+	public static ImageIcon tweetIcon_music;
+	public static ImageIcon tweetIcon_family;
+	public static ImageIcon tweetIcon_politics;
+	public static ImageIcon tweetIcon_marketing;
+	public static ImageIcon tweetIcon_education;
+	public static ImageIcon tweetIcon_rec_sport;
+	public static ImageIcon tweetIcon_news;
+	public static ImageIcon tweetIcon_computer;
+	public static ImageIcon tweetIcon_food;
+	public static ImageIcon tweetIcon_other;
+	
+	public static ImageIcon user_male;
+	public static ImageIcon user;
+	public static ImageIcon user_female;
+	
+	public static ImageIcon neg1;
+	public static ImageIcon neg2;
+	public static ImageIcon neg3;
+	public static ImageIcon neg4;
+	public static ImageIcon neg5;
+	public static ImageIcon pos1;
+	public static ImageIcon pos2;
+	public static ImageIcon pos3;
+	public static ImageIcon pos4;
+	public static ImageIcon pos5;
+	
+	
+	public static boolean iconsloaded = false;
 
 	private static boolean loadedIcons = false;
 
 	private static Point startPoint;
-
-	private static double[] geoSelection = new double[4];
-
 	private static Color grey = new Color(240, 240, 240, 50); // light grey, high opacity --> NORMAL
 	
 	private static int userTweetSwitch = 2;
@@ -161,6 +183,50 @@ public class MapPanelCreator {
 
 		image = FilesUtil.readIconFile("icons/cat_icons/other24.png");
 		tweetIcon_other = new ImageIcon(image);
+		
+		// USER Icons
+		image = FilesUtil.readIconFile("icons/user_female32.png");
+		user_female = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/user_male32.png");
+		user_male = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/user.png");
+		user = new ImageIcon(image);
+		
+		// SENTI_STRENGTH Icons
+		image = FilesUtil.readIconFile("icons/senti_strength_icons/neg1_24.png");
+		neg1 = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/senti_strength_icons/neg2_24.png");
+		neg2 = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/senti_strength_icons/neg3_24.png");
+		neg3 = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/senti_strength_icons/neg4_24.png");
+		neg4 = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/senti_strength_icons/neg5_24.png");
+		neg5 = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/senti_strength_icons/pos1_24.png");
+		pos1 = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/senti_strength_icons/pos2_24.png");
+		pos2 = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/senti_strength_icons/pos3_24.png");
+		pos3 = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/senti_strength_icons/pos4_24.png");
+		pos4 = new ImageIcon(image);
+		
+		image = FilesUtil.readIconFile("icons/senti_strength_icons/pos5_24.png");
+		pos5 = new ImageIcon(image);
+		
+		
+		loadedIcons = true;
 
 	}
 
@@ -192,7 +258,7 @@ public class MapPanelCreator {
 			}
 			
 			
-			if (GraphPanelCreator3.SELECTED) {
+			if (DetailedGraphCreator.SELECTED) {
 				painters.removeIf(
 					p -> p instanceof GlyphPainter || p instanceof GridPainter || p instanceof CountryPainter);
 				showWayPointsOnMap();
@@ -483,6 +549,9 @@ public class MapPanelCreator {
 						int topY = (int) Math.min(startPoint.getY(), e.getPoint().getY());
 						int width = (int) Math.abs(startPoint.getX() - e.getPoint().getX());
 						int height = (int) Math.abs(startPoint.getY() - e.getPoint().getY());
+						
+						if (width == 0 || height == 0 )
+							return;
 
 						Rectangle rec = new Rectangle((int) topX, (int) topY, (int) width, (int) height);
 						System.out.println(">>> GEO-Selection: " + rec.toString());
@@ -491,11 +560,6 @@ public class MapPanelCreator {
 						// mapViewer.convertGeoPositionToPoint(pos)
 						GeoPosition p1 = mapViewer.convertPointToGeoPosition(new Point(topX, topY));
 						GeoPosition p2 = mapViewer.convertPointToGeoPosition(new Point(topX + width, topY + height));
-
-						geoSelection[0] = p1.getLongitude();
-						geoSelection[1] = p1.getLatitude();
-						geoSelection[2] = p2.getLongitude();
-						geoSelection[3] = p2.getLatitude();
 
 						Lucene l = Lucene.INSTANCE;
 						while (!l.isInitialized) {
@@ -590,21 +654,203 @@ public class MapPanelCreator {
 
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					// clicked in Cell?
-//					Point p = e.getPoint();
-					Point p = mapViewer.getMousePosition();
-					int zooml = mapViewer.getZoom();
 					Map<MapGridRectangle, List<String>> cells = mapCon.getGridCells(mapViewer.getZoom());
-					if (cells == null) {
-						return;
-					}
-					for (MapGridRectangle rec : cells.keySet()) {
-						if (rec.contains(e.getX(), e.getY())) {
-							System.out.println(cells.get(rec).size());
-							// TODO
-							
-							break;
+					Rectangle recViewPort = mapViewer.getViewportBounds();
+					Lucene l = Lucene.INSTANCE;
+					
+					if (e.getButton() == 1) {
+						
+						ArrayList<MyEdge> foundEdges = new ArrayList<>();
+						ArrayList<MyUser> foundUsers = new ArrayList<>();
+
+						if (cells == null) {
+							return;
 						}
+						for (MapGridRectangle rec : cells.keySet()) {
+
+							if (rec.contains(e.getX() + recViewPort.getX(), e.getY() + recViewPort.getY())) {
+								int x = rec.x-(int)recViewPort.getX();
+								int y = rec.y-(int)recViewPort.getY();
+								// get LatLong from Rectangle
+								GeoPosition p1 = mapViewer.convertPointToGeoPosition(new Point(x,y));
+								GeoPosition p2 = mapViewer.convertPointToGeoPosition(new Point(x + rec.width, y + rec.height));
+								double minLat = Math.min(p2.getLatitude(), p1.getLatitude());
+								double maxLat = Math.max(p2.getLatitude(), p1.getLatitude());
+								double minLong = Math.min(p1.getLongitude(), p2.getLongitude());
+								double maxLong = Math.max(p1.getLongitude(), p2.getLongitude());
+								
+								// Highlight
+								// isSelection
+								if (MapPanelCreator.mapCon.isSelection()) {
+									
+									for (MyEdge edge : DetailedGraphCreator.allEdges) {
+										//Edge geo in Rectangle
+										double lat = edge.getLatitude();
+										double lon = edge.getLongitude();
+										if (lat == 0.0 && lon == 0.0) {
+											continue;
+										}
+										// is in Rectangle --> ADD
+										if (lat > minLat && lat < maxLat && 
+												lon > minLong && lon < maxLong) {
+											foundEdges.add(edge);
+										}
+									}
+									for (MyUser user : DetailedGraphCreator.allUser) {
+										//Edge geo in Rectangle
+										double lat = user.getLatitude();
+										double lon = user.getLongitude();
+										if (lat == 0.0 && lon == 0.0) {
+											continue;
+										}
+										// is in Rectangle --> ADD
+										if (lat > minLat && lat < maxLat && 
+												lon > minLong && lon < maxLong) {
+											foundUsers.add(user);
+										}
+									}
+									
+									System.out.println("Highlight "+foundEdges.size()+" Edge and "+foundUsers.size()+" Users");
+									l.printlnToConsole(foundEdges.size()+" Edge and "+foundUsers.size()+" Users");
+									
+								}
+								else {
+									// no Selection, has no User-location, get Geo from last result
+								
+									Collection<MyEdge> edges = GeneralGraphCreator.getEdges();
+									for (MyEdge edge : edges) {
+										//Edge geo in Rectangle
+										double lat = edge.getLatitude();
+										double lon = edge.getLongitude();
+										if (lat == 0.0 && lon == 0.0) {
+											continue;
+										}
+										// is in Rectangle --> ADD
+										if (lat > minLat && lat < maxLat && 
+												lon > minLong && lon < maxLong) {
+											foundEdges.add(edge);
+										}
+									}
+									
+									System.out.println("Highlight "+foundEdges.size()+" Edge and "+foundUsers.size()+" Users");
+									l.printlnToConsole(foundEdges.size()+" Edge and "+foundUsers.size()+" Users");
+									
+								}
+								
+								GeneralGraphCreator.highlightUsers(foundUsers);
+								GeneralGraphCreator.highlightEdges(foundEdges);
+								
+								break;
+								
+							}
+						}
+						
+					}
+					else if (e.getButton() == 3) {
+						
+						for (MapGridRectangle rec : cells.keySet()) {
+
+							if (rec.contains(e.getX() + recViewPort.getX(), e.getY() + recViewPort.getY())) {
+
+								int x = rec.x-(int)recViewPort.getX();
+								int y = rec.y-(int)recViewPort.getY();
+								// get LatLong from Rectangle
+								GeoPosition p1 = mapViewer.convertPointToGeoPosition(new Point(x,y));
+								GeoPosition p2 = mapViewer.convertPointToGeoPosition(new Point(x + rec.width, y + rec.height));
+								
+								double minLat = Math.min(p2.getLatitude(), p1.getLatitude());
+								double maxLat = Math.max(p2.getLatitude(), p1.getLatitude());
+								double minLong = Math.min(p1.getLongitude(), p2.getLongitude());
+								double maxLong = Math.max(p1.getLongitude(), p2.getLongitude());
+
+								System.out.println(">>> GEO-Selection: " + rec.toString());
+
+								String queryType = l.getQeryType();
+								l.setQeryType("FUSE");
+								Result result = l.ADDGeoQuery(minLat, maxLat, minLong, maxLong);
+								ScoreDoc[] data = result.getData();
+								l.setQeryType(queryType);
+								TimeLineCreatorThread lilt = new TimeLineCreatorThread(l) {
+									@Override
+									public void execute() {
+										result.setTimeCounter(l.createTimeBins(TimeBin.HOURS, data));
+										l.showInTimeLine(result.getTimeCounter());
+										// l.changeTimeLine(TimeBin.MINUTES);
+									}
+								};
+								lilt.start();
+
+								GraphCreatorThread graphThread = new GraphCreatorThread(l) {
+
+									@Override
+									public void execute() {
+										l.createGraphView(data);
+										// l.createSimpleGraphView(data);
+									}
+								};
+								graphThread.start();
+
+								l.createMapMarkers(data, true);
+								l.changeHistogramm(result.getHistoCounter());
+
+							}
+						}
+//						// Filter For the correct rectangle
+//					else if (e.getButton() == 3) {
+//						Point p = mapViewer.getMousePosition();
+//						int zooml = mapViewer.getZoom();
+//						Map<MapGridRectangle, List<String>> cells = mapCon.getGridCells(mapViewer.getZoom());
+//						Rectangle recViewPort = mapViewer.getViewportBounds();
+//						
+//						Lucene l = Lucene.INSTANCE;
+//
+//						if (cells == null) {
+//							return;
+//						}
+//						for (MapGridRectangle rec : cells.keySet()) {
+//
+//							if (rec.contains(e.getX() + recViewPort.getX(), e.getY() + recViewPort.getY())) {
+//
+//								// mapViewer.convertPointToGeoPosition(pt)
+//								//Bounding Box
+//								GeoPosition p1 = mapViewer.convertPointToGeoPosition(new Point(rec.x, rec.y));
+//								GeoPosition p2 = mapViewer.convertPointToGeoPosition(new Point(rec.x+rec.width, rec.y+rec.height));
+//								geoSelection[0] = p1.getLongitude();
+//								geoSelection[1] = p1.getLatitude();
+//								geoSelection[2] = p2.getLongitude();
+//								geoSelection[3] = p2.getLatitude();
+//								double minLat = Math.min(p2.getLatitude(), p1.getLatitude());
+//								double maxLat = Math.max(p2.getLatitude(), p1.getLatitude());
+//								double minLong = Math.min(p1.getLongitude(), p2.getLongitude());
+//								double maxLong = Math.max(p1.getLongitude(), p2.getLongitude());
+//								Result result = l.ADDGeoQuery(minLat, maxLat, minLong, maxLong);
+//								ScoreDoc[] data = result.getData();
+//								TimeLineCreatorThread lilt = new TimeLineCreatorThread(l) {
+//									@Override
+//									public void execute() {
+//										result.setTimeCounter(l.createTimeBins(TimeBin.HOURS, data));
+//										l.showInTimeLine(result.getTimeCounter());
+//										// l.changeTimeLine(TimeBin.MINUTES);
+//									}
+//								};
+//								lilt.start();
+//								
+//								GraphCreatorThread graphThread = new GraphCreatorThread(l) {
+//
+//									@Override
+//									public void execute() {
+//										l.createGraphView(data);
+////										l.createSimpleGraphView(data);
+//									}
+//								};
+//								graphThread.start();
+//
+//								l.createMapMarkers(data, true);
+//								l.changeHistogramm(result.getHistoCounter());
+//								
+//								break;
+//							}
+//						}
 					}
 				}
 			});
@@ -730,6 +976,39 @@ public class MapPanelCreator {
 		case "music":
 			icon = tweetIcon_music;
 			break;
+		case "-1":
+			icon = neg1;
+			break;
+		case "-2":
+			icon = neg2;
+			break;
+		case "-3":
+			icon = neg3;
+			break;
+		case "-4":
+			icon = neg4;
+			break;
+		case "-5":
+			icon = neg5;
+			break;
+		case "1":
+			icon = pos1;
+			break;
+		case "2":
+			icon = pos2;
+			break;
+		case "3":
+			icon = pos3;
+			break;
+		case "4":
+			icon = pos4;
+			break;
+		case "5":
+			icon = pos5;
+			break;
+		case "0":
+			icon = pos1;
+			break;
 
 		default:
 			icon = tweetIcon_;
@@ -801,12 +1080,13 @@ public class MapPanelCreator {
 		if (mapPanel == null) {
 			MapPanelCreator.getMapPanel();
 		}
+		if (!waypoints.isEmpty())
+			mapViewer.removeAll();
+		
 		if (clearList) {
 			waypoints.clear();
 			mapCon.clearSelection();
 		}
-		
-		mapViewer.removeAll();
 		
 //		int componets = mapViewer.getComponentCount();
 //		for (int i = 0; i < componets; i++) {
@@ -822,7 +1102,6 @@ public class MapPanelCreator {
 		mapViewer.repaint();
 //		mapViewer.updateUI();
 		mapViewer.revalidate();
-		
 		
 	}
 	

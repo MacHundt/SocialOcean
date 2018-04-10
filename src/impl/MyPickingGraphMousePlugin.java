@@ -110,7 +110,8 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
 	 * create an instance with default settings
 	 */
 	public MyPickingGraphMousePlugin() {
-	    this(InputEvent.BUTTON1_MASK, InputEvent.BUTTON1_MASK | InputEvent.SHIFT_MASK);
+//	    this(InputEvent.BUTTON1_MASK, InputEvent.BUTTON1_MASK | InputEvent.BUTTON3_MASK | InputEvent.SHIFT_MASK);
+		this(InputEvent.BUTTON3_MASK, InputEvent.BUTTON3_MASK | InputEvent.SHIFT_MASK);
 	}
 
 	/**
@@ -158,6 +159,8 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
             return false;
         }
     }
+    
+    
 
 	/**
 	 * For primary modifiers (default, MouseButton1):
@@ -211,15 +214,15 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
 
                     offsetx = (float) (gp.getX()-q.getX());
                     offsety = (float) (gp.getY()-q.getY());
-                } else if((edge = pickSupport.getEdge(layout, ip.getX(), ip.getY())) != null) {
-                    pickedEdgeState.clear();
-                    pickedEdgeState.pick(edge, true);
-                	
-                    nodes.clear();
-                	edges.clear();
-                	edges.add(edge);
-                    l.showDetailsOfSelection( nodes, edges, true);
-                } else {
+				} else if ((edge = pickSupport.getEdge(layout, ip.getX(), ip.getY())) != null) {
+					pickedEdgeState.clear();
+					pickedEdgeState.pick(edge, true);
+
+					nodes.clear();
+					edges.clear();
+					edges.add(edge);
+					l.showDetailsOfSelection(nodes, edges, true);
+				} else {
                     vv.addPostRenderPaintable(lensPaintable);
                 	pickedEdgeState.clear();
                     pickedVertexState.clear();
@@ -273,6 +276,8 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
         }
         if(vertex != null) e.consume();
     }
+    
+    
 
     /**
 	 * If the mouse is dragging a rectangle, pick the
@@ -283,7 +288,7 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
     @SuppressWarnings("unchecked")
     public void mouseReleased(MouseEvent e) {
         VisualizationViewer<V,E> vv = (VisualizationViewer<V, E>)e.getSource();
-        GraphPanelCreator3.clearGraph();
+        DetailedGraphCreator.clearGraph();
         if(e.getModifiers() == modifiers) {
             if(down != null) {
                 Point2D out = e.getPoint();
@@ -301,6 +306,16 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
                 }
             }
         }
+        
+        if (vertex instanceof MyUser) {
+    			MyUser user = (MyUser) vertex;
+    			GeneralGraphCreator.showSingleDetailofUser(null, user);
+        }
+        if (edge instanceof MyEdge) {
+        		MyEdge mEdge = (MyEdge) edge;
+        		GeneralGraphCreator.showSingleDetailofEdge(null, mEdge);
+        }
+        
         down = null;
         vertex = null;
         edge = null;
@@ -418,12 +433,12 @@ public class MyPickingGraphMousePlugin<V, E> extends AbstractGraphMousePlugin
 //            l.showDetailsOfSelection( picked, pickedEdges, clear);
 			
             l.showDetailsOfSelection( nodes, edges, clear);
-//            l.showCountriesOfSelection(picked, pickedEdges, clear);
         }
     }
     
 
     public void mouseClicked(MouseEvent e) {
+    	
     }
 
     public void mouseEntered(MouseEvent e) {

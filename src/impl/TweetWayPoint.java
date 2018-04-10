@@ -59,7 +59,7 @@ public class TweetWayPoint  extends SwingWaypoint {
 				String table = DBManager.getTweetdataTable();
 				
 //				String query = "select t.\"tweetScreenName\", t.\"tweetContent\", t.creationdate, t.sentiment, t.category, t.\"containsUrl\"  from "+table+" as t where t.tweetid = "+text;
-				String query = "select t.user_screenname, t.relationship, t.tweet_content, t.tweet_creationdate, t.sentiment, t.category, t.hasurl  from "+table+" as t where t.tweet_id = "+text;
+				String query = "select t.user_screenname, t.relationship, t.tweet_content, t.tweet_creationdate, t.sentiment, t.category, t.hasurl, t.urls  from "+table+" as t where t.tweet_id = "+text;
 
 				ResultSet rs = stmt.executeQuery(query);
 				while (rs.next()) {
@@ -70,6 +70,7 @@ public class TweetWayPoint  extends SwingWaypoint {
 					String sentiment = rs.getString("sentiment");
 					String category = rs.getString("category");
 					boolean hasUrl = rs.getBoolean("hasurl");
+					String urls = rs.getString("urls");
 					
 					if (relationship.equals("Followed")) {
 						details += "\n"+scName+" follows ";
@@ -88,8 +89,8 @@ public class TweetWayPoint  extends SwingWaypoint {
 					details += "\nSentiment: \t"+sentiment;
 					details += "\nCategory: \t"+category;
 					details += "\nhasURL: \t"+((hasUrl)? "true":"false");
-					
-					
+					details += "\nURLs: \t"+ urls;
+										
 				}
 				
 			} catch (SQLException e1) {

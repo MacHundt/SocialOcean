@@ -1,5 +1,6 @@
 package impl;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 public class MyEdge {
@@ -11,8 +12,6 @@ public class MyEdge {
 
 	private String id;
 	private String content;
-	
-//	private double sentiment;
 	private int pos;				// from sentiStrength lib, polarization
 	private int neg;
 	private String sentiment;
@@ -24,6 +23,7 @@ public class MyEdge {
 	private String relationsip ="";
 	private String category;
 	private Date date;
+	private long utimestamp = 0;
 	
 	private int alpha = 255;
 	
@@ -34,13 +34,19 @@ public class MyEdge {
 
 	private String source;
 	private String target;
+
+	private String device;
+
+	private ArrayList<String> urls;
+
+	private int count;
 	
 	public MyEdge(String id) {
 		this.id = id;
 	}
 	
 	public enum LabelType {
-		Credibility, Sentiment, SentiStrenth, Category
+		Credibility, Sentiment, SentiStrength, Category
 	};
 	
 	public String getRelationsip() {
@@ -75,9 +81,6 @@ public class MyEdge {
 		this.cred_score = cred_score;
 	}
 	
-//	public void addSentiment(double sentiment) {
-//		this.sentiment = sentiment;
-//	}
 	
 	public void addSentiment(String sentiment) {
 		this.sentiment = sentiment;
@@ -102,9 +105,6 @@ public class MyEdge {
 		return content;
 	}
 
-//	public double getSentiment() {
-//		return sentiment;
-//	}
 	
 	public String getSentiment() {
 		return sentiment;
@@ -143,7 +143,7 @@ public class MyEdge {
 		case Category: 
 			toString = category;
 			break;
-		case SentiStrenth:
+		case SentiStrength:
 			toString =  "("+pos+","+neg+")";
 			break;
 
@@ -210,6 +210,39 @@ public class MyEdge {
 
 	public void addAlpha(int alpha) {
 		this.alpha = alpha;
+	}
+
+	public long getUtimestamp() {
+		return utimestamp;
+	}
+
+	public void setUtimestamp(long utimestamp) {
+		this.utimestamp = utimestamp;
+	}
+
+	public void addDevice(String device) {
+		this.device = device;
+		
+	}
+	
+	public String getDevice() {
+		return device;
+	}
+
+	public void addUrls(ArrayList<String> url_list) {
+		this.urls = url_list;
+	}
+	public ArrayList<String> getUrls() {
+		return urls;
+	}
+
+	public void setCount(int count) {
+		this.count = count;
+		
+	}
+	
+	public int getCount() {
+		return count;
 	}
 	
 }

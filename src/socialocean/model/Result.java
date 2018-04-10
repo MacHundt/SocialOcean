@@ -68,15 +68,18 @@ public class Result {
 					sentiment = -1.0;
 				else
 					sentiment = 0;
+				
+				double pos = Double.parseDouble((document.getField("pos")).stringValue());
+				double neg = Double.parseDouble((document.getField("neg")).stringValue());
 
 				if (histoCounter.containsKey(field)) {
 					HistogramEntry category = histoCounter.get(field);
 					category.count();
-					category.addSentiment(sentiment);
+					category.addSentiment(sentiment, pos, neg);
 				} else {
 					HistogramEntry category = new HistogramEntry(field);
 					category.count();
-					category.addSentiment(sentiment);
+					category.addSentiment(sentiment, pos, neg);
 					histoCounter.put(field, category);
 				}
 			}

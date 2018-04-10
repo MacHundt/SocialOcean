@@ -14,7 +14,9 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.spatial.geopoint.document.GeoPointField;
 import org.joda.time.DateTime;
 
 import utils.DBManager;
@@ -64,8 +66,22 @@ public class ReIndexingThread extends Thread {
 			for (ScoreDoc doc : data) {
 				counter++;
 				Document document = null;
+				Document outDoc = new Document();
 				try {
 					document = l.getIndexSearcher().doc(doc.doc);
+					
+					for (IndexableField field : document.getFields()) {
+						if (field.name().equals("geo")) {
+							long hashgeo = field.numericValue().longValue();
+							double lat = GeoPointField.decodeLatitude(hashgeo);
+							double lon = GeoPointField.decodeLongitude(hashgeo);
+							GeoPointField geo = new GeoPointField("geo", lat, lon, GeoPointField.Store.YES);
+							outDoc.add(geo);
+						}
+						else
+							outDoc.add(field);
+					}
+					
 					
 					// get content .. add content
 					// fulltext
@@ -90,16 +106,15 @@ public class ReIndexingThread extends Thread {
 					
 					mincdate = (cDate.before(mincdate) ? cDate : mincdate);
 					maxcdate = (cDate.after(maxcdate) ? cDate : maxcdate);
-//					String content = getContent(id);
 					content = content.replaceAll("\"", "");
 					TextField content_field = new TextField("content", content, Field.Store.NO);
-					document.add(content_field);
+					outDoc.add(content_field);
 					
 				} catch (IOException e) {
 					continue;
 				}
-				if (document != null) {
-					writer.addDocument(document);
+				if (outDoc != null) {
+					writer.addDocument(outDoc);
 				}
 				
 				if (counter % step == 0) {

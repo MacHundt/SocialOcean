@@ -1,7 +1,6 @@
  
 package socialocean.parts;
 
-import java.awt.Checkbox;
 import java.awt.Rectangle;
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,11 +19,6 @@ import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JTextField;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ParameterizedCommand;
@@ -49,10 +43,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import socialocean.handlers.LuceneSearchHandler;
@@ -70,17 +62,11 @@ public class LuceneSearch {
 	
 	private Pattern datePattern = Pattern.compile("[1-2][0-9]{3}-[0-1][0-9]-[0-3][0-9]");
 	private Pattern timePattern = Pattern.compile("[0-2][0-9]:[0-6][0-9]:[0-9][0-9]");
-//	private String luceneIndex = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/lucene_index";
 	
 	@Inject ECommandService commandService;
 	@Inject EHandlerService service;
 	@Inject EPartService partService;
 	@Inject MApplication app;
-	
-//	@Inject
-//	public LuceneSearch(MApplication app) {
-//		this.app = app;
-//	}
 	
 	public LuceneSearch() {
 		
@@ -125,6 +111,7 @@ public class LuceneSearch {
 //		## BUILD GUI  
 		partService.showPart("socialocean.part.console", PartState.CREATE);
 		partService.showPart("socialocean.part.timeline", PartState.CREATE);
+		partService.showPart("socialocean.part.histogram", PartState.CREATE);
 		partService.showPart("socialocean.part.timeline", PartState.ACTIVATE  );
 		partService.showPart("socialocean.part.timeline", PartState.VISIBLE );
 		partService.showPart("socialocean.part.settings", PartState.CREATE);
@@ -264,7 +251,15 @@ public class LuceneSearch {
 					if (!timeTo.isEmpty() || !timeTo.equals(timeFormat)) {
 						String[] fromTime =  timeFrom.split(" ");
 						String[] toTime = timeTo.split(" ");
-						// TODO check Time - valid?
+						
+						if (toTime.length == 1 && fromTime.length == 1) {
+							timeFrom += " 00:00:00";
+							timeTo += " 00:00:00";
+							fromTime =  timeFrom.split(" ");
+							toTime = timeTo.split(" ");
+						}
+						
+						// check Time - valid?
 						if (fromTime.length == 2 && toTime.length == 2) {
 							if (Pattern.matches(datePattern.pattern(), fromTime[0]) && Pattern.matches(datePattern.pattern(), toTime[0])) {
 								if (Pattern.matches(timePattern.pattern(), fromTime[1]) && Pattern.matches(timePattern.pattern(), toTime[1])) {
@@ -272,8 +267,8 @@ public class LuceneSearch {
 									hasTimeRange = true;
 								}
 							}
-							else
-								System.out.println("FALSE Timestamps");
+//							else
+//								System.out.println("FALSE Timestamps");
 						}
 						// TODO convert to UNIX long
 						// TODO add to query
@@ -373,7 +368,7 @@ public class LuceneSearch {
 			}
 		});
 		btnSearch.setText("Search");
-		btnSearch.setBackground(red);
+		btnSearch.setBackground(grey);
 		btnSearch.setForeground(red);
 		
 		Button btnBack = new Button(parent, SWT.BUTTON1);
@@ -385,7 +380,6 @@ public class LuceneSearch {
 			@Override
 			public void mouseDown(MouseEvent e) {
 				
-				// TODO Graph
 				// Clear all Results, Map, Graph
 				l.showLastResult();
 			}
@@ -549,7 +543,6 @@ public class LuceneSearch {
 			@Override
 			public void mouseDown(MouseEvent e) {
 				
-				// TODO Graph
 				// Clear all Results, Map, Graph
 				System.out.println("CLEAR");
 				l.printlnToConsole("CLEAR");
@@ -557,7 +550,7 @@ public class LuceneSearch {
 				l.clearMap();
 				l.showCatHisto();
 				l.resetTimeLine();
-				l.clearGraph();							//TODO
+				l.clearGraph();		
 			}
 		});
 		
@@ -615,33 +608,5 @@ public class LuceneSearch {
 	public void save() {
 		
 	}
-	
-//	private class CustomInputDialog extends Dialog {
-//
-//		private Shell dialog;
-//		
-//		public CustomInputDialog(Shell parent) {
-//			super(parent);
-//		}
-//		
-//		public void close() {
-//			dialog.close();
-//		}
-//
-//		public String open() {
-//			Shell parent = getParent();
-//			dialog = new Shell(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
-//			dialog.setSize(100, 100);
-//			dialog.setText("Java Source and Support");
-//			dialog.open();
-//			Display display = parent.getDisplay();
-//			while (!dialog.isDisposed()) {
-//				if (!display.readAndDispatch())
-//					display.sleep();
-//			}
-//			return "After Dialog";
-//		}
-//		
-//	}
 	
 }

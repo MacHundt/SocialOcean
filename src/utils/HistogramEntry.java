@@ -3,11 +3,17 @@ package utils;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 
+import utils.Lucene.ColorScheme;
+
 public class HistogramEntry implements Comparable<HistogramEntry>{
 	
 	private String categoryName;
 	private double sumSentiment = 0.0;
+	private double sumPos = 0.0;
+	private double sumNeg = 0.0;
 	private int count = 0;
+	
+	private double sentiment  = sumSentiment;
 	
 	public HistogramEntry(String categoryName) {
 		this.categoryName = categoryName;
@@ -24,12 +30,21 @@ public class HistogramEntry implements Comparable<HistogramEntry>{
 	}
 	
 	
-	public void addSentiment(double sentiment) {
+	public void addSentiment(double sentiment, double pos, double neg) {
 		sumSentiment += sentiment;
+		sumPos += pos;
+		sumNeg += neg;
 	}
 	
 	public double getAvgSentiment() {
-		return (sumSentiment / count);
+		Lucene l = Lucene.INSTANCE;
+		if (l.getColorScheme().equals(Lucene.ColorScheme.SENTIMENT)) {
+			sentiment = sumSentiment;
+		} else if (l.getColorScheme().equals(Lucene.ColorScheme.SENTISTRENGTH)) {
+			sentiment = sumPos+sumNeg;
+		}
+		
+		return (sentiment / count);
 	}
 	
 	
@@ -38,42 +53,48 @@ public class HistogramEntry implements Comparable<HistogramEntry>{
 	}
 	
 	
-	public Color getAvgSentimentColor() {
+	public Color getAvgSentimentColor(ColorScheme colorScheme) {
 		
 //		Color color = new Color(Display.getDefault(), 204, 204, 204);		// grey
 		Color color = new Color(Display.getDefault(), 255,255,191);
 		
+		if (colorScheme.equals(Lucene.ColorScheme.SENTIMENT)) {
+			sentiment = sumSentiment;
+		} else if (colorScheme.equals(Lucene.ColorScheme.SENTISTRENGTH)) {
+			sentiment = sumPos+sumNeg;
+		}
+
 		// Positive tendency
-		if ((sumSentiment / count) > 0 ) {
-			if ((sumSentiment / count) < 0.25) {
+		if ((sentiment / count) > 0) {
+			if ((sentiment / count) < 0.25) {
 				color = new Color(Display.getDefault(), 217, 239, 139);
 				return color;
-			} else if ((sumSentiment / count) < 0.5) {
-				color = new Color(Display.getDefault(), 166,217,106);
+			} else if ((sentiment / count) < 0.5) {
+				color = new Color(Display.getDefault(), 166, 217, 106);
 				return color;
-			} else if ((sumSentiment / count) < 0.75) {
-				color = new Color(Display.getDefault(), 102,189,99);
+			} else if ((sentiment / count) < 0.75) {
+				color = new Color(Display.getDefault(), 102, 189, 99);
 				return color;
-			} else if ((sumSentiment / count) >= 0.75) {
-				color = new Color(Display.getDefault(), 26,152,80);
+			} else if ((sentiment / count) >= 0.75) {
+				color = new Color(Display.getDefault(), 26, 152, 80);
 				return color;
-			} 
+			}
 		}
 		// Negative tendency
-		else if ((sumSentiment / count) < 0 ) {
-			if ((sumSentiment / count) > -0.25) {
-				color = new Color(Display.getDefault(), 254,224,139);
+		else if ((sentiment / count) < 0) {
+			if ((sentiment / count) > -0.25) {
+				color = new Color(Display.getDefault(), 254, 224, 139);
 				return color;
-			} else if ((sumSentiment / count) > -0.5) {
-				color = new Color(Display.getDefault(), 253,174,97);
+			} else if ((sentiment / count) > -0.5) {
+				color = new Color(Display.getDefault(), 253, 174, 97);
 				return color;
-			} else if ((sumSentiment / count) > -0.75) {
-				color = new Color(Display.getDefault(), 244,109,67);
+			} else if ((sentiment / count) > -0.75) {
+				color = new Color(Display.getDefault(), 244, 109, 67);
 				return color;
-			} else if ((sumSentiment / count) <= -0.75) {
-				color = new Color(Display.getDefault(), 215,48,39);
+			} else if ((sentiment / count) <= -0.75) {
+				color = new Color(Display.getDefault(), 215, 48, 39);
 				return color;
-			} 
+			}
 		}
 		
 		return color;

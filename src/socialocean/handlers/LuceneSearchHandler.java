@@ -2,14 +2,18 @@
 package socialocean.handlers;
 
 import javax.inject.Named;
+import javax.swing.SwingUtilities;
 
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TermQuery;
 import org.eclipse.e4.core.di.annotations.CanExecute;
 import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.core.di.annotations.Optional;
+import org.eclipse.swt.widgets.Display;
 
 import impl.GraphCreatorThread;
 import impl.MyLuceneAnalyser;
@@ -21,6 +25,7 @@ import utils.Lucene.TimeBin;
 
 public class LuceneSearchHandler {
 	
+	private Result result = null;
 	
 	@Execute
 	public void execute(@Optional @Named("QueryString") String query, @Optional @Named("type") String type) {
@@ -63,25 +68,44 @@ public class LuceneSearchHandler {
 		// GET QUERY
 			try {
 				Query q = null;
+				TermQuery tquery = null;
+				boolean termQuery = false;
 				if (query.contains("name:") || query.contains("mention:")) {
 					QueryParser parser = new QueryParser("name", new MyLuceneAnalyser());
 					q = parser.parse(query);
 				}
+				else if (query.contains("urls:")) {
+					String url = query.substring(query.indexOf("urls:")+5);
+					tquery = new TermQuery(new Term("urls", url));
+					termQuery = true;
+					result = l.query(tquery, type, true, true);
+				}
 				else 
 					 q = l.getParser().parse(query);
 				
-				Result result = l.query(q, type, true, true);
+				if (!termQuery)
+					result = l.query(q, type, true, true);
+				
+				
 				ScoreDoc[] data = result.getData();
+				
 				TimeLineCreatorThread lilt = new TimeLineCreatorThread(l) {
 					@Override
 					public void execute() {
 						result.setTimeCounter(l.createTimeBins(TimeBin.HOURS, data));
 						l.showInTimeLine(result.getTimeCounter());
-//						l.changeTimeLine(TimeBin.MINUTES);
 					}
 				};
-				lilt.start();
 				
+				SwingUtilities.invokeLater(new Runnable() {
+					
+					@Override
+					public void run() {
+						lilt.start();
+					}
+				});
+				
+							
 				l.createMapMarkers(data, true);
 				l.changeHistogramm(result.getHistoCounter());
 //				l.initCountriesMap();

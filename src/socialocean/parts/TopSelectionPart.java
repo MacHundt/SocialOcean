@@ -26,10 +26,12 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TermQuery;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.Persist;
 import org.eclipse.swt.SWT;
@@ -56,6 +58,8 @@ public class TopSelectionPart {
 	private DefaultTableModel resultDataModel;
 	public int detailsColumns = 2;
 	private JTable detail;
+	
+	private Result result = null;
 	// content, tags, mentions, type, category, isRetweet //crimetype, //date, //id, sentiment, hasURL, has@ )
 //	public String[] detailsToShow = {"category", "content", "has@", "hasURL", 
 //			"isRetweet", "mention", "sentiment", "tags", "type"};
@@ -68,7 +72,7 @@ public class TopSelectionPart {
 			"content", 
 			"hasURL", 
 			"has@", 
-//			"type", 				// for now, there are only tweets!
+//			"type", 					// for now, there are only tweets!
 			"neg", 
 			"device", 				// bb_tweets
 			"pos", 
@@ -77,8 +81,13 @@ public class TopSelectionPart {
 //			"source", 
 			"tags", 
 			"name", 
-			"country",				// test .. takes long
+			"u_country",				// test .. takes long
+			"t_country",				// test .. takes long
 			"user_language", 
+			"gender",
+			"credibility",
+			"urls",					// nodeXL
+			"domains",				// nodeXL
 			"day"
 			};
 	private DefaultTableModel detailsDataModel;
@@ -194,7 +203,7 @@ public class TopSelectionPart {
 					Object[][] resulTable = new Object[result.length][resultColumns];
 					for (int i= 0; i< result.length; i++) {
 						TermStats ts = result[i];
-						resulTable[i][0] = i;						// Rank
+						resulTable[i][0] = i;						// Rank	
 						resulTable[i][1] = ts.docFreq;				
 //						resulTable[i][2] = ts.field;
 						resulTable[i][2] = ts.termtext.utf8ToString();
@@ -231,14 +240,24 @@ public class TopSelectionPart {
 //				Query q = null;
 				try {
 					Query q = null;
+					TermQuery tquery = null;
+					boolean termQuery = false;
 					if (query.contains("name:") || query.contains("mention:")) {
 						QueryParser parser = new QueryParser("name", new MyLuceneAnalyser());
 						q = parser.parse(query);
 					}
+					else if (query.contains("urls:")) {
+						String url = query.substring(query.indexOf("urls:")+5);
+						tquery = new TermQuery(new Term("urls", url));
+						termQuery = true;
+						result = l.query(tquery, l.getQeryType(), true, true);
+					}
 					else 
 						 q = l.getParser().parse(query);
 					
-					Result result = l.query(q, l.getQeryType(), true, true);
+					if (!termQuery)
+						result = l.query(q, l.getQeryType(), true, true);
+					
 					ScoreDoc[] data = result.getData();
 					TimeLineCreatorThread lilt = new TimeLineCreatorThread(l) {
 						@Override
@@ -273,9 +292,7 @@ public class TopSelectionPart {
 			}
 		});
 		
-		// TODO
 		split.setDividerLocation(0.5);
-		
 		
 		rootContainer.add(panel);
  		

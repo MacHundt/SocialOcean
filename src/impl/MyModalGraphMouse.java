@@ -8,6 +8,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import edu.uci.ics.jung.visualization.control.AbstractModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.AnimatedPickingGraphMousePlugin;
@@ -63,7 +65,13 @@ public class MyModalGraphMouse<V,E> extends AbstractModalGraphMouse
 		setModeKeyListener(new ModeKeyAdapter(this));
     }
     
-    /**
+    
+    public void changeToPicking() {
+		setMode(Mode.PICKING);
+    }
+    
+    
+    /**tttttttttttttttttttttt
      * create the plugins, and load the plugins for TRANSFORMING mode
      *
      */
@@ -73,8 +81,8 @@ public class MyModalGraphMouse<V,E> extends AbstractModalGraphMouse
     		picker.setLensColor(Color.black);
         pickingPlugin = picker;
         animatedPickingPlugin = new AnimatedPickingGraphMousePlugin<V,E>();
-        translatingPlugin = new TranslatingGraphMousePlugin(InputEvent.BUTTON1_MASK);
-        scalingPlugin = new ScalingGraphMousePlugin(new CrossoverScalingControl(), 0, in, out);
+        translatingPlugin = new TranslatingGraphMousePlugin(InputEvent.BUTTON1_MASK );
+        scalingPlugin = new ScalingGraphMousePlugin(new CrossoverScalingControl(), 0, out, in);
 //        rotatingPlugin = new RotatingGraphMousePlugin();
 //        shearingPlugin = new ShearingGraphMousePlugin();
 
@@ -82,12 +90,12 @@ public class MyModalGraphMouse<V,E> extends AbstractModalGraphMouse
         setMode(Mode.TRANSFORMING);
     }
     
-    public static class ModeKeyAdapter extends KeyAdapter {
-    	private char t = 't';
-    	private char p = 'p';
-    	protected ModalGraphMouse graphMouse;
+	public static class ModeKeyAdapter extends KeyAdapter implements MouseListener {
+		private char t = 't';
+		private char p = 'p';
+		public ModalGraphMouse graphMouse;
 
-    	public ModeKeyAdapter(ModalGraphMouse graphMouse) {
+		public ModeKeyAdapter(ModalGraphMouse graphMouse) {
 			this.graphMouse = graphMouse;
 		}
 
@@ -96,19 +104,49 @@ public class MyModalGraphMouse<V,E> extends AbstractModalGraphMouse
 			this.p = p;
 			this.graphMouse = graphMouse;
 		}
-		
+
 		@Override
-        public void keyTyped(KeyEvent event) {
+		public void keyTyped(KeyEvent event) {
 			char keyChar = event.getKeyChar();
-			if(keyChar == t) {
-				((Component)event.getSource()).setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			if (keyChar == t) {
+				((Component) event.getSource()).setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 				graphMouse.setMode(Mode.TRANSFORMING);
-			} else if(keyChar == p) {
-				((Component)event.getSource()).setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+			} else if (keyChar == p) {
+				((Component) event.getSource()).setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 				graphMouse.setMode(Mode.PICKING);
 			}
 		}
-    }
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+			// TODO Auto-generated method stub
+
+		}
+	}
 
 	@Override
 	public Object[] getSelectedObjects() {
@@ -119,12 +157,12 @@ public class MyModalGraphMouse<V,E> extends AbstractModalGraphMouse
 	@Override
 	public void addItemListener(ItemListener l) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void removeItemListener(ItemListener l) {
 		// TODO Auto-generated method stub
-		
+
 	}
 }

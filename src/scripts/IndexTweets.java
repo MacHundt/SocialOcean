@@ -20,6 +20,7 @@ import java.util.TimeZone;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.DoubleDocValuesField;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
@@ -38,14 +39,15 @@ public class IndexTweets {
 	private static int Fetchsize = 10000;
 	private static String countryTable = "countries_all";
 	
-//	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index_nodexl/";
-	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index_50/";
+//	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index_nodex2/";
+	private static String indexPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/lucene_index_1_nogeo/";
 
-	private static int topX = 50;
+	private static int topX = 1;
 	private static boolean onlyTopX = true;
 	
 	private static boolean LOCAL = false;
 	private static long mindate = Long.MAX_VALUE;
+	
 	private static long maxdate = Long.MIN_VALUE;
 	
 	// index all tweets from DB
@@ -78,29 +80,39 @@ public class IndexTweets {
 			}
 			
 			IndexWriter writer = new IndexWriter(dir, iwc);
-//			IndexWriter my_writer = new IndexWriter(dir, my_iwc);
 			
 			c.setAutoCommit(false);
 			Statement stmt = c.createStatement();
 			stmt.setFetchSize(Fetchsize);
 			
-			String query = "Select "
-					+ "tweet_id, "
-					+ "tweet_creationdate, "
-					+ "tweet_content, "
-					+ "relationship, "
-					+ "latitude, "
-					+ "longitude, "
-					+ "hasurl, "
-//					+ "user_id, "				// bb_tweets -- more unique than screen_name
-					+ "user_screenname, "
-					+ "tweet_source, "			// bb_tweets
-					+ "user_language, "			// bb_tweets
-					+ "positive, "
-					+ "negative, "
-					+ "category, "
-					+ "sentiment "
-					+ "from "+DBManager.getTweetdataTable();
+			String query = " Select "
+					+ "t.tweet_id, "
+					+ "t.tweet_creationdate, "
+					+ "t.tweet_content, "
+					+ "t.relationship, "
+					+ "t.latitude, "
+					+ "t.longitude, "
+					+ "t.hasurl, "
+					+ "t.user_screenname, "
+					+ "t.tweet_source, "			// bb_tweets
+					+ "t.user_language, "		// bb_tweets
+					+ "t.positive, "
+					+ "t.negative, "
+					+ "t.category, "
+					+ "t.sentiment, "
+//					+ "t.urls, "				// my2k
+//					+ "t.domains, "			// my2k
+					+ "u.gender, "
+					+ "u.user_statusescount, "			// Credibility attributes of users  -- add further (also scores from the tweet )
+					+ "u.user_followerscount, "
+					+ "u.user_friendscount, "
+					+ "u.user_listedcount, "
+					+ "u.desc_score, "
+					+ "u.latitude as u_lat, "
+					+ "u.longitude as u_lon "
+					+ "from "+DBManager.getTweetdataTable()+" as t, "
+					+ DBManager.getUserTable()+" as u "
+					+ "where t.user_screenname = u.user_screenname;";
 			
 			  
 			ResultSet rs = stmt.executeQuery(query);
@@ -131,9 +143,27 @@ public class IndexTweets {
 				t.setNegative(rs.getInt("negative"));
 				t.setCategory((rs.getString("category") != null) ? rs.getString("category") : "other");
 				t.setSentiment((rs.getString("sentiment") != null) ? rs.getString("sentiment") : "neu");
+				String gender = rs.getString("gender");
+				if (gender == null)
+					gender = "unknown";
+				else if (gender.equals("andy"))
+					gender = "unknown";
+				else if (gender.equals("mostly_male"))
+					gender = "male";
+				else if (gender.equals("mostly_female"))
+					gender = "female";
+				t.setGender(gender);
+				t.setU_lat(rs.getDouble("u_lat"));
+				t.setU_lon(rs.getDouble("u_lon"));
+				
+				double credibility = rs.getDouble("desc_score");
+				t.setCredibility(credibility);
+				
+				
+//				t.setUrls(rs.getString("urls"));									// my2k
+//				t.setDomains(rs.getString("domains"));							// my2k
 				
 				tweets.add(t);
-				
 				if (counter == Fetchsize) {
 					indexTweets(writer, tweets, doc_counter);
 					counter = 0;
@@ -150,6 +180,7 @@ public class IndexTweets {
 					}
 				}
 			}
+			c.close();
 			
 			writer.close();
 			
@@ -166,9 +197,6 @@ public class IndexTweets {
 			String mincdate = getMinUserCreation();
 			String maxcdate = getMaxUserCreation();
 
-//			String userMinD = sdf.format(mincdate);
-//			String userMaxD = sdf.format(maxcdate);
-			
 			wr = new FileWriter(propfile);
 			wr.write("# DB \ntweetdata=" + DBManager.getTweetdataTable() + "\nusers=" + DBManager.getUserTable()
 					+ "\n# TIME \n" + "min=" + mind + "\nmax=" + maxd + "\nusermin=" + mincdate + "\nusermax="
@@ -201,7 +229,6 @@ public class IndexTweets {
 				maxCreationDate = rs.getString(1);
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -251,7 +278,12 @@ public class IndexTweets {
 //			doc.add(new StringField("isRetweet", (t.getTweet_replytostatus() > 0) ? "true" : "false", Field.Store.NO));
 			doc.add(new StringField("relationship", t.getRelationship().toLowerCase(), Field.Store.YES));
 			
-//			TweetSource
+			
+//			Gender
+			doc.add(new StringField("gender", t.getGender().toLowerCase(), Field.Store.YES));
+			
+			
+			//	TweetSource
 			String source = t.getTweet_source().toLowerCase();
 			// last char is '/'  --> remove
 			if (source.endsWith("/")) {
@@ -263,11 +295,13 @@ public class IndexTweets {
 			}
 			doc.add(new StringField("device", source, Field.Store.YES));
 			
-			// User_ScreenName
-			doc.add(new StringField("name", t.getUserScreenName(), Field.Store.YES));
 			
 			// User_Language
 			doc.add(new StringField("user_language", t.getLanguage().toLowerCase(), Field.Store.YES));
+			
+			
+			// User_ScreenName
+			doc.add(new StringField("name", t.getUserScreenName(), Field.Store.YES));
 			
 			
 			// # tags
@@ -278,7 +312,21 @@ public class IndexTweets {
 				tags = getTagsFromTweets(content).toLowerCase();
 				TextField tag_field = new TextField("tags", tags, Field.Store.YES);
 				doc.add(tag_field);
-
+				
+				
+//				// urls
+//				String urls = t.getUrls();
+//				if (urls != null)
+//					doc.add(new StringField("urls", urls, Field.Store.YES));
+//					//doc.add(new Field("urls", urls, Field.Store.YES, Field.Index.NOT_ANALYZED));
+//				
+//				
+//				// domains
+//				String domains = t.getDomains();
+//				if (domains != null)
+//					doc.add(new StringField("domains", domains, Field.Store.YES));
+				
+				
 				// @ mentions
 				mentions = getMentionsFromTweets(content);
 				StringField hasMention = new StringField("has@", (mentions.isEmpty()) ? "false" : "true", Field.Store.YES);
@@ -291,6 +339,7 @@ public class IndexTweets {
 //				doc.add(mention_field);
 //				doc.add(new StringField("has@", (!mentions.isEmpty()) ? "true" : "false", Field.Store.YES));
 
+				
 				// fulltext
 				content = content.replaceAll("\"", "");
 				TextField content_field = new TextField("content", content.toLowerCase(), Field.Store.NO);
@@ -302,9 +351,14 @@ public class IndexTweets {
 			
 				doc.add(new StringField("hasURL", (t.isHasurl())? "true" : "false" , Field.Store.YES));
 				
-				
 				// User_id
 				doc.add(new StringField("uid", t.getUser_id()+"", Field.Store.YES));
+				
+				
+				
+// *********  Credibility
+				doc.add(new StringField("credibility", t.getCredibility()+"", Field.Store.YES));
+//				doc.add(new DoubleDocValuesField("credibility", t.getCredibility()));			// doesn't work
 				
 				
 				// Sentiment
@@ -331,17 +385,8 @@ public class IndexTweets {
 					
 					LocalDate date = LocalDate.of(year, month, day);
 					LocalTime time = LocalTime.of(hour, min, sec);
-					
-//					boolean isbefor = date.isBefore(mindate);
-//					boolean isafter = date.isAfter(maxdate);
-//					
-//					if (isbefor || isafter ) {
-//						continue;
-//					}
-					
 					LocalDateTime dt = LocalDateTime.of(date, time);
 					long utc_time = dt.toEpochSecond(ZoneOffset.UTC);
-//					String date_str = DateTools.dateToString(dt, Resolution.SECOND);
 					doc.add(new StringField("date", ""+utc_time , Field.Store.YES ));
 					
 					mindate = Math.min(mindate, utc_time);
@@ -350,34 +395,47 @@ public class IndexTweets {
 					String dayString = dt.getDayOfWeek().toString().toLowerCase();
 					doc.add(new StringField("day", dayString, Field.Store.YES));
 					
-				} else {
-					continue;
-				}
+					// geo
+					lati = t.getLatitude();
+					longi = t.getLongitude();
+					if (lati == 0 || longi == 0) {
+						no_geo++;
+//						continue;
+					}
 
-			}
-			else {
-				continue;
+					// geo tweet location --> Get Country (ID oder name) of admin0 .. and admin1
+					if (lati != 0 || longi != 0) {
+						GeoPointField geo = new GeoPointField("geo", lati, longi, GeoPointField.Store.YES);
+						doc.add(geo);
+						
+////						// add Country
+//						String country = getCountry(lati, longi, stmt).replaceAll(" ", "_").toLowerCase();
+//						if (country.isEmpty())
+//							country = "other";
+//						doc.add(new StringField("t_country", country, Field.Store.YES));
+//						
+//						// user GEO
+//						double ulat = t.getU_lat();
+//						double ulong = t.getU_lon();
+//						if (ulat != 0 || ulong != 0 ) {
+//							// user origin country
+//							String ucountry = getCountry(ulat, ulong, stmt).replaceAll(" ", "_").toLowerCase();
+//							if (ucountry.isEmpty())
+//								ucountry = "other";
+//							doc.add(new StringField("u_country", ucountry, Field.Store.YES));
+//						}
+					}
+					
+				} 
+//				else {
+//					continue;
+//				}
+//
+//			}
+//			else {
+//				continue;
 			}
 			
-			// geo
-			lati = t.getLatitude();
-			longi = t.getLongitude();
-			if (lati == 0 || longi == 0) {
-				no_geo++;
-				continue;
-			}
-
-			// TODO geo tweet location --> Get Country (ID oder name) of admin0 .. and admin1
-			if (lati != 0 || longi != 0) {
-				GeoPointField geo = new GeoPointField("geo", lati, longi, GeoPointField.Store.YES);
-				doc.add(geo);
-				
-				// add Country
-//				String country = getCountry(lati, longi, stmt).replaceAll(" ", "_").toLowerCase();
-//				doc.add(new StringField("country", country, Field.Store.YES));
-			}
-			
-
 			
 			if (writer.getConfig().getOpenMode() == OpenMode.CREATE) {
 				// New index, so we just add the document (no old document
@@ -386,7 +444,6 @@ public class IndexTweets {
 				try {
 					writer.addDocument(doc);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			} else {
@@ -406,6 +463,31 @@ public class IndexTweets {
 	}
 	
 	
+	/**
+	 * This method retrieves the gender from the user table.
+	 * If user_screenname is not present, we return "andy".
+	 * @param userScreenName
+	 * @param genderC
+	 * @return gender of the user, default is "andy".
+	 */
+	private static String getGender(String userScreenName, Connection genderC) {
+		String gender = "unknown";
+		try {
+			Statement stmt = genderC.createStatement();
+			String query = "select gender from "+DBManager.getUserTable() +" where user_screenname = '"+userScreenName+"';";
+			ResultSet rs = stmt.executeQuery(query);
+			while (rs.next()) {
+				gender = rs.getString(1);
+				if (gender.equals("andy"))
+					gender = "unknown";
+			}
+		} catch (SQLException e) {
+			return gender;
+		}
+		return gender;
+	}
+
+
 	private static String getCountry(double lati, double longi, Statement stmt) throws SQLException {
 		String country = "";
 		String query = "Select name_0 from "+countryTable+" " + 

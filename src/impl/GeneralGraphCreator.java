@@ -6,18 +6,25 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Paint;
 import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DecimalFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,6 +43,9 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSlider;
@@ -72,18 +82,23 @@ import edu.uci.ics.jung.graph.UndirectedSparseMultigraph;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.Layer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
+import edu.uci.ics.jung.visualization.control.ModalGraphMouse.Mode;
+import edu.uci.ics.jung.visualization.control.ScalingControl;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
+import edu.uci.ics.jung.visualization.util.ArrowFactory;
 import utils.DBManager;
+import utils.Lucene;
+import utils.TimeLineHelper;
 
 
-public class GraphPanelCreator {
+public class GeneralGraphCreator {
 	
 	private static JPanel graphPanel = null;
 	private static VisualizationViewer<MyUser, MyEdge> vv;
 	private static UndirectedSparseMultigraph<MyUser, MyEdge> graph;
 	private static AggregateLayout<MyUser, MyEdge> layout;
 	private static Set<Set<MyUser>> clusterSet;
-	
 	
 	private static JSlider edgeBetweennessSlider;
 	private static JSlider clusterSizeSlider;
@@ -103,6 +118,8 @@ public class GraphPanelCreator {
 	
 	private static JSpinner densitySpinner;
 	
+	private static ArrayList<MyUser> highlightUser = new ArrayList<>();
+	
 	private static LoadingCache<MyUser, Paint> vertexPaints =
 			CacheBuilder.newBuilder().build(
 					CacheLoader.from(Functions.<Paint>constant(Color.white))); 
@@ -121,7 +138,8 @@ public class GraphPanelCreator {
 	
 	private static Color node = new Color(124,119,119);
 //	private static Color highCentrality = new Color(0, 0, 255);
-	private static Color highCentrality = new Color(91, 46, 255,255);
+	private static Color highCentrality = new Color(91, 46, 255,255);		// Broadcast
+	private static Color supportColor = new Color(136,86,167);			// Support
 //	private static Color highCentrality = new Color(102, 255, 51,200);
 	private static Color group1Color = new Color(138, 136, 131);
 	
@@ -134,6 +152,8 @@ public class GraphPanelCreator {
 	private static Color edge = new Color(0,0,0);
 	
 	private static DecimalFormat df = new DecimalFormat("#.00");
+	
+	private static boolean addToSelection = false;
 	
 	
 //	public final static Color[] similarColors =	
@@ -172,8 +192,11 @@ public class GraphPanelCreator {
 			Rectangle rec = Display.getCurrent().getBounds();
 			layout.setSize(new Dimension(rec.width, rec.height));
 //			layout.setSize(new Dimension(1000, 900));
+			
+			
 			vv = new VisualizationViewer<MyUser, MyEdge>(layout);
 			vv.setBackground(Color.white);
+			vv.setSize(new Dimension(rec.width+50, rec.height+50));
 			//Tell the renderer to use our own customized color rendering
 			vv.getRenderContext().setVertexFillPaintTransformer(vertexPaints);
 			
@@ -191,6 +214,7 @@ public class GraphPanelCreator {
 			
 			vv.getRenderContext().setVertexLabelTransformer(new Function<MyUser,String>(){
 				public String apply(MyUser v) {
+					
 					if(vv.getPickedVertexState().isPicked(v)) {
 						return v.getName();
 					} else {
@@ -215,6 +239,7 @@ public class GraphPanelCreator {
 				
 			});
 			
+			
 			vv.getRenderContext().setEdgeDrawPaintTransformer(new Function<MyEdge,Paint>() {
 				public Paint apply(MyEdge v) {
 					if(vv.getPickedEdgeState().isPicked(v)) {
@@ -230,13 +255,29 @@ public class GraphPanelCreator {
 			vv.getRenderContext().setEdgeStrokeTransformer(new Function<MyEdge,Stroke>() {
                 protected final Stroke THIN = new BasicStroke(1);
                 protected final Stroke THICK= new BasicStroke(2);
+                protected final Stroke HIGH= new BasicStroke(4);
+                protected final Stroke HIGHER= new BasicStroke(6);
+                protected final Stroke HIGHHIGH= new BasicStroke(8);
+                protected final Stroke HIGHHIGHHIGH= new BasicStroke(12);
                 public Stroke apply(MyEdge e)
                 {
                     Paint c = edgePaints.getUnchecked(e);
                     if (c == Color.YELLOW)
                         return THIN;
-                    else 
+                    else {
+                    	if (e.getCount() > 15)
+                            return HIGHHIGHHIGH;
+                    	if (e.getCount() > 8)
+                            return HIGHHIGH;
+                    	else if (e.getCount() > 4)
+                          return HIGHER;
+                    	 else if (e.getCount() > 2)
+                    		 return HIGH;
+                    	 else
                         return THICK;
+                    }
+                    
+                   
                 }
             });
 			
@@ -244,10 +285,100 @@ public class GraphPanelCreator {
 			 // Probably the most important step for the pure rendering performance:
 	        // Disable anti-aliasing
 	        vv.getRenderingHints().remove(RenderingHints.KEY_ANTIALIASING);
-			
 
 	        MyModalGraphMouse<MyUser, MyEdge> gm = new MyModalGraphMouse<MyUser, MyEdge>();
 			vv.setGraphMouse(gm);
+			
+			JPanel p = new JPanel();
+			p.setBorder(BorderFactory.createTitledBorder("Mouse Mode"));
+			p.add(gm.getModeComboBox());
+			p.setToolTipText("Switch Mouse Mode with pushing SHIFT");
+			
+			
+			vv.addKeyListener(new KeyListener() {
+				
+				@Override
+				public void keyTyped(KeyEvent e) {
+					if (e.getKeyCode() == 18 ) {
+						if (gm.getModeComboBox().getSelectedItem().equals(Mode.PICKING))
+							gm.setMode(Mode.TRANSFORMING);
+						else if (gm.getModeComboBox().getSelectedItem().equals(Mode.TRANSFORMING))
+							gm.setMode(Mode.PICKING);
+					}
+				}
+				
+				@Override
+				public void keyReleased(KeyEvent e) {
+					if (e.getKeyCode() == 16 ) {
+						addToSelection = false;
+					}
+				}
+				
+				@Override
+				public void keyPressed(KeyEvent e) {
+					
+//					System.out.println(e.getKeyCode());
+					if (e.getKeyCode() == 16 ) {
+						addToSelection = true;
+					}
+					
+				}
+			});
+			
+			vv.addMouseListener(new MouseListener() {
+				
+				@Override
+				public void mouseReleased(MouseEvent e) {
+					// MouseEvent.BUTTON3 --> Right Click
+					
+					if  (e.getButton() == 3 && gm.getModeComboBox().getSelectedItem().equals(Mode.TRANSFORMING)) {
+						gm.setMode(Mode.PICKING);
+						gm.getModeComboBox().updateUI();
+					} 
+//					else if (e.getButton() == 3 && gm.getModeComboBox().getSelectedItem().equals(Mode.PICKING) 
+//							&& !addToSelection) {
+//						gm.setMode(Mode.TRANSFORMING);
+//						gm.getModeComboBox().updateUI();
+//					}
+					else if (e.getButton() == 1) {
+						gm.setMode(Mode.TRANSFORMING);
+						gm.getModeComboBox().updateUI();
+					}
+				}
+				
+				@Override
+				public void mousePressed(MouseEvent e) {
+					
+//					System.out.println("Pressed Button: "+e.getButton());
+//					if (e.getButton() == 3 ) {
+//						gm.setMode(Mode.PICKING);
+//						gm.getModeComboBox().updateUI();
+//					}
+					
+				}
+				
+				@Override
+				public void mouseExited(MouseEvent e) {
+				}
+				
+				@Override
+				public void mouseEntered(MouseEvent e) {
+				}
+				
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					
+					if (e.getButton() == 3) {
+						gm.setMode(Mode.PICKING);
+						gm.getModeComboBox().updateUI();
+					}
+					else if (e.getButton() == 1) {
+						gm.setMode(Mode.TRANSFORMING);
+						gm.getModeComboBox().updateUI();
+					}
+					
+				}
+			});
 			
 			
 			// The clustSizeSlider
@@ -339,6 +470,7 @@ public class GraphPanelCreator {
 			final String centrality = "Centrality: ";
 			final TitledBorder scoreBorder = BorderFactory.createTitledBorder(centrality);
 			group1Panel.setBorder(scoreBorder);
+			group1Panel.setToolTipText("BLUE: <Broadcast> (high Out-Degree), PURPLE: <Support> (high In-Degree)");
 			
 			
 			final JPanel group2Panel = new JPanel();
@@ -435,13 +567,10 @@ public class GraphPanelCreator {
 			densityPanel.setBorder(densityBorder);
 			
 			
-			
-			
 			graphPanel.add(new GraphZoomScrollPane(vv), BorderLayout.CENTER);
 			JPanel south = new JPanel();
-			JPanel p = new JPanel();
-			p.setBorder(BorderFactory.createTitledBorder("Mouse Mode"));
-			p.add(gm.getModeComboBox());
+			
+			
 			south.add(p);
 			south.add(clusterControls);
 //			south.add(eastControls);
@@ -454,6 +583,27 @@ public class GraphPanelCreator {
 		}
 		
 	}
+	
+	
+	public static void highlightUsers(ArrayList<MyUser> foundUsers) {
+		highlightUser = foundUsers;
+		vv.fireStateChanged();
+		
+//		vv.getRenderContext().setVertexLabelTransformer(new Function<MyUser,String>(){
+//			
+//			public String apply(MyUser v) {
+//				if(highlightUser.contains(v)) {
+//					return "***"+v.getName()+"***";
+//				} else {
+//					return "";
+//				}
+//			}
+//		});
+	}
+	
+	public static void highlightEdges(ArrayList<MyEdge> foundEdges) {
+		
+	}
 
 
 	public static void createSimpleGraph(ScoreDoc[] result, IndexSearcher searcher, boolean withMention,
@@ -462,7 +612,6 @@ public class GraphPanelCreator {
 		clearGraph();
 		
 		vv.setVisible(false);
-		
 		HashMap<String, MyUser> nodeNames = new HashMap<>(); // screenName -> id
 		HashMap<String, MyUser> sources = new HashMap<>();
 
@@ -478,8 +627,13 @@ public class GraphPanelCreator {
 //				long tweetdate = Long.parseLong((document.getField("date")).stringValue());
 			
 				String id = (document.getField("id")).stringValue();						// tweet_id
-				String mentionString = (document.getField("mention")).stringValue();
-				boolean hasMention =  ((document.getField("has@")).stringValue() == "true") ? true : false;
+				String hasMentionSrg = (document.getField("has@") != null) ? (document.getField("has@")).stringValue() : null;
+				if (hasMentionSrg == null) 
+					continue;
+				boolean hasMention =  ( hasMentionSrg == "true") ? true : false;
+				String mentionString = (document.getField("mention") != null) ? (document.getField("mention")).stringValue() : null;
+				if (mentionString == null)
+					continue;
 				String screenName = (document.getField("name")).stringValue().trim();
 
 				// EDGE information
@@ -514,23 +668,34 @@ public class GraphPanelCreator {
 				String[] mentions = mentionString.split(" ");
 				
 				if (!hasMention && mentionString.isEmpty()) {
+					Lucene l = Lucene.INSTANCE;
+					if (l.isOnlyGeo() && !hasGeo ) 
+						continue;
+					
 					// Self-Edge for every tweet without mention
 					MyEdge edge = null;
 					// ADD Edge: source to Target
 					String edgesNames = "" + sourceID.getId() + "_" + sourceID.getId();
+					sourceID.incOutDegree();
+					sourceID.incInDegree();
+					int count = 1;
 					if (edgesMap.containsKey(edgesNames)) {
 						edgesMap.put(edgesNames, edgesMap.get(edgesNames) + 1);
+						count = edgesMap.get(edgesNames);
 					} else {
 						edgesMap.put(edgesNames, new Integer(1));
 					}
 
 					// Every Edge Unique!
 					edge = new MyEdge(id);
-					edge.changeToString(MyEdge.LabelType.SentiStrenth);
+					edge.changeToString(MyEdge.LabelType.SentiStrength);
+					
+					edge.setCount(count);
 
-					if (hasGeo)
+					if (hasGeo) {
 						edge.addPoint(lat, lon);
-
+					}
+					
 					// Self-Edge
 					graph.addEdge(edge, sourceID, sourceID);
 				}
@@ -539,6 +704,10 @@ public class GraphPanelCreator {
 					for (String target : mentions) {
 
 						if (target.isEmpty())
+							continue;
+						
+						Lucene l = Lucene.INSTANCE;
+						if (l.isOnlyGeo() && !hasGeo ) 
 							continue;
 
 						target = target.replaceAll("[:']", "").trim();
@@ -555,16 +724,23 @@ public class GraphPanelCreator {
 
 						MyEdge edge = null;
 						// ADD Edge: source to Target
+						sourceID.incOutDegree();
+						nodeID.incInDegree();
 						String edgesNames = "" + sourceID.getId() + "_" + nodeID.getId();
+						int count = 1;
 						if (edgesMap.containsKey(edgesNames)) {
 							edgesMap.put(edgesNames, edgesMap.get(edgesNames) + 1);
+							count = edgesMap.get(edgesNames);
 						} else {
 							edgesMap.put(edgesNames, new Integer(1));
 						}
 
 						// Every Edge Unique!
 						edge = new MyEdge(id); 
-						edge.changeToString(MyEdge.LabelType.SentiStrenth);
+						edge.changeToString(MyEdge.LabelType.SentiStrength);
+						
+						edge.setCount(count);
+						
 
 						if (hasGeo)
 							edge.addPoint(lat, lon);
@@ -575,8 +751,9 @@ public class GraphPanelCreator {
 								// TODO add edges .. tweet_id to MyEdge
 								System.out.println("Self-Mention-Edge: "+edge.getId()+" already exists ..");
 							}
-							else 
+							else {
 								graph.addEdge(edge, sourceID, nodeID);
+							}
 						} 
 
 					}
@@ -601,17 +778,22 @@ public class GraphPanelCreator {
 				vv.validate();
 				vv.repaint();
 				vv.setVisible(true);
-				
 //				System.out.println(vv.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.LAYOUT).getScale());
 //				System.out.println(vv.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.VIEW).getScale());
-//				System.out.println(vv.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.VIEW).getScaleX());
-//				System.out.println(vv.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.VIEW).getScaleY());
-				
 				vv.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.VIEW).setScale(0.2, 0.2, vv.getCenter());
 				
+				
+//				double amount = 1.0;    // Or negative to zoom out.
+//				ScalingControl scaler = new CrossoverScalingControl();
+//				scaler.scale(vv, amount > 0 ? 1.1f : 1 / 1.1f, vv.getCenter());
+//				vv.scaleToLayout(scaler);
+				
+				double amount = -1.0;    // Or negative to zoom out.
+				ScalingControl scaler = new CrossoverScalingControl();
+				scaler.scale(vv, amount < 0 ? 1.1f : 1 / 1.1f, vv.getCenter());
+				vv.scaleToLayout(scaler);
 			}
 		});
-		
 		
 	}
 
@@ -663,17 +845,12 @@ public class GraphPanelCreator {
 					// see if target is in keySet --> true add an edge
 					String target = rs.getString("target");
 					String id = rs.getString("tweet_id");
-					double lon = rs.getDouble("longitude");
-					double lat = rs.getDouble("latitude");
-					boolean hasGeo = false;
-					if (lat != 0.0 || lon != 0.0) {
-						hasGeo = true;
-					}
 					if (nodeNames.keySet().contains(target)) {
 						// add edge
 						MyEdge edge = null;
 						// ADD Edge: source to Target
-
+						((MyUser) nodeNames.get(name)).incOutDegree();
+						((MyUser) nodeNames.get(target)).incInDegree();
 						String edgesNames = "" + ((MyUser) nodeNames.get(name)).getId() + "_"
 								+ ((MyUser) nodeNames.get(target)).getId();
 						if (edgesMap.containsKey(edgesNames)) {
@@ -690,11 +867,8 @@ public class GraphPanelCreator {
 						edge.setRelationsip("Followed");
 //						edge.addSource(name);
 //						edge.addTarget(target);
-						if (hasGeo)
-							edge.addPoint(lat, lon);
 						
 						graph.addEdge(edge, nodeNames.get(name), nodeNames.get(target));
-
 					}
 				}
 			}
@@ -795,6 +969,8 @@ public class GraphPanelCreator {
 		int maxDeg = 0;
 		double globalCentrality = 0.0;
 		long sum = 0;
+		int hInDegree = 0;
+		int hOoutDegree = 0;
 		for (MyUser u : graph.getVertices()) {
 			int degScore = u.getDegree();
 			double betScore = u.getBetweennessScore();
@@ -812,6 +988,12 @@ public class GraphPanelCreator {
 			if (degScore > maxDeg) {
 				maxDeg = degScore;
 			}
+			if (u.getInDegree() > hInDegree) {
+				hInDegree = u.getInDegree();
+			}
+			if (u.getOutDegree() > hOoutDegree) {
+				hOoutDegree = u.getOutDegree();
+			}
 		}
 		
 		if (isBetweenness) {
@@ -820,14 +1002,13 @@ public class GraphPanelCreator {
 		else if (isDegree) {
 			globalCentrality = (maxDeg / (double) sum);
 		}
-		
-//		System.out.println("Global_Centrality: "+globalCentrality);
+		String degreeType = ( hOoutDegree > hInDegree) ? "Broadcast" : "Support";
 		
 		vertexPaints.cleanUp();
-		
 		int isolateCounter = 0;
+		int i = 0;
 		for (Iterator<Set<MyUser>> cIt = clusterSet.iterator(); cIt.hasNext();) {
-			
+			i++;
 			HashSet<MyEdge> uniqueEdges = new HashSet<>();
 			
 			Set<MyUser> vertices = cIt.next();
@@ -838,6 +1019,8 @@ public class GraphPanelCreator {
 			if (isGlobal) {
 				if (globalCentrality > centrThreshold) {
 					nodeColor = highCentrality;
+					if (degreeType.equals("Support"))
+						nodeColor = supportColor;
 				}
 			}
 			
@@ -845,8 +1028,11 @@ public class GraphPanelCreator {
 			int localDeg = 0;
 			long localSum = 0;
 			double localCentrality = 0.0;
+			int lhinDegree = 0;
+			int lhOutDegree = 0;
 			for (MyUser u : vertices) {
 				
+				u.addClusterID(i);
 				Collection<MyEdge> local_edges = graph.getOutEdges(u);
 				if (local_edges != null )
 					for (MyEdge e : local_edges) {
@@ -862,6 +1048,12 @@ public class GraphPanelCreator {
 					maxBet = u.getBetweennessScore();
 				if (u.getDegree() > localDeg)
 					localDeg = u.getDegree();
+				if (u.getInDegree() > lhinDegree) {
+					lhinDegree = u.getInDegree();
+				}
+				if (u.getOutDegree() > lhOutDegree) {
+					lhOutDegree = u.getOutDegree();
+				}
 			}
 			
 			maxBet = (maxBet == 0) ? 1 : maxBet;
@@ -873,6 +1065,7 @@ public class GraphPanelCreator {
 			else if (isDegree) {
 				localCentrality = (localSum == 0) ? 0 : (localDeg / (double) localSum);
 			}
+			String localdegreeType = ( lhOutDegree > lhinDegree) ? "Broadcast" : "Support";
 			
 			double localDensity = 0.0;
 			if ( vertices.size() > 1 )
@@ -881,6 +1074,8 @@ public class GraphPanelCreator {
 			if (isLocal) {
 				if (localCentrality > centrThreshold) {
 					nodeColor = highCentrality;
+					if (localdegreeType.equals("Support"))
+						nodeColor = supportColor;
 				} else {
 					if (localDensity >= (double)densitySpinner.getValue()) {
 						nodeColor = highDensity;
@@ -938,6 +1133,8 @@ public class GraphPanelCreator {
 		int maxDeg = 0;
 		double globalCentrality = 0.0;
 		long sum = 0;
+		int hInDegree = 0;
+		int hOoutDegree = 0;
 		
 		if (!tooMuch) {
 			BetweennessCentrality<MyUser, MyEdge> bc = new BetweennessCentrality<MyUser, MyEdge>(graph);
@@ -967,6 +1164,33 @@ public class GraphPanelCreator {
 				if (degScore > maxDeg) {
 					maxDeg = degScore;
 				}
+				if (u.getInDegree() > hInDegree) {
+					hInDegree = u.getInDegree();
+				}
+				if (u.getOutDegree() > hOoutDegree) {
+					hOoutDegree = u.getOutDegree();
+				}
+				
+			}
+		} else {
+			// just do Degree Centrality
+			DegreeScorer<MyUser> deg = new DegreeScorer<>(graph);
+
+			for (MyUser u : graph.getVertices()) {
+				int degScore = deg.getVertexScore(u);
+				u.addDegree(degScore);
+				if (isDegree)
+					sum += degScore;
+
+				if (degScore > maxDeg) {
+					maxDeg = degScore;
+				}
+				if (u.getInDegree() > hInDegree) {
+					hInDegree = u.getInDegree();
+				}
+				if (u.getOutDegree() > hOoutDegree) {
+					hOoutDegree = u.getOutDegree();
+				}
 			}
 		}
 		
@@ -978,18 +1202,19 @@ public class GraphPanelCreator {
 		}
 		
 		double globalDensitiy = (2 * graph.getEdgeCount()) / (double) ((graph.getVertexCount() * (graph.getVertexCount()-1)));
-		
+		String degreeType = ( hOoutDegree > hInDegree) ? "Broadcast" : "Support";
+	
 		System.out.println("Global_Centrality: "+df.format(globalCentrality));
 		System.out.println("Global_Density: "+ df.format(globalDensitiy));
-		
+				
 		Color nodeColor = node;
 		if (isGlobal)
 			if (globalCentrality > centrThreshold) {
 				nodeColor = highCentrality;
+				if (degreeType.equals("Support"))
+					nodeColor = supportColor;
 			}
 			
-		
-		
 		Graph<MyUser, MyEdge> g = layout.getGraph();
         layout.removeAll();
 
@@ -1003,10 +1228,6 @@ public class GraphPanelCreator {
 
 		int i = 0;
 		int isolateCounter = 0;
-		//Set the colors of each node so that each cluster's vertices have the same color
-		
-		
-		
 		for (Iterator<Set<MyUser>> cIt = clusterSet.iterator(); cIt.hasNext();) {
 			
 			HashSet<MyEdge> uniqueEdges = new HashSet<>();
@@ -1014,7 +1235,7 @@ public class GraphPanelCreator {
 			Set<MyUser> vertices = cIt.next();
 			if (vertices.size() == 1) 
 				isolateCounter++;
-				
+			
 			if (vertices.size() < clusterSizeSlider.getValue()) {
 				for (MyUser n : vertices) {
 					tooSmallClusterNodes.add(n);
@@ -1038,7 +1259,8 @@ public class GraphPanelCreator {
 			int localDeg = 0;
 			long localSum = 0;
 			double localCentrality = 0.0;
-			
+			int lhinDegree = 0;
+			int lhOutDegree = 0;
 			
 			for (MyUser u : vertices) {
 				
@@ -1051,7 +1273,10 @@ public class GraphPanelCreator {
 						double b = 0.0;
 						b = e.getBetweennessScore() / EBscore;
 						b = (b == 0.0) ? 5 : b * 255;
-						b = Math.abs((Math.log(b) / Math.log(255)) * 255);
+						b = (int) Math.abs((Math.log(b) / Math.log(255)) * 255);
+						
+						b = (b > 255) ? 255 : b;
+						b = (b < 0) ? 0 : b;
 
 						Color c = new Color(edge.getRed(), edge.getGreen(), edge.getBlue(), (int) b);
 						e.addAlpha((int) b);
@@ -1059,7 +1284,6 @@ public class GraphPanelCreator {
 						edgePaints.put(e, c);
 					}
 				}
-				
 				
 				if (isBetweenness) 
 					localSum += u.getBetweennessScore();
@@ -1070,6 +1294,12 @@ public class GraphPanelCreator {
 					maxBet = u.getBetweennessScore();
 				if (u.getDegree() > localDeg)
 					localDeg = u.getDegree();
+				if (u.getInDegree() > lhinDegree) {
+					lhinDegree = u.getInDegree();
+				}
+				if (u.getOutDegree() > lhOutDegree) {
+					lhOutDegree = u.getOutDegree();
+				}
 			}
 			
 			if (isBetweenness) {
@@ -1078,6 +1308,7 @@ public class GraphPanelCreator {
 			else if (isDegree) {
 				localCentrality = (localSum == 0)? 0 : (localDeg / (double) localSum);
 			}
+			String localdegreeType = ( lhOutDegree > lhinDegree) ? "Broadcast" : "Support";
 			
 			maxBet = (maxBet == 0) ? 1 : maxBet;
 			localDeg = (localDeg == 0) ? 1 : localDeg;
@@ -1092,6 +1323,8 @@ public class GraphPanelCreator {
 				nodeColor = node;
 				if (localCentrality > centrThreshold) {
 					nodeColor = highCentrality;
+					if (localdegreeType.equals("Support"))
+						nodeColor = supportColor;
 				} else {
 					if (localDensity >= (double)densitySpinner.getValue()) {
 						nodeColor = highDensity;
@@ -1102,6 +1335,7 @@ public class GraphPanelCreator {
 			for (MyUser u : vertices) {
 				// scale
 				double a = 0.0;
+				u.addClusterID(i);
 				
 				// LOCAL
 				if (isLocal) {
@@ -1137,8 +1371,7 @@ public class GraphPanelCreator {
 			
 		}
 		
-		
-		
+//		DEBUG:
 //		for (MyEdge e : g.getEdges()) {
 //
 //			if (edges.contains(e)) {
@@ -1158,7 +1391,9 @@ public class GraphPanelCreator {
 //			}
 //		}
 		
-		System.out.println("Isolates: "+isolateCounter);
+		Lucene l = Lucene.INSTANCE;
+		System.out.println("Isolates: "+isolateCounter + " -- Isolate ratio: "+ String.format( "%.2f",  (isolateCounter)/ (double) graph.getVertexCount() ));
+		l.printlnToConsole("Isolate ratio: "+ String.format( "%.2f",  (isolateCounter)/ (double) graph.getVertexCount() ));
 		
 		removeCluster(tooSmallClusterNodes, deleteEdges, layout);
 
@@ -1194,7 +1429,7 @@ public class GraphPanelCreator {
 			
 			
 			subLayout.setInitializer(vv.getGraphLayout());
-			subLayout.setSize(new Dimension(70,70));
+			subLayout.setSize(new Dimension(80,80));
 
 			layout.put(subLayout,center);
 			vv.repaint();
@@ -1213,23 +1448,239 @@ public class GraphPanelCreator {
 			g.removeEdge(edge);
 		}
 		
-//		SwingUtilities.invokeLater(new Runnable() {
-//			public void run() {
-//				
-//				for (Number n : tooSmallClusterNodes) {
-//					g.removeVertex(n);
-//				}
-//				for (Number edge : deleteEdges) {
-//					g.removeEdge(edge);
-//				}
-//			}
-//		});
-
-//		
+	}
+	
+	public static void showSingleDetailofEdge(JComponent root, MyEdge edge) {
 		
+		if (root == null)
+			root = graphPanel;
+		
+		int breakLineAT = 80;
+		String table = DBManager.getTweetdataTable();
+		String details = "";
+		ImageIcon icon = null;
+		Connection c = DBManager.getConnection();
+		try {
+			Statement stmt = c.createStatement();
+			String query = "select t.user_screenname, t.relationship, t.tweet_content, t.positive, t.negative, t.tweet_creationdate, t.sentiment, "
+					+ "t.category," + (table.startsWith("nodexl") ? "" : "t.tweet_source, ")
+					+ " cscore, t.tweet_retweetcount, t.hasurl, t.urls from " + table
+					+ " as t where t.tweet_id = " + edge.getId();
+			ResultSet rs = stmt.executeQuery(query);
+			while (rs.next()) {
+				String scName = rs.getString("user_screenname");
+				String relationship = rs.getString("relationship");
+				String content = rs.getString("tweet_content");
+				double cscore = rs.getDouble("cscore");
+				double betweenness = edge.getBetweennessScore();
+				String date = rs.getString("tweet_creationdate");
+				String cd = date.split(" ")[0];
+				Date dt = new Date(Integer.parseInt(cd.split("-")[0]), (Integer.parseInt(cd.split("-")[1])) -1 , Integer.parseInt(cd.split("-")[2]));
+				String sentiment = rs.getString("sentiment");
+				double pos = rs.getDouble("positive");
+				double neg = rs.getDouble("negative");
+				int reweeted = rs.getInt("tweet_retweetcount");
+				
+				String category = rs.getString("category");
+				boolean hasUrl = rs.getBoolean("hasurl");
+				String urls = rs.getString("urls");
+				String device = (table.startsWith("nodexl") ? "" : rs.getString("tweet_source"));
+
+				if (relationship.equals("Followed")) {
+					details += "\n" + scName + " follows ";
+					break;
+				}
+				device = device.substring(device.lastIndexOf("/")+1);
+
+				details += "\n" + scName + " (" + device + ") wrote on " + date + ":\n";
+				if (content.length() > breakLineAT) {
+					// next line
+					details += "\n\"" + content.substring(0, breakLineAT);
+					details += "\n" + content.substring(breakLineAT, content.length()) + "\"\n";
+				} else {
+					details += "\n\"" + content +"\"\n";
+				}
+				
+				edge.addSentiment(sentiment);
+				edge.addCategory(category);
+				edge.addContent(content);
+				edge.addCredibility(cscore);
+				edge.addDate(dt);
+				edge.addDevice(device);
+				ArrayList<String> url_list = new ArrayList<>();
+				if (!urls.isEmpty()) {
+					for (String url : urls.split(" ")) {
+						url_list.add(url);
+					}
+				}
+				edge.addUrls(url_list);
+				
+				icon =  DetailedGraphCreator.getTweetIcon(edge);
+				
+				sentiment += " (" + (int)pos + "," + (int)neg + ")";
+				
+				details += "\nCategory: \t" + category;
+				details += "\nSentiment: \t" + sentiment;
+				details += "\n\nCredibilty: ";
+				details += "\nContent Credibility Score: \t" + df.format(cscore);
+				details += "\nBetweenness Score: \t" + df.format(cscore);
+				details += "\nRetweeted: \t" + reweeted+" times";
+				// details += "\nhasURL: \t" + ((hasUrl) ? "true" : "false");
+				details += (hasUrl) ? "\nURLs: \t" + urls : "";
+			}
+			stmt.close();
+			c.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		JOptionPane.showMessageDialog(root, details, "Details Tweet", JOptionPane.PLAIN_MESSAGE, icon );
 	}
 	
 	
+	public static void showSingleDetailofUser(JComponent root,  MyUser user) {
+		
+		if (root == null)
+			root = graphPanel;
+		
+		Lucene l = Lucene.INSTANCE;
+		// Max values: hard coded
+		double maxFollow = Math.log10(8448672);				// loged
+		double maxFriends = Math.log10(290739);
+		double maxMessage = Math.log10(625638);
+		long maxDate = l.getUser_maxDate();
+		long minDate = l.getUser_minDate();
+		
+		LocalDateTime latestTweet = l.getLatestTweetDate();
+		LocalDateTime dt = latestTweet;
+		int breakLineAT = 80;
+		String table = DBManager.getUserTable();
+
+		ImageIcon icon = null;
+		String details = "";
+		Connection c = DBManager.getConnection();
+			try {
+				Statement stmt = c.createStatement();
+				String query = "select u.user_creationdate, u.user_language, u.user_statusescount, u.user_followerscount, "
+						+ "u.user_friendscount, u.user_listedcount, u.gender, u.desc_score, u.user_location, "
+						+ "geocoding_type from " + table
+						+ " as u where u.user_screenname = '" + user.getName()+"'";
+				ResultSet rs = stmt.executeQuery(query);
+				while (rs.next()) {
+					String scName = user.getName();
+					String gender = rs.getString("gender");
+					String creationdate = rs.getString("user_creationdate");
+//					// DATE
+//					String cd = creationdate.split(" ")[0];
+					long time = TimeLineHelper.creationDateToLong(creationdate); 	// the bigger the 'older' the user
+					
+					dt = TimeLineHelper.longTOLocalDateTime(time);
+					
+					String user_language = rs.getString("user_language");
+					String user_location = rs.getString("user_location");
+					
+					int statuses = rs.getInt("user_statusescount");
+					int followers = rs.getInt("user_followerscount");
+					int friends = rs.getInt("user_friendscount");
+					int listed = rs.getInt("user_listedcount");
+					
+					double desc_score = rs.getDouble("desc_score");
+					int geocoding_type = rs.getInt("geocoding_type");
+					
+//					double sc_follow =  Math.log10(followers) / maxFollow;
+//					double sc_friend =  Math.log10(friends) / maxFriends;
+//					double sc_tweets =  Math.log10(statuses) / maxMessage;
+//					double sc_time = ((Math.log(time) / Math.log(1000)) - (Math.log(minDate) / Math.log(1000))) / 
+//							((Math.log(maxDate) / Math.log(1000)) - (Math.log(minDate) / Math.log(1000)));
+////					
+//					double credible  = 1 - ((sc_follow + sc_friend +sc_tweets + sc_time + desc_score) / 5.0);
+					
+					// ratio = 1: I follow nobody (no friends), but many follow me
+					// ratio -> 0: I follow many (many friends), but nobody follows me
+					double follow_friend_ratio = followers / (double) (followers+friends);
+					
+					int Age_year = latestTweet.minusYears(dt.getYear()).getYear();
+					int Age_month = latestTweet.minusMonths(dt.getMonthValue()).getMonthValue();
+					int Age_day = latestTweet.minusDays(dt.getDayOfMonth()).getDayOfMonth();
+					
+					user.addGender(gender);
+					user.addStatuses(statuses);
+					user.addFollowers(followers);
+					user.addFriends(friends);
+					user.addListed(listed);
+					
+					user.addDescScore(desc_score);
+					user.addGeocodingType(geocoding_type);
+					
+					user.addCreationDate(creationdate);
+					
+					icon =  DetailedGraphCreator.getUserIcon(user);
+					
+					details += "\nUSER: " + scName + " ("+gender+"):";
+					details += "\n\nCreated on: \t" + creationdate;
+					// Get "Age" of user
+					details += "\nAge: \t" + ((Age_year > 0) ?  Age_year+" years " : "") + 
+							((Age_month > 0) ?  Age_month+" months " : "") + 
+							((Age_day > 0) ?  Age_day+" days " : "");
+					details += "\nUser Language: \t" + user_language;
+					details += "\nUser Location: \t" + user_location;
+					// get more cred-values
+					details += "\n\nCredibility:";
+					details += "\nDescription Score: \t" + df.format(desc_score);
+					details += "\nGeocoding of Location, Type: \t" + geocoding_type +"\n\t ("+getExplanation(geocoding_type)+")";
+//					details += "\nCredibility: \t" + df.format(credible);
+					details += "\nFollow-Friend Ratio: \t" + df.format(follow_friend_ratio);
+					
+					details += "\n\nStatistics:\n (#Tweets, #Followers, #Friends, #Listed):  \t (" + statuses+", "+followers+", "+friends+", "+listed+")";
+				}
+				stmt.close();
+				c.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
+			if (details.isEmpty()) {
+				details += "\nUSER: " + user.getName();
+			}
+			
+			JOptionPane.showMessageDialog(root, details, "Details User", JOptionPane.PLAIN_MESSAGE, icon );
+	}
+	
+	
+	private static String getExplanation(int geocoding_type) {
+		String geocoding = "Unknown";
+		
+		switch (geocoding_type) {
+		case 1:
+			geocoding = "Valid coordinates with matching timezone";
+			break;
+		case 2:
+			geocoding = "Valid coordinates";
+			break;
+		case 3:
+			geocoding = "Valid city with matching timezone";
+			break;
+		case 4:
+			geocoding = "Matching timezone: centroid of timezone-shape";
+			break;
+		case 5:
+			geocoding = "Valid city, take highest population";
+			break;
+		case 6:
+			geocoding = "Like a cityname, take longest match and highest population";
+			break;
+		case 7:
+			geocoding = "Like a timezone or a countryname: centroid of timezone shape";
+			break;
+
+		default:
+			geocoding = "Unknown";
+			break;
+		}
+		
+		return geocoding;
+	}
+
+
 	private static Map<String, Integer> sortByComparator(Map<String, Integer> unsortMap, final boolean order)
 	{
 	    List<Entry<String, Integer>> list = new LinkedList<Entry<String, Integer>>(unsortMap.entrySet());
@@ -1259,5 +1710,11 @@ public class GraphPanelCreator {
 	    }
 
 	    return sortedMap;
+	}
+
+
+	public static Collection<MyEdge> getEdges() {
+		
+		return graph.getEdges();
 	}
 }

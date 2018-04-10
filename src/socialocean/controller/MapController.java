@@ -77,7 +77,6 @@ public class MapController extends Observable {
 	}
 	
 	
-	
 	public void clearSelection() {
 		selection = null;
 	}

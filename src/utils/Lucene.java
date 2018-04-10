@@ -43,12 +43,17 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.BooleanQuery.Builder;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.spatial.geopoint.document.GeoPointField;
 import org.apache.lucene.spatial.geopoint.search.GeoPointInBBoxQuery;
 import org.apache.lucene.store.Directory;
@@ -59,8 +64,8 @@ import org.jxmapviewer.viewer.GeoPosition;
 
 import impl.GraphCreatorThread;
 import impl.GraphML_Helper;
-import impl.GraphPanelCreator;
-import impl.GraphPanelCreator3;
+import impl.GeneralGraphCreator;
+import impl.DetailedGraphCreator;
 import impl.MapPanelCreator;
 import impl.MyEdge;
 import impl.MyLuceneAnalyser;
@@ -109,11 +114,6 @@ public enum Lucene {
 	
 	private ColorScheme colorScheme = ColorScheme.SENTIMENT;
 
-
-	// START TIME
-	// private PreparedStatement pre_statement_min;
-	// private PreparedStatement pre_statement_max;
-
 	private LocalDateTime dt_min = null;
 	private long utc_time_min;
 	public boolean hasStartTime = false;
@@ -122,7 +122,6 @@ public enum Lucene {
 	public boolean hasStopTime = false;
 	private ArrayList<TimeLineHelper> completeDataTime = new ArrayList<>();
 
-//	private ScoreDoc[] last_result = null;
 	private Result last_result = null;
 	private String last_query = "";
 	private String query_type = "";
@@ -136,7 +135,7 @@ public enum Lucene {
 	}
 	
 	public static enum ColorScheme {
-		SENTIMENT, CATEGORY
+		SENTIMENT, CATEGORY, SENTISTRENGTH
 	}
 
 	public enum QueryTypes {
@@ -153,12 +152,6 @@ public enum Lucene {
 																// high opacity
 																// --> ADD
 
-	// public static void main(String[] args) {
-	// String formattedString = String.format("%s \t\t %.2f \t %d %s", "Test",
-	// 1*100/(float)4, 15, "%");
-	// System.out.println(formattedString);
-	// }
-
 	public int serialCounter = 0;
 	public boolean isInitialized = false;
 	private boolean changedTimeSeries;
@@ -167,6 +160,7 @@ public enum Lucene {
 	private String luceneIndex;
 	private long user_minDate;
 	private long user_maxDate;
+	private boolean ONLY_GEO;
 	
 	public static boolean SHOWHeatmap = true;
 	public static boolean SHOWCountries = false;
@@ -368,8 +362,8 @@ public enum Lucene {
 		try {
 			if (type.equals("ADD") && !last_query.isEmpty()) {
 				String newQuery = "";
-				if (query.toString().startsWith("GeoPointInBBoxQuery")
-						|| last_query.startsWith("GeoPointInBBoxQuery")) {
+				if (query.toString().contains("GeoPointInBBoxQuery")
+						|| last_query.contains("GeoPointInBBoxQuery")) {
 					// merge the both results by hand
 					// ArrayList<Query> last_two = new ArrayList<>();
 					// last_two.add(queryHistory.get(queryHistory.size()-1));
@@ -386,9 +380,15 @@ public enum Lucene {
 //					mergeScoreDocs(queryResult);
 					timeRangeFilter(query);
 				}
-
+				else if (query.toString().startsWith("urls:")) {
+					if (query instanceof TermQuery) {
+						queryResult = querySearcher.searchAll(query);
+						queryResult = mergeScoreDocs(queryResult);
+					}
+				}
 				else {
 					newQuery = query.toString() + " OR (" + last_query + ")";
+					last_query = newQuery;
 					query = parser.parse(newQuery);
 					queryResult = querySearcher.searchAll(query);
 				}
@@ -397,8 +397,8 @@ public enum Lucene {
 			// FUSE
 			else if (type.equals("FUSE") && !last_query.isEmpty()) {
 				String newQuery = "";
-				if (query.toString().startsWith("GeoPointInBBoxQuery")
-						|| last_query.startsWith("GeoPointInBBoxQuery")) {
+				if (query.toString().contains("GeoPointInBBoxQuery")
+						|| last_query.contains("GeoPointInBBoxQuery")) {
 					// FUSE and Geo is a selection!
 					// 1) case: 
 //						last_query is empty --> nothing to FUSE, we are not here
@@ -433,12 +433,34 @@ public enum Lucene {
 				
 				else {
 					newQuery = "(" + query.toString() + ")" + " AND (" + last_query + ")";
-					if (newQuery.contains("name:") || newQuery.contains("mention:")) {
-						// take MyLuceneParser
-						QueryParser parser = new QueryParser("name", new MyLuceneAnalyser());
-						query = parser.parse(newQuery);
-					} else
-						query = parser.parse(newQuery);
+					
+					if (query instanceof TermQuery || last_query.contains("urls:")) {
+						BooleanQuery bool =  BooleanQuery.Builder.class.newInstance().build();
+						Builder bq = new Builder();
+						// last AND new
+						if (last_query.contains("urls:")) {
+							String url = last_query.substring(last_query.indexOf("urls:")+5);
+							TermQuery tquery = new TermQuery(new Term("urls", url));
+							bq.add(tquery, Occur.MUST);
+						}
+						else {
+							Query lastQery = parser.parse(last_query);
+							bq.add(lastQery, Occur.MUST);
+						}
+						
+						bq.add(query, Occur.MUST);
+						
+						query = bq.build();
+						
+					}
+					else {
+						if (newQuery.contains("name:") || newQuery.contains("mention:")) {
+							// take MyLuceneParser
+							QueryParser parser = new QueryParser("name", new MyLuceneAnalyser());
+							query = parser.parse(newQuery);
+						} else
+							query = parser.parse(newQuery);
+					}
 					last_query = query.toString();
 
 					queryResult = querySearcher.searchAll(query);
@@ -455,7 +477,7 @@ public enum Lucene {
 				}
 			}
 
-		} catch (ParseException e) {
+		} catch (ParseException | InstantiationException | IllegalAccessException e) {
 			e.printStackTrace();
 		}
 
@@ -486,29 +508,60 @@ public enum Lucene {
 	
 	private ScoreDoc[] timeRangeFilter(Query query) {
 		
-		if (last_result == null) {
+		if (last_result == null || last_result.getData() == null) {
 			return querySearcher.searchAll(query);
 		}
 		
 		long from = normalizeDate(Long.parseLong(getRangeFromQuery(query)[0].trim()), 10);
 		long to = normalizeDate(Long.parseLong(getRangeFromQuery(query)[1].trim()), 10);
 		
-		// TODO go through last result and filter those in time range
-		
 		ArrayList<ScoreDoc> result = new ArrayList<>();
-		for (ScoreDoc doc : last_result.getData()	) {
-			try {
-				Document d = reader.document(doc.doc);
-				long date = Long.parseLong(d.getField("date").stringValue());
-				
-				if (date > from && date < to ) {
-					result.add(doc);
+		
+		//if selection -- get selection result
+		if (MapPanelCreator.mapCon.isSelection()) {
+			ArrayList<ScoreDoc> selectedDocs = new ArrayList<>();
+			Query q;
+			for (MyEdge x : DetailedGraphCreator.allEdges) {
+				try {
+					q = parser.parse("id:"+x.getId());
+					ScoreDoc[] rs = querySearcher.searchAll(q);
+					for (ScoreDoc doc : rs) 
+						selectedDocs.add(doc);
+				} catch (ParseException e) {
+					e.printStackTrace();
 				}
-			} catch (IOException e) {
-				e.printStackTrace();
+			}
+			for (ScoreDoc x : selectedDocs) {
+				long date = 0;
+				Document docu;
+				try {
+					docu = searcher.doc(x.doc);
+					date = Long.parseLong(docu.get("date"));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+				if (date >= from && date < to) {
+					result.add(x);
+				}
+			}
+		}
+		else {
+			for (ScoreDoc doc : last_result.getData()) {
+				try {
+					Document d = reader.document(doc.doc);
+					long date = Long.parseLong(d.getField("date").stringValue());
+
+					if (date > from && date < to) {
+						result.add(doc);
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 		ScoreDoc[] out = new ScoreDoc[result.size()];
+		
 		return result.toArray(out);
 	}
 	
@@ -535,6 +588,10 @@ public enum Lucene {
 //		ScoreDoc[] out = new ScoreDoc[result.size()];
 //		return result.toArray(out);
 //	}
+	
+	public LocalDateTime getLatestTweetDate() {
+		return dt_max;
+	}
 
 	
 	private String[] getRangeFromQuery(Query query) {
@@ -558,14 +615,39 @@ public enum Lucene {
 	private ScoreDoc[] cutScoreDocs(ScoreDoc[] result) {
 		if (last_result == null)
 			return result;
-
-		// NAIV --> selection / filter Find x in y
+		
 		ArrayList<ScoreDoc> finding = new ArrayList<>();
-		for (ScoreDoc x : last_result.getData()) {
-			for (ScoreDoc y : result) {
-				if (x.doc == y.doc) {
-					finding.add(x);
-					break;
+		//if selection -- get selection result
+		if (MapPanelCreator.mapCon.isSelection()) {
+			ArrayList<ScoreDoc> selectedDocs = new ArrayList<>();
+			Query q;
+			for (MyEdge x : DetailedGraphCreator.allEdges) {
+				try {
+					q = parser.parse("id:"+x.getId());
+					ScoreDoc[] rs = querySearcher.searchAll(q);
+					for (ScoreDoc doc : rs) 
+						selectedDocs.add(doc);
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+			}
+			for (ScoreDoc x : selectedDocs) {
+				for (ScoreDoc y : result) {
+					if (x.doc == y.doc) {
+						finding.add(x);
+						break;
+					}
+				}
+			}
+		}
+		else {
+			// NAIV --> selection / filter Find x in y
+			for (ScoreDoc x : last_result.getData()) {
+				for (ScoreDoc y : result) {
+					if (x.doc == y.doc) {
+						finding.add(x);
+						break;
+					}
 				}
 			}
 		}
@@ -616,9 +698,9 @@ public enum Lucene {
 			// TODO put into external thread!
 			TermStats[] result = HighFreqTerms.getHighFreqTerms(reader, topX, fields);
 
-			for (TermStats ts : result) {
-				System.out.println(ts.toString());
-			}
+//			for (TermStats ts : result) {
+//				System.out.println(ts.toString());
+//			}
 
 			return result;
 		} catch (Exception e) {
@@ -804,9 +886,6 @@ public enum Lucene {
 	
 	public void iniUserMinMaxCreationDate(String usermin, String usermax) {
 		
-//		user_maxDate = Date.UTC(2013, 04, 24, 19, 0, 0);
-//		user_minDate = Date.UTC(2006, 03, 21, 0, 0, 0);
-		
 		// MIN
 		String[] datetime_String = usermin.split(" ");
 		String date_Str = datetime_String[0];
@@ -887,15 +966,81 @@ public enum Lucene {
 		last_query = "";
 	}
 	
+	
+	public ArrayList<TimeLineHelper> createTimeBins(TimeBin binsize, ArrayList<MyEdge> tweets) {
+		ArrayList<TimeLineHelper> tl_data = new ArrayList<>();
+		long minDate = Long.MAX_VALUE;
+		long maxDate = Long.MIN_VALUE;
+		if (tweets == null || tweets.size() == 0) {
+			System.out.println(">>>> Result is empty");
+			return tl_data;
+		}
+		
+		// get min-max values
+		for (MyEdge edge : tweets) {
+			long time = edge.getUtimestamp();
+			if (time > maxDate) {
+				maxDate = time;
+			}
+			if (time < minDate) {
+				minDate = time;
+			}
+		}
+		long temp_utc = minDate;
+		long stepSize = 0;
+		HashMap<Long, Integer> buckets = new HashMap<>();
+		// From Start Date to StopDate .. make bins and plot
+		LocalDateTime dt_temp = TimeLineHelper.longTOLocalDateTime(minDate);
+		
+		// CREATE TIME Bins
+		while (temp_utc <= maxDate) {
+			LocalDateTime dt_plus = dt_temp;
+			switch (binsize) {
+			case SECONDS:
+				dt_plus = dt_temp.plusSeconds(1);
+				break;
+			case MINUTES:
+				dt_plus = dt_temp.plusMinutes(1);
+				break;
+			case HOURS:
+				dt_plus = dt_temp.plusHours(1);
+				break;
+			case DAYS:
+				dt_plus = dt_temp.plusDays(1);
+				break;
+			}
+			long utc_plus = dt_plus.toEpochSecond(ZoneOffset.UTC);
+			if (stepSize == 0) {
+				stepSize = utc_plus - temp_utc;
+			}
+			
+			buckets.put(temp_utc, 0);
+//			ScoreDoc[] rs = searchTimeRange(temp_utc, utc_plus, false, false);
+			dt_temp = dt_plus;
+			temp_utc = utc_plus;
+		}
+		// ADD To Bins
+		for (MyEdge edge : tweets) {
+			long time = edge.getUtimestamp();
+			long key = getBucket(buckets, stepSize, time);
+			if (key >= 0)
+				buckets.put(key, (buckets.get(key) + 1));
+			else
+				continue;
+		}
+
+		for (Long key : buckets.keySet()) {
+			tl_data.add(new TimeLineHelper(TimeLineHelper.longTOLocalDateTime(key), buckets.get(key)));
+		}
+
+		return tl_data;
+	}
+	
 
 	public ArrayList<TimeLineHelper> createTimeBins(TimeBin binsize, ScoreDoc[] result) {
 
 		ArrayList<TimeLineHelper> tl_data = new ArrayList<>();
 
-		// TODO Get New MIN - MAX
-		// TODO always fuse the result with last_result ( TEST!! )
-		// Or by hand .. put result into Buckets (after min max ) -> create
-		// buckets ... print
 		long minDate = Long.MAX_VALUE;
 		long maxDate = Long.MIN_VALUE;
 		
@@ -912,7 +1057,9 @@ public enum Lucene {
 			try {
 				document = searcher.doc(docID);
 				// System.out.println(document.getField("id").stringValue());
-				long time = Long.parseLong((document.getField("date")).stringValue());
+				long time = (document.getField("date") != null) ? Long.parseLong((document.getField("date")).stringValue()) : -1;
+				if ( time == -1)
+					continue;
 				if (time > maxDate) {
 					maxDate = time;
 				}
@@ -929,7 +1076,7 @@ public enum Lucene {
 		
 		HashMap<Long, Integer> buckets = new HashMap<>();
 		// From Start Date to StopDate .. make bins and plot
-		LocalDateTime dt_temp = longTOLocalDateTime(minDate);
+		LocalDateTime dt_temp = TimeLineHelper.longTOLocalDateTime(minDate);
 		
 		// CREATE TIME Bins
 		while (temp_utc <= maxDate) {
@@ -980,7 +1127,7 @@ public enum Lucene {
 		}
 		
 		for (Long key:  buckets.keySet()) {
-			tl_data.add(new TimeLineHelper(longTOLocalDateTime(key), buckets.get(key)));
+			tl_data.add(new TimeLineHelper( TimeLineHelper.longTOLocalDateTime(key), buckets.get(key)));
 		}
 		
 		return tl_data;
@@ -1007,10 +1154,8 @@ public enum Lucene {
 	}
 
 	
-	private LocalDateTime longTOLocalDateTime(long minDate) {
-		LocalDateTime time = LocalDateTime.ofEpochSecond(minDate, 0, ZoneOffset.UTC);
-		return time;
-	}
+	
+	
 	
 	
 	/**
@@ -1021,17 +1166,15 @@ public enum Lucene {
 	public void createGraphView(ScoreDoc[] result) {
 //		GraphPanelCreator3.createGraph(result, searcher, withMention, withFollows);
 //		GraphPanelCreator3.createSimpleGraph(result, searcher, withMention, withFollows);
-		GraphPanelCreator.createSimpleGraph(result, searcher, withMention, withFollows);
+		GeneralGraphCreator.createSimpleGraph(result, searcher, withMention, withFollows);
 	}
 	
 	
 	
 	public void changeEdgeColor() {
-		GraphPanelCreator3.changeEdgeColor();
+		DetailedGraphCreator.changeEdgeColor();
 	}
 
-	
-	
 
 	/**
 	 * This method creates an external mention.graphml file, to open it with
@@ -1128,13 +1271,16 @@ public enum Lucene {
 					double lon = GeoPointField.decodeLongitude(hashgeo);
 					String id = (document.getField("id")).stringValue();
 					// String type = (document.getField("type")).stringValue();
-					String query = "";
-					String sentiment = (document.getField("sentiment")).stringValue();
-					String category = (document.getField("category")).stringValue();
+					String sentiment = (document.getField("sentiment") != null) ? (document.getField("sentiment")).stringValue() : "neu";
+					String category = (document.getField("category") != null) ? (document.getField("category")).stringValue() : "other";
+					int s_strength = Integer.parseInt(document.getField("pos").stringValue()) + Integer.parseInt(document.getField("neg").stringValue());
 					
 					Lucene l = Lucene.INSTANCE;
 					if (l.getColorScheme().equals(Lucene.ColorScheme.CATEGORY)) {
 						MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, category, lat, lon));
+					}
+					else if (l.getColorScheme().equals(Lucene.ColorScheme.SENTISTRENGTH)) {
+						MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, s_strength+"", lat, lon));
 					}
 					else {
 						MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, sentiment, lat, lon));
@@ -1163,9 +1309,6 @@ public enum Lucene {
 				MapPanelCreator.clearWayPoints(clearMap);
 			
 			HashSet<GeoPosition> points = new HashSet<>();
-			
-			Lucene l = Lucene.INSTANCE;
-			
 			ArrayList<MyEdge> noGeoEdge = new ArrayList<>();
 			
 			for (MyEdge edge : edges) {
@@ -1175,11 +1318,16 @@ public enum Lucene {
 				double lat = edge.getLatitude();
 				double lon = edge.getLongitude();
 				
+				String s_strength = (edge.getPos() + edge.getNeg()) + "";
+				
 				if (lat !=0.0 || lon != 0.0) {
 					GeoPosition g = new GeoPosition(lat, lon);
 					points.add(g);
 					if (colorScheme.equals(Lucene.ColorScheme.CATEGORY)) {
 						MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, cate, lat, lon));
+					}
+					else if (colorScheme.equals(Lucene.ColorScheme.SENTISTRENGTH)) {
+						MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, s_strength, lat, lon));
 					}
 					else
 						MapPanelCreator.addWayPoint(MapPanelCreator.createTweetWayPoint(id, senti, lat, lon));
@@ -1197,13 +1345,14 @@ public enum Lucene {
 				
 			}
 			
-			if (noGeoEdge.size() > 0)
-				System.out.println("Edges with no geo: "+ noGeoEdge.size());
-			//TODO Do something with these edges ...
-			//OR print ALL selected edges in a Table?  -> add a new Part?
-			
+			if (noGeoEdge.size() > 0) {
+//				System.out.println("Edges with no geo: "+ noGeoEdge.size());
+				for (MyEdge noGe : noGeoEdge	) {
+					
+				}
+				
+			}
 			MapPanelCreator.zoomToBestFit(points);
-			MapPanelCreator.showWayPointsOnMap();
 		}
 	}
 	
@@ -1228,14 +1377,17 @@ public enum Lucene {
 				else 
 					senti = 0;
 				
+				double pos = edge.getPos();
+				double neg = edge.getNeg();
+				
 				if (counter.containsKey(category)) {
 					HistogramEntry entry = counter.get(category);
 					entry.count();
-					entry.addSentiment(senti);
+					entry.addSentiment(senti, pos, neg);
 				} else {
 					HistogramEntry entry = new HistogramEntry(category);
 					entry.count();
-					entry.addSentiment(senti);
+					entry.addSentiment(senti, pos, neg);
 					counter.put(category, entry);
 				}
 				
@@ -1265,7 +1417,7 @@ public enum Lucene {
 		
 		HashMap<Long, Integer> buckets = new HashMap<>();
 		// From Start Date to StopDate .. make bins and plot
-		LocalDateTime dt_temp = longTOLocalDateTime(minDate);
+		LocalDateTime dt_temp =  TimeLineHelper.longTOLocalDateTime(minDate);
 		
 		// CREATE TIME Bins
 		while (temp_utc <= utc_time_max) {
@@ -1296,7 +1448,7 @@ public enum Lucene {
 		
 				
 		for (Long key:  buckets.keySet()) {
-			tl_data.add(new TimeLineHelper(longTOLocalDateTime(key), buckets.get(key)));
+			tl_data.add(new TimeLineHelper( TimeLineHelper.longTOLocalDateTime(key), buckets.get(key)));
 		}
 
 		Time time = Time.getInstance();
@@ -1307,7 +1459,6 @@ public enum Lucene {
 	}
 	
 	
-
 	public void setQeryType(String text) {
 		query_type = text;
 	}
@@ -1463,6 +1614,9 @@ public enum Lucene {
 		else if (ColorScheme.CATEGORY.name().toLowerCase().equals(text.toLowerCase())) {
 			setColorScheme(ColorScheme.CATEGORY);
 		}
+		else if (ColorScheme.SENTISTRENGTH.name().toLowerCase().equals(text.toLowerCase())) {
+			setColorScheme(ColorScheme.SENTISTRENGTH);
+		}
 		else {
 			setColorScheme(ColorScheme.SENTIMENT);	// default
 		}
@@ -1587,27 +1741,53 @@ public enum Lucene {
 			
 			Connection c = DBManager.getConnection();
 			Statement stmt = c.createStatement();
-		
-			ReIndexingThread indexer = new ReIndexingThread(this, last_result.getData(), c, stmt, writer, 
+			
+			ScoreDoc[] data = last_result.getData();
+			
+			// if selection - get ScoreDocs of selection
+			if (MapPanelCreator.mapCon.isSelection() ) {
+				data = getSelectionFromScoreDocs(DetailedGraphCreator.allEdges, data);
+			}
+			
+			ReIndexingThread indexer = new ReIndexingThread(this, data, c, stmt, writer, 
 					reload, newIndex.getAbsolutePath());
 			indexer.start();
 			
 		} catch (IOException | SQLException e1 ) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		
 	}
 	
-	
+	private ScoreDoc[] getSelectionFromScoreDocs(ArrayList<MyEdge> allEdges, ScoreDoc[] data) {
+		
+		ArrayList<ScoreDoc> result = new ArrayList<>();
+		for (ScoreDoc doc : data	) {
+			try {
+				Document d = reader.document(doc.doc);
+				String tweet_id = d.getField("id").stringValue();
+				for (MyEdge e : allEdges) {
+					if (e.getId().equals(tweet_id))
+						result.add(doc);
+				}
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		ScoreDoc[] out = new ScoreDoc[result.size()];
+		return result.toArray(out);
+	}
+
+
 	public void clearGraph() {
 		
-		GraphPanelCreator3.clearGraph();	
+		DetailedGraphCreator.clearGraph();	
 		
 		Display.getCurrent().asyncExec(new Runnable() {
 			@Override
 			public void run() {
-				GraphPanelCreator.clearGraph();
+				GeneralGraphCreator.clearGraph();
 			}
 		});
 		
@@ -1650,18 +1830,21 @@ public enum Lucene {
 
 	public <V, E> void showDetailsOfSelection(Collection<V> nodes, Collection<E> edges, boolean clear) {
 		DATACHANGED = true;
-		GraphPanelCreator3.createDetailGraph(nodes, edges, withMention, withFollows, clear);
+		DetailedGraphCreator.createDetailGraph(nodes, edges, withMention, withFollows, clear);
 		
 		Display.getDefault().asyncExec(new Runnable() {
 		    public void run() {
 		    	SettingsPart.selectCountries(false);
 		    }
 		});
+		
 	}
 	
 	
+
+
 	public void showSelectionInMap() {
-		showClustersInMap(GraphPanelCreator3.allUser, GraphPanelCreator3.allEdges);
+		showClustersInMap(DetailedGraphCreator.allUser, DetailedGraphCreator.allEdges);
 	}
 	
 
@@ -1751,4 +1934,12 @@ public enum Lucene {
 		
 	}
 
+
+	public void setOnlyGeo(boolean onlyGeo) {
+		this.ONLY_GEO = onlyGeo;
+	}
+
+	public boolean isOnlyGeo() {
+		return ONLY_GEO;
+	}
 }

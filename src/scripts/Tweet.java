@@ -20,8 +20,15 @@ public class Tweet {
 	 
 	 private String relationship = "";
 	 private String language = "en";
+	 private String gender = "";
 	 
+	 private String urls = "";
+	 private String domains = "";
+	 
+	 private double u_lat;
+	 private double u_lon;
 	 // ...
+	private double credibility;
 	 
 	 public Tweet(String id){
 		 tweet_id = id;
@@ -127,6 +134,55 @@ public class Tweet {
 
 	public void setLanguage(String language) {
 		this.language = language;
+	}
+
+	public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+	public String getUrls() {
+		return urls;
+	}
+
+	public void setUrls(String urls) {
+		this.urls = urls;
+	}
+
+	public String getDomains() {
+		return domains;
+	}
+
+	public void setDomains(String domains) {
+		this.domains = domains;
+	}
+
+	public double getU_lat() {
+		return u_lat;
+	}
+
+	public void setU_lat(double u_lat) {
+		this.u_lat = u_lat;
+	}
+
+	public double getU_lon() {
+		return u_lon;
+	}
+
+	public void setU_lon(double u_lon) {
+		this.u_lon = u_lon;
+	}
+
+	public void setCredibility(double credibility) {
+		this.credibility = credibility;
+		
+	}
+	
+	public double getCredibility() {
+		return credibility;
 	}
 
 }

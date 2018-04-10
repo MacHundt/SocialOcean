@@ -3,10 +3,14 @@ package scripts;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
+
+import com.aliasi.util.Arrays;
 
 public class TEST {
 
@@ -15,10 +19,41 @@ public class TEST {
 		System.out.println(java.lang.Runtime.getRuntime().totalMemory());
 		System.out.println(java.lang.Runtime.getRuntime().availableProcessors());
 		
-		
 		String token = "Test:Me,";
 		token = token.replaceAll("[,:]", "");
 		System.out.println(token);
+		
+		String s1 = "Peter"; String s2 = "Horst"; String s3 = "Abel";
+		ArrayList<String> sort = new ArrayList<>();
+		sort.add(s1); sort.add(s2); sort.add(s3);
+		
+		String[] out = new String[3];
+		sort.sort(new Comparator<String>() {
+
+			@Override
+			public int compare(String o1, String o2) {
+				return o1.compareTo(o2);
+			}
+		});
+		
+		System.out.println(s1.compareTo(s3));
+		
+		
+		for( String s_sort : sort) {
+			System.out.println(s_sort);
+		}
+		
+		
+		ArrayList<Integer> listNr = new ArrayList<>();
+		listNr.add(1); listNr.add(2); 
+		
+		int i = 0;
+		for ( ; i< listNr.size() - 1; i++) {
+			for (int j = i+1; j < listNr.size() ; j++) {
+				System.out.println(listNr.get(i)+ " - "+listNr.get(j));
+			}
+		}
+		
 		
 		String date = "2013-04-24";
 		Pattern datePattern = Pattern.compile("[1-2][0-9]{3}-[0-1][0-9]-[0-3][0-9]");

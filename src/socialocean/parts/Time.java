@@ -9,11 +9,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.text.Format;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -164,8 +161,6 @@ public class Time {
 					return;
 				}
 
-//				result = l.searchTimeRange(low.longValue(), up.longValue(), true, true);
-//				if (l.getLastResult() != null && zoom) {
 				if (!zoom) {
 					Result  result = l.searchTimeRange(low.longValue(),  up.longValue(), true,  true);
 					ScoreDoc[] data = result.getData();
@@ -181,7 +176,6 @@ public class Time {
 						}
 					};
 					graphThread.start();
-					
 //					l.createGraphML_Mention(result, true);
 				} else {
 					// back --> == zoom out
@@ -193,14 +187,7 @@ public class Time {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-				
 				startingPoint = e.getPoint();
-//				EventQueue.invokeLater(new Runnable() {
-//					public void run() {
-//						markerStart = getPosition(e).longValue();
-//
-//					}
-//				});
 			}
 			
 			@Override
@@ -210,11 +197,11 @@ public class Time {
 			
 			@Override
 			public void mouseEntered(MouseEvent e) {
+				
 			}
 			
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				
 			}
 		});
 		
@@ -261,10 +248,8 @@ public class Time {
 			@Override
 			public void run() {
 				
-//				final XYSeries series = new XYSeries("Documents");
 				for (int i = 0; i < resulTable.size(); i++) {
 					int freq = resulTable.get(i).getFrequency();
-//					series.add((double) resulTable.get(i).getTime().toEpochSecond(ZoneOffset.UTC), (double) freq);
 					LocalDateTime d = resulTable.get(i).getTime();
 					String timeString = d.toString();
 					String[] date = timeString.split("T")[0].split("-");

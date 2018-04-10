@@ -6,11 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import javax.annotation.Resource;
-import javax.inject.Inject;
-
 import org.eclipse.e4.core.di.annotations.Execute;
-import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Shell;
 
@@ -24,7 +20,6 @@ public class OpenHandler {
 	@Execute
 	public void execute(Shell shell) {
 		// FileDialog dialog = new FileDialog(shell);
-		
 		
 		DirectoryDialog dialog = new DirectoryDialog(shell);
 		String initialPath = "/Users/michaelhundt/Documents/Meine/Studium/MASTER/MasterProject/data/LUCENE_Index/";
