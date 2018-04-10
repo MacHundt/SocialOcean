@@ -2,7 +2,7 @@
 SocialOcean enables users to explore geo-tagged social media data.
 In the context of my Master Thesis, it is tailored to Echo Chamber detection.
 Depending on the pre-processed features, it can be adapted for other purposes.
-The tool utilizes a Lucene index and a corresponding Postgres database.
+The tool utilizes a Lucene index and a corresponding PostgreSQL database.
 A script to create the Lucene index is included.
 This repository is an Eclipse RCP project. So it enables plugin-creation.
 
@@ -10,58 +10,33 @@ This repository is an Eclipse RCP project. So it enables plugin-creation.
 
 
 The initial idea and a prototype was presented at the EuroVis2017.
-A demonstration video, a poster and a short paper can be downloaded at: [http://socialocean.dbvis.de/eurovis2017/](http://socialocean.dbvis.de/eurovis2017/)
+A demonstration video, a poster and a short paper can be downloaded at: [http://socialocean.dbvis.de/eurovis2017/](http://socialocean.dbvis.de/eurovis2017/)  
+The result of the Master Thesis is captured in a video as well: 
+[http://socialocean.dbvis.de/SocialOcean/](http://socialocean.dbvis.de/SocialOcean/)
 
 
-## Installation
-
-### Downloads
+## Setup
 
 - You will need a **Eclipse RCP** Version to run this project as an eclipse application:  
 [http://www.eclipse.org/downloads/packages/eclipse-rcp-and-rap-developers/neon3](http://www.eclipse.org/downloads/packages/eclipse-rcp-and-rap-developers/neon3)  
 One of the best **tutorials** to eclipse RCP are by Lars Vogella. They can be found [**here**](http://www.vogella.com/tutorials/EclipseRCP/article.html)
 or from eclipse itself, see [**here**](http://wiki.eclipse.org/Eclipse4/RCP).
 
-- Download [Postgres](https://www.postgresql.org) and install the [Postgis](http://postgis.net) extansion.
-
-- If it is not yet included and you would like to have GUI tool for the database, you could download [PgAdmin](https://www.pgadmin.org)
-
+- For a local version you need a PostgreSQL database:  
+	Download [Postgres](https://www.postgresql.org) and install the [Postgis](http://postgis.net) extension.
 
 - **Clone** this git reporsitory and import the project into Eclipse.
-### Setup
 
-Depending on the system that you use, you may have to adapt the configuration of the target **platform**.
+- create a **db_config.properties** file (according to the template) within the settings folder that fits to your database credentials.
+
+
+### Possible Problems
+Depending on the system that you use, you may have to adapt the configuration of the **target platform**.
 But first try to change the settings at:
 
 	SocialOcean.product --> Configuration --> Configuration File (maxosx, solaris, win32)
 	SocialOcean.product --> Contents --> Add Required Plug-ins
 
-### Required Plug-ins
-
-You have to ensure all required plug-ins selected. If not, you have to add all required plug-ins manually .(SocialOcean.product --> Contents --> Add Required Plug-ins)
-
--	org.apache.commons.logging
--	org.apache.felix.scr
--	org.eclipse.core.databinding.beans
--	org.eclipse.emf.databinding
--	org.eclipse.equinox.concurrent
--	org.eclipse.equinox.ds
-- 	org.eclipse.equinox.event
-- 	org.eclipse.equinox.util
--	org.eclipse.ui
-
-If this doesn't work, go to:
-
-	targetPlatform --> SocialOcean.target --> Environment --> Target Environment
-and change the settings and click <*Set as Target Platform*>.
-
-**Example data**  
-The folder *example* includes a Lucene Index and a Postgres backup file.
-
-- Create a database
-- Load the .backup file into your database.
-	- PgAdmin: right click on database --> 'Wiederherstellen.. (restore database..)' --> my2k.backup 
-- Enter your login data into the settings/db\_config\_template.properties file and save it as settings/**db\_config.properties**
 
 ## Pre-Processing
 
@@ -111,7 +86,10 @@ and yields the following indexed Lucene fields:
 Depending on the data sources you use, you could change and adapt these fields.
 
 
-## Workflow
+
+## Useful Tools
+
+- If it is not yet included and you would like to have a GUI tool for the database, you could download [DataGrip](https://www.jetbrains.com/datagrip/download/) or [PgAdmin](https://www.pgadmin.org)
 
 
 ## Further Reading
