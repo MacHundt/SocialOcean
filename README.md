@@ -44,15 +44,16 @@ There are three scripts, that offer some basic pre-processing.
 
 	src/scripts:
 		(1) AddCategoryScript.java
-		(2) AddCategoryScript.java
-		(3) IndexTweets.java
+		(2) AddSentimentScript.java
+		(3) Geocoding.java
+		(4) IndexTweets.java
 
 The first two (1) und (2) scripts need the following database fields:
 
 	tweet_id, long
 	tweet_content,  String
 
-The indexing scripts (3) in the current form needs the following database fields from the **tweets** table:
+The indexing scripts (4) in the current form needs the following database fields from the **tweets** table:
 
 -	_tweet_id_, 			**long**
 -	_tweet_creationdate_,		**String**, timestamp of the form "yyyy-dd-MM hh:mm:ss", example: "2013-08-01 01:15:00"
@@ -66,8 +67,8 @@ The indexing scripts (3) in the current form needs the following database fields
 - _user___language_, **String**
 -	_positive_, 			**int** (result of SentiStrength.jar)
 -	_negative_, 			**int** (result of SentiStrength.jar)
--	_category_, 			**String** (AddCategoryScript.java)
--	_sentiment_, 			**String** (AddCategoryScript.java)
+-	_category_, 			**String** (1)
+-	_sentiment_, 			**String** (2)
 
 And the following fields from the **users** table:
 
@@ -77,8 +78,8 @@ And the following fields from the **users** table:
 - _user___friendscount_, **int**
 - _user___listedcount_, **int**
 - _desc___score_, **double** ( [0,1] value that rates the text of the user description )
-- _latitude_, **double** (Geocoding.java of users location)\* 
-- _longitude_, **double** (Geocoding.java)\*  
+- _latitude_, **double** (3)\* 
+- _longitude_, **double** (3)\*  
 
 \*import **reference data**: [_cities1000_](http://download.geonames.org/export/dump/) from geonames and [_timezone\_shapes_](https://github.com/evansiroky/timezone-boundary-builder/releases):  
 
