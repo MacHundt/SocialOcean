@@ -1,17 +1,17 @@
 # SocialOcean
 SocialOcean enables users to explore geo-tagged social media data.
 In the context of my Master Thesis, it is tailored to Echo Chamber detection.
-Depending on the pre-processed features, it can be adapted for other purposes.
+Depending on the pre-processed features, it can easily be adapted for other purposes as well.
 The tool utilizes a Lucene index and a corresponding PostgreSQL database.
 A script to create the Lucene index is included.
-This repository is an Eclipse RCP project. So it enables plugin-creation.
+This repository is an Eclipse RCP project, so it enables plugin-creation.
 
 ![SocialOcean Tool Interface](./tool.png)
 
 
 The initial idea and a prototype was presented at the EuroVis2017.
 A demonstration video, a poster and a short paper can be downloaded at: [http://socialocean.dbvis.de/eurovis2017/](http://socialocean.dbvis.de/eurovis2017/)  
-The result of the Master Thesis is captured in a video as well: 
+The Master Thesis, the slides of my final presentation and a short introduction video can be downloaded at:
 [http://socialocean.dbvis.de/SocialOcean/](http://socialocean.dbvis.de/SocialOcean/)
 
 
@@ -19,8 +19,9 @@ The result of the Master Thesis is captured in a video as well:
 
 - You will need a **Eclipse RCP** Version to run this project as an eclipse application:  
 [http://www.eclipse.org/downloads/packages/eclipse-rcp-and-rap-developers/neon3](http://www.eclipse.org/downloads/packages/eclipse-rcp-and-rap-developers/neon3)  
-One of the best **tutorials** to eclipse RCP are by Lars Vogella. They can be found [**here**](http://www.vogella.com/tutorials/EclipseRCP/article.html)
-or from eclipse itself, see [**here**](http://wiki.eclipse.org/Eclipse4/RCP).
+- Good **tutorials** for Eclipse RCP can be found at:  
+	- [**Vogella Tutorials**](http://www.vogella.com/tutorials/EclipseRCP/article.html)
+	- [**Eclipse Tutorial**](http://wiki.eclipse.org/Eclipse4/RCP).
 
 - For a local version you need a PostgreSQL database:  
 	Download [Postgres](https://www.postgresql.org) and install the [Postgis](http://postgis.net) extension.
@@ -31,8 +32,7 @@ or from eclipse itself, see [**here**](http://wiki.eclipse.org/Eclipse4/RCP).
 
 
 ### Possible Problems
-Depending on the system that you use, you may have to adapt the configuration of the **target platform**.
-But first try to change the settings at:
+Depending on the system that you use, you may have to adapt the configuration of the **target platform** or the **.product** file.
 
 	SocialOcean.product --> Configuration --> Configuration File (maxosx, solaris, win32)
 	SocialOcean.product --> Contents --> Add Required Plug-ins
@@ -40,6 +40,7 @@ But first try to change the settings at:
 
 ## Pre-Processing
 
+For the pre-processing we need a **tweets** table and **users** table. In the following we describe which fields are obligatory.
 There are three scripts, that offer some basic pre-processing.
 
 	src/scripts:
@@ -48,12 +49,12 @@ There are three scripts, that offer some basic pre-processing.
 		(3) Geocoding.java
 		(4) IndexTweets.java
 
-The first two (1) und (2) scripts need the following database fields:
+The first two (1) and (2) scripts need the following database fields:
 
 	tweet_id, long
 	tweet_content,  String
 
-The indexing scripts (4) in the current form needs the following database fields from the **tweets** table:
+The indexing script (4) in the current form needs the following database fields from a **tweets** table:
 
 -	_tweet_id_, 			**long**
 -	_tweet_creationdate_,		**String**, timestamp of the form "yyyy-dd-MM hh:mm:ss", example: "2013-08-01 01:15:00"
