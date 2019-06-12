@@ -10,9 +10,9 @@ This repository is an Eclipse RCP project, so it enables plugin-creation.
 
 
 The initial idea and a prototype was presented at the EuroVis2017.
-A demonstration video, a poster and a short paper can be downloaded at: [http://socialocean.dbvis.de/eurovis2017/](http://socialocean.dbvis.de/eurovis2017/)  
+A demonstration video, a poster and a short paper can be downloaded at: [https://lighthouse-bodensee.de/michaelhundt/eurovis2017/](https://lighthouse-bodensee.de/michaelhundt/eurovis2017/)  
 The Master Thesis, the slides of my final presentation and a short introduction video can be downloaded at:
-[http://socialocean.dbvis.de/SocialOcean/](http://socialocean.dbvis.de/SocialOcean/)
+[https://lighthouse-bodensee.de/michaelhundt/socialocean/](https://lighthouse-bodensee.de/michaelhundt/socialocean/)
 
 
 ## Setup
